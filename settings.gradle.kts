@@ -1,3 +1,3 @@
 rootProject.name = "KotlinExtension.Lwjgl"
 
-include("sample")
+include("lib", "sample")
