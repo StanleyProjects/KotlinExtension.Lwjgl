@@ -2,6 +2,7 @@ package sp.service.sample
 
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
+import sp.kx.lwjgl.engine.EngineInputState
 import sp.kx.lwjgl.engine.EngineLogic
 import sp.kx.lwjgl.engine.EngineProperty
 import sp.kx.lwjgl.entity.Canvas
@@ -14,6 +15,7 @@ import sp.service.sample.util.ResourceUtil
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
+/*
 private object SampleEngineLogic : EngineLogic {
 	private lateinit var shouldEngineStopUnit: Unit
 	override val inputCallback = object : EngineInputCallback {
@@ -26,7 +28,11 @@ private object SampleEngineLogic : EngineLogic {
 		return ::shouldEngineStopUnit.isInitialized
 	}
 
-	override fun onRender(canvas: Canvas, property: EngineProperty) {
+	override fun onRender(
+		canvas: Canvas,
+		inputState: EngineInputState,
+		property: EngineProperty
+	) {
 		canvas.drawPoint(
 			color = Color.GREEN,
 			point = point(
@@ -36,8 +42,9 @@ private object SampleEngineLogic : EngineLogic {
 		)
 	}
 }
+*/
 
-object KeyboardEngineLogic : EngineLogic {
+class KeyboardEngineLogic(private val engine: Engine) : EngineLogic {
 	private lateinit var shouldEngineStopUnit: Unit
 
 	private fun getFontInfo(name: String, height: Float): FontInfo {
@@ -69,19 +76,33 @@ object KeyboardEngineLogic : EngineLogic {
 		return ::shouldEngineStopUnit.isInitialized
 	}
 
-	override fun onRender(canvas: Canvas, property: EngineProperty) {
-		val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (property.timeNow - property.timeLast)
+	override fun onRender(canvas: Canvas) {
+		val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
 		canvas.drawText(
 			info = getFontInfo("font.ttf", height = 16f),
 			pointTopLeft = point(x = 0, y = 0),
 			color = Color.GREEN,
 			text = String.format("%.2f", fps)
 		)
+		setOf(
+			setOf(Key.Q, Key.W, Key.E, Key.R, Key.T, Key.Y, Key.U, Key.I, Key.O, Key.P),
+			setOf(Key.A, Key.S, Key.D, Key.F, Key.G, Key.H, Key.J, Key.K, Key.L),
+			setOf(Key.Z, Key.X, Key.C, Key.V, Key.B, Key.N, Key.M)
+		).forEachIndexed { y, keys ->
+			keys.forEachIndexed { x, key ->
+				val state = engine.input.keyboard.getState(key)
+				canvas.drawText(
+					info = getFontInfo("font.ttf", height = 16f),
+					color = if (state == KeyState.PRESS) Color.YELLOW else Color.GREEN,
+					pointTopLeft = point(25 + 25 * x, 25 + 25 * y),
+					text = key.name
+				)
+			}
+		}
 	}
 }
 
 fun main() {
 //	val logic: EngineLogic = SampleEngineLogic
-	val logic: EngineLogic = KeyboardEngineLogic
-	Engine.run(logic)
+	Engine.run(::KeyboardEngineLogic)
 }
