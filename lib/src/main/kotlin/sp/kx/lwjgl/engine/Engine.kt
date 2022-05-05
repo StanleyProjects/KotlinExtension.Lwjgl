@@ -1,9 +1,12 @@
 package sp.kx.lwjgl.engine
 
 import org.lwjgl.glfw.GLFW
+import sp.kx.lwjgl.entity.input.KeyState
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
+import sp.kx.lwjgl.glfw.toKeyOrNull
+import sp.kx.lwjgl.glfw.toKeyStateOrNull
 
 object Engine {
     fun run(logic: EngineLogic) {
@@ -13,6 +16,13 @@ object Engine {
             title = "Engine",
             onKeyCallback = GLFWUtil.onKeyCallback { _, key: Int, scanCode: Int, action: Int, _ ->
                 println("on -> key callback: $key $scanCode $action")
+                val kk = key.toKeyOrNull()
+                if (kk != null) {
+                    val state = action.toKeyStateOrNull()
+                    if (state != null) {
+                        logic.inputCallback.onKey(kk, state)
+                    }
+                }
             },
             onWindowCloseCallback = {
                 // todo
