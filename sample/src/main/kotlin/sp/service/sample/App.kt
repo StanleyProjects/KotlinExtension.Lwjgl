@@ -6,9 +6,13 @@ import sp.kx.lwjgl.engine.EngineLogic
 import sp.kx.lwjgl.engine.EngineProperty
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.input.Key
 import sp.kx.lwjgl.entity.input.KeyState
 import sp.kx.lwjgl.entity.point
+import sp.service.sample.util.ResourceUtil
+import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 private object SampleEngineLogic : EngineLogic {
 	private lateinit var shouldEngineStopUnit: Unit
@@ -22,12 +26,12 @@ private object SampleEngineLogic : EngineLogic {
 		return ::shouldEngineStopUnit.isInitialized
 	}
 
-	override fun onRender(canvas: Canvas, engineProperty: EngineProperty) {
+	override fun onRender(canvas: Canvas, property: EngineProperty) {
 		canvas.drawPoint(
 			color = Color.GREEN,
 			point = point(
-				x = engineProperty.pictureSize.width / 2,
-				y = engineProperty.pictureSize.height / 2
+				x = property.pictureSize.width / 2,
+				y = property.pictureSize.height / 2
 			)
 		)
 	}
@@ -35,6 +39,18 @@ private object SampleEngineLogic : EngineLogic {
 
 object KeyboardEngineLogic : EngineLogic {
 	private lateinit var shouldEngineStopUnit: Unit
+
+	private fun getFontInfo(name: String, height: Float): FontInfo {
+		return object : FontInfo {
+			override val id: String = "${name}_${height}"
+			override val height: Float = height
+
+			override fun getInputStream(): InputStream {
+				return ResourceUtil.requireResourceAsStream(name)
+			}
+		}
+	}
+
 	override val inputCallback = object : EngineInputCallback {
 		override fun onKey(key: Key, state: KeyState) {
 			when (key) {
@@ -53,8 +69,14 @@ object KeyboardEngineLogic : EngineLogic {
 		return ::shouldEngineStopUnit.isInitialized
 	}
 
-	override fun onRender(canvas: Canvas, engineProperty: EngineProperty) {
-		// todo
+	override fun onRender(canvas: Canvas, property: EngineProperty) {
+		val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (property.timeNow - property.timeLast)
+		canvas.drawText(
+			info = getFontInfo("font.ttf", height = 16f),
+			pointTopLeft = point(x = 0, y = 0),
+			color = Color.GREEN,
+			text = String.format("%.2f", fps)
+		)
 	}
 }
 

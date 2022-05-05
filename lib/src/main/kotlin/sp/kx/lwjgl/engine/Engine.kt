@@ -32,7 +32,7 @@ object Engine {
                 val timeRenderNow = System.nanoTime().toDouble()
                 logic.onRender(
                     canvas = canvas,
-                    engineProperty = engineProperty(
+                    property = engineProperty(
                         timeLast = timeRenderLast,
                         timeNow = timeRenderNow,
                         pictureSize = pictureSize

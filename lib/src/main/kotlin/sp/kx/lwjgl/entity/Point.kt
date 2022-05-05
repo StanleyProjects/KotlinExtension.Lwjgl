@@ -36,3 +36,10 @@ fun point(
         y = y
     )
 }
+
+fun point(
+    x: Int,
+    y: Int
+): Point {
+    return point(x = x.toDouble(), y = y.toDouble())
+}

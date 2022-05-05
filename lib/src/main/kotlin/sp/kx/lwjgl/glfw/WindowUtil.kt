@@ -12,6 +12,9 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.Size
+import sp.kx.lwjgl.entity.font.AdvancedFontDrawer
+import sp.kx.lwjgl.entity.font.FontDrawer
+import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
 
@@ -52,11 +55,22 @@ object WindowUtil {
     }
 
     private class WindowCanvas : Canvas {
+        private val fontDrawer: FontDrawer = AdvancedFontDrawer()
+
         override fun drawPoint(color: Color, point: Point) {
             GLUtil.colorOf(color)
             GLUtil.transaction(GL11.GL_POINTS) {
                 GLUtil.vertexOf(point)
             }
+        }
+
+        override fun drawText(color: Color, info: FontInfo, pointTopLeft: Point, text: String) {
+            fontDrawer.drawText(
+                info = info,
+                pointTopLeft = pointTopLeft,
+                color = color,
+                text = text
+            )
         }
     }
 

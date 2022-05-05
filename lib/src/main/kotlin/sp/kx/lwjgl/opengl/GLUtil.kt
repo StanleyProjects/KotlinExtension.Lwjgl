@@ -13,14 +13,28 @@ object GLUtil {
         GL11.glColor4f(color.red, color.green, color.blue, color.alpha)
     }
 
+    fun vertexOf(first: Float, second: Float) {
+        GL11.glVertex2f(first, second)
+    }
+
+    fun vertexOf(first: Double, second: Double) {
+        GL11.glVertex2d(first, second)
+    }
+
     fun vertexOf(point: Point) {
-        GL11.glVertex2d(point.x, point.y)
+        vertexOf(point.x, point.y)
     }
 
     fun transaction(mode: Int, block: () -> Unit) {
         GL11.glBegin(mode)
         block()
         GL11.glEnd()
+    }
+
+    fun enabled(target: Int, block: () -> Unit) {
+        GL11.glEnable(target)
+        block()
+        GL11.glDisable(target)
     }
 
     fun ortho(

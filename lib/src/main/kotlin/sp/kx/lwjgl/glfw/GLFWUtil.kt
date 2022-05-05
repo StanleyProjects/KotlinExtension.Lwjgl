@@ -4,12 +4,14 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI
+import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil
 import sp.kx.lwjgl.entity.Size
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.system.use
+import java.nio.ByteBuffer
 
 object GLFWUtil {
     fun getVideoMode(monitorId: Long): GLFWVidMode {
@@ -57,6 +59,29 @@ object GLFWUtil {
         return stackPush().use {
             getWindowSize(windowId, stack = it)
         }
+    }
+
+    fun texImage2D(
+        textureTarget: Int,
+        textureInternalFormat: Int,
+        textureSize: Size,
+        texelDataFormat: Int,
+        texelDataType: Int,
+        pixels: ByteBuffer,
+        levelOfDetailNumber: Int = 0,
+        textureBorderWidth: Int = 0
+    ) {
+        GL11.glTexImage2D(
+            textureTarget,
+            levelOfDetailNumber,
+            textureInternalFormat,
+            textureSize.width.toInt(),
+            textureSize.height.toInt(),
+            textureBorderWidth,
+            texelDataFormat,
+            texelDataType,
+            pixels
+        )
     }
 }
 
