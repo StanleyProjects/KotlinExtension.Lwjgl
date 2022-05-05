@@ -11,9 +11,16 @@ object LwjglUtil {
 
     fun requireNativesName(): String {
         val os = DefaultNativePlatform.getCurrentOperatingSystem()
-        return when {
-            os.isLinux -> "natives-linux"
-            else -> error("Operating System ${os.name} not supported!")
+        when {
+            os.isLinux -> return "natives-linux"
+            os.isMacOsX -> {
+                val architecture = DefaultNativePlatform.getCurrentArchitecture()
+                when (architecture.name) {
+                    "arm-v8" -> return "natives-macos-arm64"
+                }
+                error("Operating System ${os.name} with architecture ${architecture.name} is not supported!")
+            }
         }
+        error("Operating System ${os.name} is not supported!")
     }
 }

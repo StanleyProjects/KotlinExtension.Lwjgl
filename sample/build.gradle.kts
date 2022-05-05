@@ -18,6 +18,17 @@ tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin"
     kotlinOptions.jvmTarget = Version.jvmTarget
 }
 
+tasks.getByName<JavaExec>("run") {
+    doFirst {
+        val os = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()
+        when {
+            os.isMacOsX -> {
+                jvmArgs = listOf("-XstartOnFirstThread")
+            }
+        }
+    }
+}
+
 dependencies {
     implementation(project(":lib"))
     val group = LwjglUtil.group
