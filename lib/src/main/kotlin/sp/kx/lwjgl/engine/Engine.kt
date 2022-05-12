@@ -24,11 +24,7 @@ sealed interface Engine {
             }
             val engine = EngineImpl(
                 input = EngineInputState(keyboard),
-                property = MutableEngineProperty(
-                    timeLast = 0.0,
-                    timeNow = 0.0,
-                    pictureSize = size
-                )
+                property = MutableEngineProperty(pictureSize = size)
             )
             val logic = supplier(engine)
             WindowUtil.loopWindow(
@@ -40,7 +36,10 @@ sealed interface Engine {
                     if (kk != null) {
                         val state = action.toKeyStateOrNull()
                         if (state != null) {
-                            keys[kk] = state
+                            when (state) {
+                                KeyState.RELEASE -> keys.remove(kk)
+                                else -> keys[kk] = state
+                            }
                             logic.inputCallback.onKey(kk, state)
                         }
                     }
@@ -49,12 +48,11 @@ sealed interface Engine {
                     // todo
                 },
                 onRender = { windowId, canvas ->
-                    val pictureSize = GLFWUtil.getWindowSize(windowId)
-                    val timeRenderNow = System.nanoTime().toDouble()
-                    engine.property.timeNow = timeRenderNow
-                    engine.property.pictureSize = pictureSize
+                    val now = System.nanoTime().toDouble()
+                    engine.property.timeNow = now
+                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                     logic.onRender(canvas = canvas)
-                    engine.property.timeLast = timeRenderNow
+                    engine.property.timeLast = now
                     if (logic.shouldEngineStop()) {
                         GLFW.glfwSetWindowShouldClose(windowId, true)
                     }

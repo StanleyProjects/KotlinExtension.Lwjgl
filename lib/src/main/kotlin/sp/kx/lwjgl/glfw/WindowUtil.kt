@@ -64,7 +64,7 @@ object WindowUtil {
             }
         }
 
-        override fun drawText(color: Color, info: FontInfo, pointTopLeft: Point, text: String) {
+        override fun drawText(color: Color, info: FontInfo, pointTopLeft: Point, text: CharSequence) {
             fontDrawer.drawText(
                 info = info,
                 pointTopLeft = pointTopLeft,

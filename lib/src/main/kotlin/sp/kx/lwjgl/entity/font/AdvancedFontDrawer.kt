@@ -24,7 +24,7 @@ import java.io.InputStream
 
 class AdvancedFontDrawer : FontDrawer {
     companion object {
-        private val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,".toCharArray().toSortedSet()
+        private val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,".toSortedSet()
         private val bufferSize = size(2048, 2048)
         private val infos = mutableMapOf<String, FontSTBInfo>()
         private const val charBufferLimit = Char.MAX_VALUE.code

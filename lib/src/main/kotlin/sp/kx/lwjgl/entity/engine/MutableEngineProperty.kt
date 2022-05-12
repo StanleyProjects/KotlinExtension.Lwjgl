@@ -4,7 +4,7 @@ import sp.kx.lwjgl.engine.EngineProperty
 import sp.kx.lwjgl.entity.Size
 
 class MutableEngineProperty(
-    override var timeLast: Double,
-    override var timeNow: Double,
+    override var timeLast: Double = 0.0,
+    override var timeNow: Double = timeLast,
     override var pictureSize: Size
 ) : EngineProperty
