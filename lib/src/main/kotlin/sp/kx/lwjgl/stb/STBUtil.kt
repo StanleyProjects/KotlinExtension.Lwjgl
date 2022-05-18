@@ -15,6 +15,30 @@ import java.nio.FloatBuffer
 object STBUtil {
     fun getPackedQuad(
         buffer: STBTTPackedchar.Buffer,
+        fontHeight: Float,
+        index: Int,
+        xBuffer: FloatBuffer,
+        yBuffer: FloatBuffer,
+        quad: STBTTAlignedQuad,
+        isAlignToInteger: Boolean = false
+    ) {
+        val width = fontHeight * 64 * 1.5
+        val height = fontHeight * 8 * 1.5
+        STBTruetype.stbtt_GetPackedQuad(
+            buffer,
+            width.toInt(),
+            height.toInt(),
+            index,
+            xBuffer,
+            yBuffer,
+            quad,
+            isAlignToInteger
+        )
+    }
+
+    @Deprecated(level = DeprecationLevel.ERROR, message = "size!")
+    fun getPackedQuad(
+        buffer: STBTTPackedchar.Buffer,
         size: Size,
         index: Int,
         xBuffer: FloatBuffer,
@@ -34,6 +58,31 @@ object STBUtil {
         )
     }
 
+    fun pack(
+        context: STBTTPackContext,
+        pixels: ByteBuffer,
+        fontHeight: Float,
+        strideInBytes: Int = 0,
+        padding: Int = 1,
+        alloc: Long? = null,
+        block: () -> Unit
+    ) {
+        val width = fontHeight * 64 * 1.5
+        val height = fontHeight * 8 * 1.5
+        STBTruetype.stbtt_PackBegin(
+            context,
+            pixels,
+            width.toInt(),
+            height.toInt(),
+            strideInBytes,
+            padding,
+            alloc ?: MemoryUtil.NULL
+        )
+        block()
+        STBTruetype.stbtt_PackEnd(context)
+    }
+
+    @Deprecated(level = DeprecationLevel.ERROR, message = "size!")
     fun pack(
         context: STBTTPackContext,
         pixels: ByteBuffer,

@@ -1,8 +1,9 @@
 package sp.kx.lwjgl.engine
 
-import sp.kx.lwjgl.entity.input.Key
-import sp.kx.lwjgl.entity.input.KeyState
+import sp.kx.lwjgl.entity.input.JoystickButton
+import sp.kx.lwjgl.entity.input.KeyboardButton
 
 interface EngineInputCallback {
-    fun onKey(key: Key, state: KeyState)
+    fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean)
+    fun onJoystickButton(button: JoystickButton, isPressed: Boolean)
 }

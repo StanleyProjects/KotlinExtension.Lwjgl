@@ -1,6 +1,7 @@
 package sp.kx.lwjgl.glfw
 
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFWJoystickCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI
@@ -44,6 +45,16 @@ object GLFWUtil {
         return object: GLFWKeyCallback() {
             override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
                 block(window, key, scancode, action, mods)
+            }
+        }
+    }
+
+    fun onJoystickCallback(
+        block: (id: Int, event: Int) -> Unit
+    ): GLFWJoystickCallback {
+        return object: GLFWJoystickCallback() {
+            override fun invoke(jid: Int, event: Int) {
+                block(jid, event)
             }
         }
     }

@@ -1,6 +1,5 @@
 package sp.kx.lwjgl.glfw
 
-import java.io.PrintStream
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -12,11 +11,11 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.Size
-import sp.kx.lwjgl.entity.font.AdvancedFontDrawer
 import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
+import java.io.PrintStream
 
 object WindowUtil {
     fun createWindow(
@@ -27,6 +26,7 @@ object WindowUtil {
         size: Size,
         title: String,
         onKeyCallback: GLFWKeyCallback,
+//        onJoystickCallback: GLFWJoystickCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI
     ): Long {
         GLFWErrorCallback.createPrint(errorPrintStream).set()
@@ -50,12 +50,12 @@ object WindowUtil {
         GL.createCapabilities()
         GLFW.glfwSwapInterval(1)
         GLFW.glfwSetKeyCallback(windowId, onKeyCallback)
+//        GLFW.glfwSetJoystickCallback(onJoystickCallback) // This is called when a joystick is connected to or disconnected from the system.
         GLFW.glfwSetWindowCloseCallback(windowId, onWindowCloseCallback)
         return windowId
     }
 
-    private class WindowCanvas : Canvas {
-        private val fontDrawer: FontDrawer = AdvancedFontDrawer()
+    private class WindowCanvas(private val fontDrawer: FontDrawer) : Canvas {
 
         override fun drawPoint(color: Color, point: Point) {
             GLUtil.colorOf(color)
@@ -71,6 +71,16 @@ object WindowUtil {
                 color = color,
                 text = text
             )
+        }
+
+        override fun drawLineLoop(color: Color, points: Iterable<Point>, lineWidth: Float) {
+            GL11.glLineWidth(lineWidth)
+            GLUtil.colorOf(color)
+            GLUtil.transaction(GL11.GL_LINE_LOOP) {
+                points.forEach {
+                    GLUtil.vertexOf(it)
+                }
+            }
         }
     }
 
@@ -99,12 +109,13 @@ object WindowUtil {
 
     private fun loopWindow(
         windowId: Long,
+        fontDrawer: FontDrawer,
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit
     ) {
         GLUtil.clearColor(Color.BLACK)
-        val canvas = WindowCanvas()
+        val canvas = WindowCanvas(fontDrawer)
         onPreLoop(windowId)
         while (!GLFW.glfwWindowShouldClose(windowId)) {
             onPreRender(windowId)
@@ -124,6 +135,7 @@ object WindowUtil {
     fun loopWindow(
         size: Size,
         title: String,
+        fontDrawer: FontDrawer,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
         onPreLoop: (Long) -> Unit,
@@ -145,7 +157,7 @@ object WindowUtil {
             monitorIdSupplier = monitorIdSupplier
         )
         GLFW.glfwShowWindow(windowId)
-        loopWindow(windowId, onPreLoop, onPostLoop, onRender)
+        loopWindow(windowId, fontDrawer, onPreLoop, onPostLoop, onRender)
         destroyWindow(windowId)
     }
 }
