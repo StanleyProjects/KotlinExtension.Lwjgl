@@ -48,6 +48,7 @@ object EngineUtil {
             }
             val old = joysticks[id]
             joysticks[id] = MappedJoystick(gj, mapping)
+//            println("axes: " + gj.axes.toList())
             if (old == null) continue
             JoystickButton.values().forEach { button ->
                 val newValue = gj.buttons[mapping.getIndex(button)].toInt() == 1

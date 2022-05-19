@@ -1,6 +1,7 @@
 package sp.service.sample.util
 
 import sp.kx.lwjgl.engine.input.JoystickMapping
+import sp.kx.lwjgl.entity.input.JoystickAxis
 import sp.kx.lwjgl.entity.input.JoystickButton
 
 object XBoxSeriesJoystickMapping : JoystickMapping {
@@ -21,6 +22,17 @@ object XBoxSeriesJoystickMapping : JoystickMapping {
             JoystickButton.DPAD_RIGHT -> 17
             JoystickButton.DPAD_DOWN -> 18
             JoystickButton.DPAD_LEFT -> 19
+        }
+    }
+
+    override fun getIndex(axis: JoystickAxis): Int {
+        return when (axis) {
+            JoystickAxis.LEFT_X -> 0
+            JoystickAxis.RIGHT_X -> 2
+            JoystickAxis.LEFT_Y -> 1
+            JoystickAxis.RIGHT_Y -> 3
+            JoystickAxis.LEFT_TRIGGER -> 5
+            JoystickAxis.RIGHT_TRIGGER -> 4
         }
     }
 }

@@ -8,10 +8,12 @@ import sp.kx.lwjgl.engine.EngineProperty
 import sp.kx.lwjgl.engine.input.Joystick
 import sp.kx.lwjgl.engine.input.JoystickMapper
 import sp.kx.lwjgl.engine.input.JoystickMapping
+import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.font.FontInfo
+import sp.kx.lwjgl.entity.input.JoystickAxis
 import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.entity.point
@@ -20,6 +22,7 @@ import sp.kx.lwjgl.entity.updated
 import sp.kx.lwjgl.util.EngineUtil
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.lwjgl.util.drawRectangle
+import sp.service.sample.util.Dualshock4JoystickMapping
 import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.XBoxSeriesJoystickMapping
 import java.io.InputStream
@@ -79,6 +82,11 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 						return XBoxSeriesJoystickMapping
 					}
 				}
+                "030000004c050000cc09000000010000" -> {
+                    if (buttons.size == 18 && axes.size == 6) {
+                        return Dualshock4JoystickMapping
+                    }
+                }
 			}
 			return null
 		}
@@ -110,23 +118,90 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 		return ::shouldEngineStopUnit.isInitialized
 	}
 
-	private var w = -1.0
-	private fun Canvas.drawJoystickButton(pointCenter: Point, text: String, isPressed: Boolean) {
+    private fun Canvas.drawJoystickTriggers(x: Double, y: Double, joystick: Joystick) {
+        val d = 25.0 * 3
+        val info = getFontInfo(height = 16f)
+        val lv = joystick.getValue(JoystickAxis.LEFT_TRIGGER)
+        drawLineLoop(
+            color = Color.GREEN,
+            points = setOf(point(x = x, y = y + d + 25.0), point(x = x, y = y + d + 25.0 + d * lv)),
+            lineWidth = 2f
+        )
+        drawText(
+            color = Color.GREEN,
+            pointTopLeft = point(x = x - 16.0, y = y),
+            info = info,
+            text = String.format("%+.1f", lv)
+        )
+        val rv = joystick.getValue(JoystickAxis.RIGHT_TRIGGER)
+        drawLineLoop(
+            color = Color.GREEN,
+            points = setOf(
+                point(x = x + 16.0 * 6 + 25.0 * 10, y = y + d + 25.0),
+                point(x = x + 16.0 * 6 + 25.0 * 10, y = y + d + 25.0 + d * rv)
+            ),
+            lineWidth = 2f
+        )
+        drawText(
+            color = Color.GREEN,
+            pointTopLeft = point(x = x - 16.0 + 16.0 * 6 + 25.0 * 10, y = y),
+            info = info,
+            text = String.format("%+.1f", rv)
+        )
+    }
+
+    private fun Canvas.drawJoystickBumpers(x: Double, y: Double, joystick: Joystick) {
+        val height = 25.0
+        val width = height * 3
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x, y = y + height * 0),
+            width = width,
+            height = height,
+            text = "LEFT_B",
+            isPressed = joystick.isPressed(JoystickButton.LEFT_BUMPER)
+        )
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width + height * 4 + 16.0 * 2, y = y + height * 0),
+            width = width,
+            height = height,
+            text = "RIGHT_B",
+            isPressed = joystick.isPressed(JoystickButton.RIGHT_BUMPER)
+        )
+    }
+
+    private fun Canvas.drawJoystickButtonRectangle(pointTopLeft: Point, width: Double, height: Double, text: String, isPressed: Boolean) {
+        val color = if (isPressed) Color.YELLOW else Color.GREEN
+        drawRectangle(
+            color = color,
+            pointTopLeft = pointTopLeft,
+            size = size(width = width, height = height),
+            lineWidth = 2f
+        )
+        val textHeight = 16f
+        val info = getFontInfo(height = textHeight)
+        drawText(
+            color = color,
+            pointTopLeft = pointTopLeft.updated(
+                dX = width / 2 - engine.fontAgent.getTextWidth(info, text) / 2,
+                dY = height / 2 - textHeight / 2.0
+            ),
+            info = info,
+            text = text
+        )
+    }
+
+	private fun Canvas.drawJoystickButtonCircle(pointCenter: Point, radius: Double, text: String, isPressed: Boolean) {
 		val color = if (isPressed) Color.YELLOW else Color.GREEN
 		drawCircle(
 			color = color,
 			pointCenter = pointCenter,
-			radius = 16.0,
+			radius = radius,
 			edgeCount = 16,
 			lineWidth = 2f
 		)
 		val textHeight = 16f
 		val info = getFontInfo(height = textHeight)
 		val width = engine.fontAgent.getTextWidth(info, text)
-		if (width != w) {
-			println("before: $w | after: $width")
-			w = width // todo wrong width!
-		}
 		drawText(
 			color = color,
 			pointTopLeft = pointCenter.updated(dX = - width / 2, dY = - textHeight / 2.0),
@@ -135,85 +210,191 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 		)
 	}
 
-	private fun test(canvas: Canvas, x: Double, y: Double, name: String, height: Double, text: CharSequence) {
-        canvas.drawText(
-            color = Color.WHITE,
-            pointTopLeft = point(x = x, y = y),
-            info = getFontInfo(height = 16f),
-            text = name
+    private fun Canvas.drawJoystickButtonsLeft(x: Double, y: Double, joystick: Joystick) {
+        val width = 25.0
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width * 1, y = y + width * 0),
+            width = width,
+            height = width,
+            text = "U",
+            isPressed = joystick.isPressed(JoystickButton.DPAD_UP)
         )
-		val info = getFontInfo(name = name, height = height.toFloat())
-		val width = engine.fontAgent.getTextWidth(info, text)
-		val pointTopLeft = point(x = x, y = y + 16)
-//		canvas.drawRectangle(
-//			color = Color.YELLOW,
-//			pointTopLeft = pointTopLeft,
-//			size = size(width = width, height = height),
-//			lineWidth = 1f
-//		)
-		canvas.drawText(
-			color = Color.GREEN,
-			pointTopLeft = pointTopLeft,
-			info = info,
-			text = text
-		)
-	}
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width * 0, y = y + width * 1),
+            width = width,
+            height = width,
+            text = "L",
+            isPressed = joystick.isPressed(JoystickButton.DPAD_LEFT)
+        )
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width * 2, y = y + width * 1),
+            width = width,
+            height = width,
+            text = "R",
+            isPressed = joystick.isPressed(JoystickButton.DPAD_RIGHT)
+        )
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width * 1, y = y + width * 2),
+            width = width,
+            height = width,
+            text = "D",
+            isPressed = joystick.isPressed(JoystickButton.DPAD_DOWN)
+        )
+    }
+
+    private fun Canvas.drawJoystickJoy(
+        pointCenter: Point,
+        radius: Double,
+        joystick: Joystick,
+        button: JoystickButton,
+        axisX: JoystickAxis,
+        axisY: JoystickAxis
+    ) {
+        drawJoystickButtonCircle(
+            pointCenter = pointCenter,
+            radius = radius,
+            text = button.name,
+            isPressed = joystick.isPressed(button)
+        )
+        val valueX = joystick.getValue(axisX)
+        val valueY = joystick.getValue(axisY)
+        drawLineLoop(
+            color = Color.GREEN,
+            points = setOf(
+                pointCenter,
+                pointCenter.updated(dX = radius * valueX, dY = radius * valueY)
+            ),
+            lineWidth = 2f
+        )
+        val textHeight = 16f
+        val info = getFontInfo(height = textHeight)
+        drawText(
+            color = Color.GREEN,
+            pointTopLeft = pointCenter.updated(dX = - radius, dY = radius + 16.0),
+            info = info,
+            text = String.format("x: %+.1f", valueX)
+        )
+        drawText(
+            color = Color.GREEN,
+            pointTopLeft = pointCenter.updated(dX = - radius, dY = radius + 16.0 + textHeight),
+            info = info,
+            text = String.format("y: %+.1f", valueY)
+        )
+    }
+
+    private fun Canvas.drawJoystickJoys(x: Double, y: Double, joystick: Joystick) {
+        val radius = 25.0 * 2
+        drawJoystickJoy(
+            pointCenter = point(x = x + 25.0 * 0 + radius, y = y + 25.0 * 0 + radius),
+            radius = radius,
+            joystick = joystick,
+            button = JoystickButton.LEFT_THUMB,
+            axisX = JoystickAxis.LEFT_X,
+            axisY = JoystickAxis.LEFT_Y
+        )
+        drawJoystickJoy(
+            pointCenter = point(x = x + 25.0 * 6 + 16.0 * 2 + radius, y = y + 25.0 * 0 + radius),
+            radius = radius,
+            joystick = joystick,
+            button = JoystickButton.RIGHT_THUMB,
+            axisX = JoystickAxis.RIGHT_X,
+            axisY = JoystickAxis.RIGHT_Y
+        )
+    }
+
+    private fun Canvas.drawJoystickMain(x: Double, y: Double, joystick: Joystick) {
+        val height = 25.0
+        val width = height * 2
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width / 2, y = y + height * 0),
+            width = width,
+            height = height,
+            text = "GUIDE",
+            isPressed = joystick.isPressed(JoystickButton.GUIDE)
+        )
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x, y = y + height * 1),
+            width = width,
+            height = height,
+            text = "BACK",
+            isPressed = joystick.isPressed(JoystickButton.BACK)
+        )
+        drawJoystickButtonRectangle(
+            pointTopLeft = point(x = x + width, y = y + height * 1),
+            width = width,
+            height = height,
+            text = "START",
+            isPressed = joystick.isPressed(JoystickButton.START)
+        )
+    }
+
+    private fun Canvas.drawJoystickButtonsRight(x: Double, y: Double, joystick: Joystick) {
+        val radius = 25.0 / 2
+        val d = radius * 2
+        drawJoystickButtonCircle(
+            pointCenter = point(x = x + radius + d * 1, y = y + radius + d * 2),
+            radius = radius,
+            text = "A",
+            isPressed = joystick.isPressed(JoystickButton.A)
+        )
+        drawJoystickButtonCircle(
+            pointCenter = point(x = x + radius + d * 2, y = y + radius + d * 1),
+            radius = radius,
+            text = "B",
+            isPressed = joystick.isPressed(JoystickButton.B)
+        )
+        drawJoystickButtonCircle(
+            pointCenter = point(x = x + radius + d * 0, y = y + radius + d * 1),
+            radius = radius,
+            text = "X",
+            isPressed = joystick.isPressed(JoystickButton.X)
+        )
+        drawJoystickButtonCircle(
+            pointCenter = point(x = x + radius + d * 1, y = y + radius + d * 0),
+            radius = radius,
+            text = "Y",
+            isPressed = joystick.isPressed(JoystickButton.Y)
+        )
+    }
+
+    private fun Canvas.drawJoystick(x: Double, y: Double, joystick: Joystick) {
+        drawJoystickTriggers(x = x + 16.0 * 1, y = y + 16.0 * 0, joystick = joystick)
+        drawJoystickBumpers(x = x + 16.0 * 3, y = y + 16.0 * 0, joystick = joystick)
+        drawJoystickButtonsLeft(x = x + 16.0 * 3, y = y + 16.0 + 25.0 * 1, joystick = joystick)
+        drawJoystickButtonsRight(x = x + 16.0 * 3 + 25.0 * 7 + 16.0 * 2, y = y + 16.0 + 25.0 * 1, joystick = joystick)
+        drawJoystickMain(x = x + 16.0 * 3 + 25.0 * 3 + 16.0, y = y + 16.0 * 2, joystick = joystick)
+        drawJoystickJoys(x = x + 16.0 * 3, y = y + 16.0 * 2 + 25.0 * 4, joystick = joystick)
+    }
+
+    private fun Canvas.drawKeyboard(x: Double, y: Double, keyboard: Keyboard) {
+        setOf(
+            setOf(KeyboardButton.Q, KeyboardButton.W, KeyboardButton.E, KeyboardButton.R, KeyboardButton.T, KeyboardButton.Y, KeyboardButton.U, KeyboardButton.I, KeyboardButton.O, KeyboardButton.P),
+            setOf(KeyboardButton.A, KeyboardButton.S, KeyboardButton.D, KeyboardButton.F, KeyboardButton.G, KeyboardButton.H, KeyboardButton.J, KeyboardButton.K, KeyboardButton.L),
+            setOf(KeyboardButton.Z, KeyboardButton.X, KeyboardButton.C, KeyboardButton.V, KeyboardButton.B, KeyboardButton.N, KeyboardButton.M)
+        ).forEachIndexed { dY, keys ->
+            keys.forEachIndexed { dX, button ->
+                val isPressed = keyboard.isPressed(button)
+                val width = 25.0
+                val pointTopLeft = point(x + width * dX, y + width * dY)
+                drawText(
+                    info = getFontInfo(height = 16f),
+                    color = if (isPressed) Color.YELLOW else Color.GREEN,
+                    pointTopLeft = pointTopLeft,
+                    text = button.name
+                )
+                if (isPressed) {
+                    drawRectangle(
+                        color = Color.YELLOW,
+                        pointTopLeft = pointTopLeft,
+                        size = size(width = width, height = width),
+                        lineWidth = 2f
+                    )
+                }
+            }
+        }
+    }
 
 	override fun onRender(canvas: Canvas) {
-		/*
-//		setOf(8, 16, 32, 64).forEachIndexed { index, height ->
-//			canvas.drawText(
-//				info = getFontInfo("font.ttf", height = height.toFloat()),
-//				pointTopLeft = point(x = 0, y = 32 * index),
-//				color = Color.GREEN,
-//				text = "$height) 0az9AZ!\""
-//			)
-//		}
-		val first = 500 * 0
-		val last = if (first + 500 >= Char.MAX_VALUE.code) Char.MAX_VALUE.code - 1 else first + 500
-		val height = 16
-//		val map = (Char.MIN_VALUE until Char.MAX_VALUE)
-		val map = (first.toChar() until last.toChar())
-//		val map = ('А'..'я')
-//		val map = ('!'..'z')
-			.mapIndexed { index, char -> (index / 20) to char }
-			.groupBy { (k, _) -> k }
-			.mapValues { (_, v) -> v.map { (_, char) -> char } }
-			.toMap()
-		map.forEach { (k, list) ->
-			list.forEachIndexed { index, char ->
-				val x = index * height * 2.0
-				val y = k * height * 1.5
-				canvas.drawText(
-					info = getFontInfo("font.ttf", height = height.toFloat() / 2),
-					pointTopLeft = point(x = x, y = y),
-					color = Color.GREEN,
-					text = String.format("%03d", index + k * 20)
-				)
-				canvas.drawText(
-					info = getFontInfo("font.ttf", height = height.toFloat()),
-					pointTopLeft = point(x = x, y = y + height * 0.5),
-					color = Color.GREEN,
-					text = "$char"
-				)
-			}
-		}
-		*/
-		"(){}[]".also { text ->
-//			val height = 16.0
-//			val height = 19.2
-			val height = 32.0
-//			val height = 38.4
-            setOf(
-                "Anonymous-Pro.ttf",
-                "JetBrainsMono.ttf",
-                "OpenSans.ttf",
-                "Roboto.ttf"
-            ).forEachIndexed { index, name ->
-                test(canvas, x = 16.0, y = 16.0 + (height + 16.0) * index, name = name, height = height, text = text)
-            }
-		}
-		return // todo
 		val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
 		canvas.drawText(
 			info = getFontInfo(height = 16f),
@@ -221,45 +402,12 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 			color = Color.GREEN,
 			text = String.format("%.2f", fps)
 		)
-		val joystick = engine.input.joysticks[0]
-		if (joystick != null) {
-			canvas.drawJoystickButton(
-				pointCenter = point(x = 25.0 + 25 * 2, y = 25.0 + 25 * 6),
-				text = "A",
-				isPressed = joystick.isPressed(JoystickButton.A)
-			)
-			canvas.drawJoystickButton(
-				pointCenter = point(x = 25.0 + 25 * 3, y = 25.0 + 25 * 5),
-				text = "B",
-				isPressed = joystick.isPressed(JoystickButton.B)
-			)
-			canvas.drawJoystickButton(
-				pointCenter = point(x = 25.0 + 25 * 1, y = 25.0 + 25 * 5),
-				text = "X",
-				isPressed = joystick.isPressed(JoystickButton.X)
-			)
-			canvas.drawJoystickButton(
-				pointCenter = point(x = 25.0 + 25 * 2, y = 25.0 + 25 * 4),
-				text = "Y",
-				isPressed = joystick.isPressed(JoystickButton.Y)
-			)
-			// todo
-		}
-		setOf(
-			setOf(KeyboardButton.Q, KeyboardButton.W, KeyboardButton.E, KeyboardButton.R, KeyboardButton.T, KeyboardButton.Y, KeyboardButton.U, KeyboardButton.I, KeyboardButton.O, KeyboardButton.P),
-			setOf(KeyboardButton.A, KeyboardButton.S, KeyboardButton.D, KeyboardButton.F, KeyboardButton.G, KeyboardButton.H, KeyboardButton.J, KeyboardButton.K, KeyboardButton.L),
-			setOf(KeyboardButton.Z, KeyboardButton.X, KeyboardButton.C, KeyboardButton.V, KeyboardButton.B, KeyboardButton.N, KeyboardButton.M)
-		).forEachIndexed { y, keys ->
-			keys.forEachIndexed { x, button ->
-				val isPressed = engine.input.keyboard.isPressed(button)
-				canvas.drawText(
-					info = getFontInfo(height = 16f),
-					color = if (isPressed) Color.YELLOW else Color.GREEN,
-					pointTopLeft = point(25 + 25 * x, 25 + 25 * y),
-					text = button.name
-				)
-			}
-		}
+        canvas.drawKeyboard(x = 16.0, y = 16.0, engine.input.keyboard)
+        val joystick = engine.input.joysticks[0]
+        if (joystick != null) {
+            canvas.drawJoystick(x = 16.0, y = 16.0 + 25.0 * 4, joystick)
+            // todo
+        }
 	}
 }
 
