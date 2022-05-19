@@ -5,6 +5,7 @@ interface Color {
         const val MAX_VALUE = 1f
         const val MIN_VALUE = 0f
 
+        val WHITE = color(MAX_VALUE, MAX_VALUE, MAX_VALUE)
         val BLACK = color(MIN_VALUE, MIN_VALUE, MIN_VALUE)
         val GREEN = color(MIN_VALUE, MAX_VALUE, MIN_VALUE)
         val BLUE = color(MIN_VALUE, MIN_VALUE, MAX_VALUE)

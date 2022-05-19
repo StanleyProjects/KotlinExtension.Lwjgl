@@ -58,7 +58,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 	private lateinit var shouldEngineStopUnit: Unit
 
 	private fun getFontInfo(name: String, height: Float): FontInfo {
-		return object : FontInfo {
+        return object : FontInfo {
 			override val id: String = "${name}_${height}"
 			override val height: Float = height
 
@@ -67,6 +67,9 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 			}
 		}
 	}
+    private fun getFontInfo(height: Float): FontInfo {
+        return getFontInfo(name = "JetBrainsMono.ttf", height = height)
+    }
 
 	override val joystickMapper: JoystickMapper = object : JoystickMapper {
 		override fun map(guid: String, buttons: ByteArray, axes: FloatArray): JoystickMapping? {
@@ -118,7 +121,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 			lineWidth = 2f
 		)
 		val textHeight = 16f
-		val info = getFontInfo("font.ttf", height = textHeight)
+		val info = getFontInfo(height = textHeight)
 		val width = engine.fontAgent.getTextWidth(info, text)
 		if (width != w) {
 			println("before: $w | after: $width")
@@ -132,16 +135,22 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 		)
 	}
 
-	private fun test(canvas: Canvas, y: Double, height: Double, text: CharSequence) {
-		val info = getFontInfo("font.ttf", height = height.toFloat())
+	private fun test(canvas: Canvas, x: Double, y: Double, name: String, height: Double, text: CharSequence) {
+        canvas.drawText(
+            color = Color.WHITE,
+            pointTopLeft = point(x = x, y = y),
+            info = getFontInfo(height = 16f),
+            text = name
+        )
+		val info = getFontInfo(name = name, height = height.toFloat())
 		val width = engine.fontAgent.getTextWidth(info, text)
-		val pointTopLeft = point(x = 25.0, y = y)
-		canvas.drawRectangle(
-			color = Color.GREEN,
-			pointTopLeft = pointTopLeft,
-			size = size(width = width, height = height),
-			lineWidth = 2f
-		)
+		val pointTopLeft = point(x = x, y = y + 16)
+//		canvas.drawRectangle(
+//			color = Color.YELLOW,
+//			pointTopLeft = pointTopLeft,
+//			size = size(width = width, height = height),
+//			lineWidth = 1f
+//		)
 		canvas.drawText(
 			color = Color.GREEN,
 			pointTopLeft = pointTopLeft,
@@ -190,16 +199,24 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 			}
 		}
 		*/
-//		"xyzABC123".also { text ->
+		"(){}[]".also { text ->
 //			val height = 16.0
-//			for (i in text.indices) {
-//				test(canvas, y = 128.0 + height * i, height = height, text = text.substring(0..i))
-//			}
-//		}
-//		return // todo
+//			val height = 19.2
+			val height = 32.0
+//			val height = 38.4
+            setOf(
+                "Anonymous-Pro.ttf",
+                "JetBrainsMono.ttf",
+                "OpenSans.ttf",
+                "Roboto.ttf"
+            ).forEachIndexed { index, name ->
+                test(canvas, x = 16.0, y = 16.0 + (height + 16.0) * index, name = name, height = height, text = text)
+            }
+		}
+		return // todo
 		val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
 		canvas.drawText(
-			info = getFontInfo("font.ttf", height = 16f),
+			info = getFontInfo(height = 16f),
 			pointTopLeft = point(x = 0, y = 0),
 			color = Color.GREEN,
 			text = String.format("%.2f", fps)
@@ -236,7 +253,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 			keys.forEachIndexed { x, button ->
 				val isPressed = engine.input.keyboard.isPressed(button)
 				canvas.drawText(
-					info = getFontInfo("font.ttf", height = 16f),
+					info = getFontInfo(height = 16f),
 					color = if (isPressed) Color.YELLOW else Color.GREEN,
 					pointTopLeft = point(25 + 25 * x, 25 + 25 * y),
 					text = button.name

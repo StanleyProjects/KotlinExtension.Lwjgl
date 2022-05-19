@@ -12,6 +12,7 @@ import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.system.use
 import sp.kx.lwjgl.util.IOUtil
+import sp.kx.lwjgl.util.toArray
 import sp.kx.lwjgl.util.toByteBuffer
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -21,8 +22,9 @@ internal class STBFontStorage(chars: Iterable<Char>) {
     private val map = mutableMapOf<String, STBFontInfo>()
 
     private fun InputStream.getFontInfo(fontHeight: Float): STBFontInfo {
-        val bufferSize = size(width = fontHeight * 64 * 1.5, height = fontHeight * 8 * 1.5)
-        println("ss: $bufferSize")
+        val bufferSize = size(width = fontHeight * 128.0, height = fontHeight * 16.0)
+//        val bufferSize = size(width = fontHeight * 64 * 1.5, height = fontHeight * 8 * 1.5)
+//        println("ss: $bufferSize")
         val fontByteBuffer = toByteBuffer(1024)
         val pixels = IOUtil.createByteBuffer(bufferSize)
 //        val container = BufferUtils.createByteBuffer(STBTTFontinfo.SIZEOF)
@@ -33,11 +35,11 @@ internal class STBFontStorage(chars: Iterable<Char>) {
 //        val position = chars.first().code
 //        val position = 0
         val position = Char.MIN_VALUE.code
+        val fontVMetrics = fontInfo.toFontVMetrics(fontHeight = fontHeight)
         STBTTPackContext.malloc().use { context ->
-            STBUtil.pack(
-                context = context,
+            context.pack(
                 pixels = pixels,
-                fontHeight = fontHeight
+                size = bufferSize
             ) {
                 charBuffer.limit(limit)
                 charBuffer.position(position)
@@ -47,7 +49,9 @@ internal class STBFontStorage(chars: Iterable<Char>) {
                 context.packFontRange(
                     fontByteBuffer = fontByteBuffer,
                     fontIndex = 0,
-                    fontSize = fontHeight,
+//                    fontSize = fontHeight,
+                    fontSize = fontVMetrics.ascent - fontVMetrics.descent,
+//                    fontSize = STBTruetype.STBTT_POINT_SIZE((fontVMetrics.ascent - fontVMetrics.descent).toInt()).toFloat(),
                     firstUnicodeCharInRange = position,
                     charBufferForRange = charBuffer
                 )
@@ -66,13 +70,25 @@ internal class STBFontStorage(chars: Iterable<Char>) {
         )
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
-        val fontVMetrics = fontInfo.toFontVMetrics()
-        val lineHeight = fontHeight /
-                (fontVMetrics.ascent.toFloat() - fontVMetrics.descent.toFloat() - fontVMetrics.lineGap.toFloat() / 2) *
-                fontVMetrics.ascent.toFloat()
+//        val bb = fontInfo.toBitmapBox(fontHeight = fontHeight)
+//        println(bb)
+        println(fontVMetrics)
+        // https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
+        (0..10).forEach { nameId ->
+            val name = STBTruetype.stbtt_GetFontNameString(
+                fontInfo,
+                STBTruetype.STBTT_PLATFORM_ID_MICROSOFT,
+                STBTruetype.STBTT_UNICODE_EID_UNICODE_1_1,
+                STBTruetype.STBTT_MS_LANG_ENGLISH,
+                nameId
+            )?.toArray()
+            if (name != null) {
+                println("$nameId) ${String(name)}")
+            }
+        }
         return STBFontInfo(
             textureId = textureId,
-            lineHeight = lineHeight,
+            metrics = fontVMetrics,
             buffer = charBuffer,
             container = fontByteBuffer,
             info = fontInfo

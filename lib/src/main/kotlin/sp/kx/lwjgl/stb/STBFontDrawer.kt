@@ -3,6 +3,8 @@ package sp.kx.lwjgl.stb
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.stb.STBTTAlignedQuad
+import org.lwjgl.stb.STBTTFontinfo
+import org.lwjgl.stb.STBTruetype
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.font.FontDrawer
@@ -26,14 +28,30 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
     }
 
     private fun drawText(
-        info: FontInfo,
-        sfi: STBFontInfo,
+        info: STBFontInfo,
+//        fontHeight: Float,
         pointTopLeft: Point,
         color: Color,
         text: CharSequence
     ) {
         val x = pointTopLeft.x
-        val y = pointTopLeft.y + sfi.lineHeight
+//        val y = pointTopLeft.y
+//        val y = pointTopLeft.y + sfi.lineHeight
+//        val y = pointTopLeft.y + info.height + sfi.metrics.descent * STBTruetype.stbtt_ScaleForPixelHeight(sfi.info, info.height)
+//        val scale = STBTruetype.stbtt_ScaleForPixelHeight(info.info, fontHeight)
+//        val baseline = pointTopLeft.y + sfi.metrics.ascent * scale
+//        val baseline = pointTopLeft.y + info.height
+//        val y = pointTopLeft.y + (sfi.metrics.ascent + sfi.metrics.descent) * STBTruetype.stbtt_ScaleForPixelHeight(sfi.info, info.height)
+//        val y = baseline
+//        val y = pointTopLeft.y + info.metrics.ascent * scale
+        val fontHeight = info.metrics.ascent - info.metrics.descent
+//        val y = pointTopLeft.y + fontHeight
+        val y = pointTopLeft.y + info.metrics.ascent
+//        val y = pointTopLeft.y + info.metrics.ascent + info.metrics.descent
+//        println("""
+//            fh: $fontHeight
+//            ad: ${info.metrics.ascent + info.metrics.descent}
+//        """.trimIndent())
 
         val xBuffer = BufferUtils.createFloatBuffer(1)
         val yBuffer = BufferUtils.createFloatBuffer(1)
@@ -41,7 +59,7 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
         yBuffer.put(0, y.toFloat())
 
         GLUtil.enabled(GL11.GL_TEXTURE_2D) {
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, sfi.textureId)
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, info.textureId)
 
             GLUtil.colorOf(color)
 
@@ -54,7 +72,7 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
 //                    val size = size(1024, 1024)
 //                    val size = size(2048, 2048)
                     for (char in text) {
-                        if (storage.isAvailable(sfi.info, char)) {
+                        if (storage.isAvailable(info.info, char)) {
 //                            println("Char ${char.code}) $char is available.")
                         } else {
                             println("Char #${char.code} is not available!")
@@ -63,8 +81,8 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
 //                        val index = storage.getIndex(char)
 //                        if (index < 0) continue
                         STBUtil.getPackedQuad(
-                            buffer = sfi.buffer,
-                            fontHeight = info.height,
+                            buffer = info.buffer,
+                            fontHeight = fontHeight,
                             index = char.code,
                             xBuffer = xBuffer,
                             yBuffer = yBuffer,
@@ -86,6 +104,8 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
 //        }
 //        return // todo
 //        println("fh: " + info.height)
-        drawText(info, storage.getInfo(info), pointTopLeft, color, text)
+        drawText(storage.getInfo(info),
+//            fontHeight = info.height,
+            pointTopLeft, color, text)
     }
 }

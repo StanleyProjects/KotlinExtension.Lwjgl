@@ -8,9 +8,11 @@ import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryUtil
 import sp.kx.lwjgl.entity.Size
+import sp.kx.lwjgl.entity.font.BitmapBox
 import sp.kx.lwjgl.entity.font.FontVMetrics
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 object STBUtil {
     fun getPackedQuad(
@@ -22,8 +24,8 @@ object STBUtil {
         quad: STBTTAlignedQuad,
         isAlignToInteger: Boolean = false
     ) {
-        val width = fontHeight * 64 * 1.5
-        val height = fontHeight * 8 * 1.5
+        val width = fontHeight * 128.0
+        val height = fontHeight * 16.0
         STBTruetype.stbtt_GetPackedQuad(
             buffer,
             width.toInt(),
@@ -35,75 +37,27 @@ object STBUtil {
             isAlignToInteger
         )
     }
+}
 
-    @Deprecated(level = DeprecationLevel.ERROR, message = "size!")
-    fun getPackedQuad(
-        buffer: STBTTPackedchar.Buffer,
-        size: Size,
-        index: Int,
-        xBuffer: FloatBuffer,
-        yBuffer: FloatBuffer,
-        quad: STBTTAlignedQuad,
-        isAlignToInteger: Boolean = false
-    ) {
-        STBTruetype.stbtt_GetPackedQuad(
-            buffer,
-            size.width.toInt(),
-            size.height.toInt(),
-            index,
-            xBuffer,
-            yBuffer,
-            quad,
-            isAlignToInteger
-        )
-    }
-
-    fun pack(
-        context: STBTTPackContext,
-        pixels: ByteBuffer,
-        fontHeight: Float,
-        strideInBytes: Int = 0,
-        padding: Int = 1,
-        alloc: Long? = null,
-        block: () -> Unit
-    ) {
-        val width = fontHeight * 64 * 1.5
-        val height = fontHeight * 8 * 1.5
-        STBTruetype.stbtt_PackBegin(
-            context,
-            pixels,
-            width.toInt(),
-            height.toInt(),
-            strideInBytes,
-            padding,
-            alloc ?: MemoryUtil.NULL
-        )
-        block()
-        STBTruetype.stbtt_PackEnd(context)
-    }
-
-    @Deprecated(level = DeprecationLevel.ERROR, message = "size!")
-    fun pack(
-        context: STBTTPackContext,
-        pixels: ByteBuffer,
-        size: Size,
-        strideInBytes: Int = 0,
-        padding: Int = 1,
-        alloc: Long? = null,
-        block: () -> Unit
-    ) {
-        STBTruetype.stbtt_PackBegin(
-            context,
-            pixels,
-            size.width.toInt(),
-            size.height.toInt(),
-            strideInBytes,
-            padding,
-            alloc ?: MemoryUtil.NULL
-        )
-        block()
-        STBTruetype.stbtt_PackEnd(context)
-    }
+fun STBTTPackContext.pack(
+    pixels: ByteBuffer,
+    size: Size,
+    strideInBytes: Int = 0,
+    padding: Int = 1,
+    alloc: Long? = null,
+    block: () -> Unit
+) {
+    STBTruetype.stbtt_PackBegin(
+        this,
+        pixels,
+        size.width.toInt(),
+        size.height.toInt(),
+        strideInBytes,
+        padding,
+        alloc ?: MemoryUtil.NULL
+    )
+    block()
+    STBTruetype.stbtt_PackEnd(this)
 }
 
 fun STBTTPackContext.packFontRange(
@@ -123,14 +77,35 @@ fun STBTTPackContext.packFontRange(
     )
 }
 
-fun STBTTFontinfo.toFontVMetrics(): FontVMetrics {
+fun STBTTFontinfo.toFontVMetrics(fontHeight: Float): FontVMetrics {
     val ascentBuffer = BufferUtils.createIntBuffer(1)
     val descentBuffer = BufferUtils.createIntBuffer(1)
-    val lineGapBuffer = BufferUtils.createIntBuffer(1)
+    val lineGapBuffer: IntBuffer? = null // todo
     STBTruetype.stbtt_GetFontVMetrics(this, ascentBuffer, descentBuffer, lineGapBuffer)
+    val scale = STBTruetype.stbtt_ScaleForPixelHeight(this, fontHeight)
+    println("""
+        original
+        scale: $scale
+        ascent: ${ascentBuffer[0]}
+        descent: ${descentBuffer[0]}
+    """.trimIndent())
     return FontVMetrics(
-        ascent = ascentBuffer[0],
-        descent = descentBuffer[0],
-        lineGap = lineGapBuffer[0]
+        ascent = ascentBuffer[0] * scale,
+        descent = descentBuffer[0] * scale
+    )
+}
+
+fun STBTTFontinfo.toBitmapBox(fontHeight: Float): BitmapBox {
+    val scale = STBTruetype.stbtt_ScaleForPixelHeight(this, fontHeight)
+    val x0Buffer = BufferUtils.createIntBuffer(1)
+    val y0Buffer = BufferUtils.createIntBuffer(1)
+    val x1Buffer = BufferUtils.createIntBuffer(1)
+    val y1Buffer = BufferUtils.createIntBuffer(1)
+    STBTruetype.stbtt_GetCodepointBitmapBox(this, '|'.code, scale, scale, x0Buffer, y0Buffer, x1Buffer, y1Buffer)
+    return BitmapBox(
+        left = x0Buffer.get(0),
+        bottom = y0Buffer.get(0),
+        right = x1Buffer.get(0),
+        top = y1Buffer.get(0)
     )
 }
