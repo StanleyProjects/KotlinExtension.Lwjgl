@@ -13,7 +13,7 @@ tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin"
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(files("libs/KotlinExtension.Math-${Version.math}-SNAPSHOT.jar"))
 
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))

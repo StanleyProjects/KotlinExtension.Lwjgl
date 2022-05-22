@@ -18,6 +18,7 @@ fun Int.toPressedOrNull(): Boolean? {
 
 fun Int.toKeyboardButtonOrNull(): KeyboardButton? {
     return when (this) {
+        GLFW.GLFW_KEY_ENTER -> KeyboardButton.ENTER
         GLFW.GLFW_KEY_ESCAPE -> KeyboardButton.ESCAPE
         //
         GLFW.GLFW_KEY_Q -> KeyboardButton.Q

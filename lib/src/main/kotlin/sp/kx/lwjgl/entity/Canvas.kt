@@ -1,6 +1,7 @@
 package sp.kx.lwjgl.entity
 
 import sp.kx.lwjgl.entity.font.FontInfo
+import sp.kx.math.foundation.entity.geometry.Point
 
 interface Canvas {
     fun drawPoint(color: Color, point: Point)

@@ -61,7 +61,7 @@ object EngineUtil {
     }
 
     fun run(supplier: (Engine) -> EngineLogic) {
-        val size = size(640, 640)
+        val size = size(640, 480)
         val keyboard = StatefulKeyboard()
         val joystickStorage = StatefulJoystickStorage()
         val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,".toSet()

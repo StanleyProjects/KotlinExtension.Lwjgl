@@ -6,12 +6,12 @@ import org.lwjgl.stb.STBTTAlignedQuad
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.use
+import sp.kx.math.foundation.entity.geometry.Point
 
 internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
     companion object {

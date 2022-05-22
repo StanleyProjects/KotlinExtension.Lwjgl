@@ -2,7 +2,7 @@ package sp.kx.lwjgl.opengl
 
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.Point
+import sp.kx.math.foundation.entity.geometry.Point
 
 object GLUtil {
     fun clearColor(color: Color) {

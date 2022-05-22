@@ -2,10 +2,10 @@ package sp.kx.lwjgl.util
 
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.Point
 import sp.kx.lwjgl.entity.Size
-import sp.kx.lwjgl.entity.point
-import sp.kx.lwjgl.entity.updated
+import sp.kx.math.foundation.entity.geometry.Point
+import sp.kx.math.implementation.entity.geometry.pointOf
+import sp.kx.math.implementation.entity.geometry.updated
 
 fun Canvas.drawCircle(
     color: Color,
@@ -40,9 +40,9 @@ fun Canvas.drawRectangle(
     )
     val points = setOf(
         pointTopLeft,
-        point(pointBottomRight.x, pointTopLeft.y),
+        pointOf(pointBottomRight.x, pointTopLeft.y),
         pointBottomRight,
-        point(pointTopLeft.x, pointBottomRight.y)
+        pointOf(pointTopLeft.x, pointBottomRight.y)
     )
     drawLineLoop(
         color = color,
