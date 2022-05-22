@@ -38,7 +38,7 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private val menus = setOf("New game", "Exit")
+    private val menus = setOf("New game", "Settings", "Exit")
     private var position = 0
 
     override val inputCallback: EngineInputCallback = object : EngineInputCallback {

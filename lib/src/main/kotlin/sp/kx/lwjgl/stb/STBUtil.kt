@@ -7,7 +7,6 @@ import org.lwjgl.stb.STBTTPackContext
 import org.lwjgl.stb.STBTTPackedchar
 import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryUtil
-import sp.kx.lwjgl.entity.Size
 import sp.kx.lwjgl.entity.font.BitmapBox
 import sp.kx.lwjgl.entity.font.FontVMetrics
 import java.nio.ByteBuffer
@@ -41,7 +40,8 @@ object STBUtil {
 
 fun STBTTPackContext.pack(
     pixels: ByteBuffer,
-    size: Size,
+    width: Int,
+    height: Int,
     strideInBytes: Int = 0,
     padding: Int = 1,
     alloc: Long? = null,
@@ -50,8 +50,8 @@ fun STBTTPackContext.pack(
     STBTruetype.stbtt_PackBegin(
         this,
         pixels,
-        size.width.toInt(),
-        size.height.toInt(),
+        width,
+        height,
         strideInBytes,
         padding,
         alloc ?: MemoryUtil.NULL
@@ -83,12 +83,6 @@ fun STBTTFontinfo.toFontVMetrics(fontHeight: Float): FontVMetrics {
     val lineGapBuffer: IntBuffer? = null // todo
     STBTruetype.stbtt_GetFontVMetrics(this, ascentBuffer, descentBuffer, lineGapBuffer)
     val scale = STBTruetype.stbtt_ScaleForPixelHeight(this, fontHeight)
-    println("""
-        original
-        scale: $scale
-        ascent: ${ascentBuffer[0]}
-        descent: ${descentBuffer[0]}
-    """.trimIndent())
     return FontVMetrics(
         ascent = ascentBuffer[0] * scale,
         descent = descentBuffer[0] * scale
@@ -108,4 +102,9 @@ fun STBTTFontinfo.toBitmapBox(fontHeight: Float): BitmapBox {
         right = x1Buffer.get(0),
         top = y1Buffer.get(0)
     )
+}
+
+fun STBTTFontinfo.isAvailable(char: Char): Boolean {
+    val index = STBTruetype.stbtt_FindGlyphIndex(this, char.code)
+    return index != 0
 }

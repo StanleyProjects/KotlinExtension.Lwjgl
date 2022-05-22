@@ -64,23 +64,17 @@ object EngineUtil {
         val size = size(640, 480)
         val keyboard = StatefulKeyboard()
         val joystickStorage = StatefulJoystickStorage()
-        val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,".toSet()
-        val sfs = STBFontStorage(
-            chars = chars,
-//            bufferSize = size(2048, 2048)
-        )
-        val fontAgent = STBFontAgent(storage = sfs)
-        val fontDrawer = STBFontDrawer(storage = sfs)
+        val fontStorage = STBFontStorage()
         val engine = EngineImpl(
             input = EngineInputState(keyboard, joystickStorage.joysticks),
             property = MutableEngineProperty(pictureSize = size),
-            fontAgent = fontAgent
+            fontAgent = fontStorage.agent
         )
         val logic = supplier(engine)
         WindowUtil.loopWindow(
             size = size,
             title = "Engine",
-            fontDrawer = fontDrawer,
+            fontDrawer = fontStorage.drawer,
             onKeyCallback = GLFWUtil.onKeyCallback { _, key: Int, scanCode: Int, action: Int, _ ->
                 println("on -> keyboard callback: $key $scanCode $action")
                 val button = key.toKeyboardButtonOrNull()

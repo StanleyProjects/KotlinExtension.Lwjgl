@@ -1,19 +1,10 @@
 package sp.kx.lwjgl.util
 
 import org.lwjgl.BufferUtils
-import sp.kx.lwjgl.entity.Size
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.channels.Channels
-import java.nio.channels.ReadableByteChannel
-
-object IOUtil {
-    fun createByteBuffer(size: Size): ByteBuffer {
-        val capacity = size.width * size.height
-        return BufferUtils.createByteBuffer(capacity.toInt())
-    }
-}
 
 private fun resizeBuffer(buffer: ByteBuffer, newCapacity: Int): ByteBuffer {
     val newBuffer = BufferUtils.createByteBuffer(newCapacity)
