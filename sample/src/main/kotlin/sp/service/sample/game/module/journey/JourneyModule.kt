@@ -6,12 +6,12 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
+import sp.kx.math.foundation.entity.geometry.Point
 import sp.kx.math.implementation.entity.geometry.getAngle
 import sp.kx.math.implementation.entity.geometry.isEmpty
 import sp.kx.math.implementation.entity.geometry.pointOf
 import sp.kx.math.implementation.entity.geometry.updated
 import sp.kx.math.implementation.entity.geometry.vectorOf
-import sp.service.sample.game.entity.Direction
 import sp.service.sample.game.entity.MutablePoint
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
@@ -27,6 +27,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     }
 
     class Direction(var actual: Double, var expected: Double, val velocity: Double)
+    class Region(val points: List<Point>, val color: Color)
     private val velocity: Double = 5 / TimeUnit.SECONDS.toNanos(1).toDouble()
     private val direction: Direction = Direction(
         actual = 0.0,
@@ -36,10 +37,24 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     private val point = MutablePoint(x = 0.0, y = 0.0)
     private val width = pixelsPerUnit * 2
     private val radius = kotlin.math.sqrt(2.0) * width / 2
+    private val regions = listOf(
+        Region(
+            points = listOf(
+                pointOf(x = 7 + 0, y = 7 + 0),
+                pointOf(x = 7 + 3, y = 7 - 5),
+                pointOf(x = 7 + 5, y = 7 - 5),
+                pointOf(x = 7 + 5, y = 7 + 6),
+            ).map {
+                pointOf(x = it.x * pixelsPerUnit, y = it.y * pixelsPerUnit)
+            },
+            color = Color.GREEN
+        ),
+//        Region(points = listOf(), color = Color.BLUE)
+    )
 
     fun init() {
-        point.x = engine.property.pictureSize.width / 2
-        point.y = engine.property.pictureSize.height / 2
+//        point.x = engine.property.pictureSize.width / 2
+//        point.y = engine.property.pictureSize.height / 2
     }
 
     private fun debug(canvas: Canvas) {
@@ -98,7 +113,80 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         point.move(length = units, direction = direction.expected)
     }
 
+    private fun onRenderPlayer(canvas: Canvas, point: Point) {
+        canvas.drawLine(
+            color = Color.WHITE,
+            vector = vectorOf(start = point, length = radius, direction = direction.actual),
+            lineWidth = 1f
+        )
+        val size = size(width = width, height = width)
+        canvas.drawRectangle(
+            color = Color.YELLOW,
+            pointTopLeft = point.updated(dX = - size.width / 2, dY = - size.height / 2),
+            size = size,
+            direction = direction.actual,
+            pointOfRotation = point,
+            lineWidth = 1f
+        )
+        canvas.drawCircle(
+            color = Color.WHITE,
+            pointCenter = point,
+            radius = radius,
+            edgeCount = 16,
+            lineWidth = 1f
+        )
+        debug(canvas)
+    }
+
+    private fun onRenderRegions(canvas: Canvas, center: Point, point: Point, regions: List<Region>) {
+        val dX = center.x - point.x
+        val dY = center.y - point.y
+        regions.forEach { region ->
+            canvas.drawLineLoop(
+                color = region.color,
+                points = region.points.map {
+                    it.updated(dX = dX, dY = dY)
+                },
+                lineWidth = 1f
+            )
+        }
+    }
+
+    private fun onRenderCenter(canvas: Canvas, center: Point) {
+        val relative = center.updated(dX = -point.x, dY = -point.y)
+        val length = pixelsPerUnit * 2
+        canvas.drawLine(
+            color = Color.GREEN,
+            vector = vectorOf(
+                start = relative.updated(dX = 0.0, dY = length),
+                finish = relative.updated(dX = 0.0, dY = -length)
+            ),
+            lineWidth = 1f
+        )
+        canvas.drawLine(
+            color = Color.GREEN,
+            vector = vectorOf(
+                start = relative.updated(dX = -length, dY = 0.0),
+                finish = relative.updated(dX = length, dY = 0.0)
+            ),
+            lineWidth = 1f
+        )
+        val info = FontInfoUtil.getFontInfo(height = 16f)
+        val text = "0/0"
+        canvas.drawText(
+            color = Color.GREEN,
+            info = info,
+            pointTopLeft = relative.updated(
+                dX = (info.height / 2).toDouble(),
+                dY = (-info.height).toDouble()
+            ),
+            text = text
+        )
+    }
+
     fun onRender(canvas: Canvas) {
+        val center = pointOf(x = engine.property.pictureSize.width / 2, y = engine.property.pictureSize.height / 2)
+        onRenderCenter(canvas, center)
         val keyboard = engine.input.keyboard
         var dX = 0.0
         var dY = 0.0
@@ -124,38 +212,8 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         if (!vector.isEmpty(epsilon = 0.0001)) {
             move(angle = vector.getAngle())
         }
-        canvas.drawPoint(
-            color = Color.YELLOW,
-            point = point
-        )
-        canvas.drawLine(
-            color = Color.WHITE,
-            vector = vectorOf(start = point, length = radius, direction = direction.actual),
-            lineWidth = 1f
-        )
-        val size = size(width = width, height = width)
-//        canvas.drawRectangle(
-//            color = Color.YELLOW,
-//            pointTopLeft = point.updated(dX = - size.width / 2, dY = - size.height / 2),
-//            size = size,
-//            lineWidth = 1f
-//        )
-        canvas.drawRectangle(
-            color = Color.YELLOW,
-            pointTopLeft = point.updated(dX = - size.width / 2, dY = - size.height / 2),
-            size = size,
-            direction = direction.actual,
-            pointOfRotation = point,
-            lineWidth = 1f
-        )
-        canvas.drawCircle(
-            color = Color.WHITE,
-            pointCenter = point,
-            radius = radius,
-            edgeCount = 16,
-            lineWidth = 1f
-        )
-        debug(canvas)
+        onRenderPlayer(canvas, point = center)
+        onRenderRegions(canvas, center = center, point = point, regions = regions)
     }
 
     fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
