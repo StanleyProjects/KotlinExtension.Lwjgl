@@ -15,6 +15,10 @@ import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
 import sp.kx.math.foundation.entity.geometry.Point
+import sp.kx.math.foundation.entity.geometry.Vector
+import sp.kx.math.implementation.entity.geometry.pointOf
+import sp.kx.math.implementation.entity.geometry.updated
+import sp.kx.math.implementation.entity.geometry.vectorOf
 import java.io.PrintStream
 
 object WindowUtil {
@@ -80,6 +84,56 @@ object WindowUtil {
                 points.forEach {
                     GLUtil.vertexOf(it)
                 }
+            }
+        }
+
+        override fun drawLine(color: Color, vector: Vector, lineWidth: Float) {
+            GL11.glLineWidth(lineWidth)
+            GLUtil.colorOf(color)
+            GLUtil.transaction(GL11.GL_LINE_STRIP) {
+                GLUtil.vertexOf(vector.start)
+                GLUtil.vertexOf(vector.finish)
+            }
+        }
+
+        override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Float) {
+            val pointBottomRight = pointTopLeft.updated(
+                dX = size.width,
+                dY = size.height
+            )
+            val points = setOf(
+                pointTopLeft,
+                pointOf(pointBottomRight.x, pointTopLeft.y),
+                pointBottomRight,
+                pointOf(pointTopLeft.x, pointBottomRight.y)
+            )
+            drawLineLoop(
+                color = color,
+                points = points,
+                lineWidth = lineWidth
+            )
+        }
+
+        override fun drawRectangle(
+            color: Color,
+            pointTopLeft: Point,
+            size: Size,
+            lineWidth: Float,
+            direction: Double,
+            pointOfRotation: Point
+        ) {
+            GLUtil.onMatrix {
+                GL11.glTranslated(pointOfRotation.x, pointOfRotation.y, 0.0)
+                GL11.glRotated(Math.toDegrees(direction), 0.0, 0.0, 1.0)
+                drawRectangle(
+                    color = color,
+                    pointTopLeft = pointTopLeft.updated(
+                        dX = -pointOfRotation.x,
+                        dY = -pointOfRotation.y
+                    ),
+                    size = size,
+                    lineWidth = lineWidth
+                )
             }
         }
     }

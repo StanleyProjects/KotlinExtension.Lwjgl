@@ -75,10 +75,12 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     override fun onRender(canvas: Canvas) {
+        val pixelsPerUnit = 16.0 // todo
+        val padding = pixelsPerUnit * 1
         val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
         canvas.drawText(
             info = FontInfoUtil.getFontInfo(height = 16f),
-            pointTopLeft = pointOf(x = 0, y = 0),
+            pointTopLeft = pointOf(x = padding, y = padding),
             color = Color.GREEN,
             text = String.format("%.2f", fps)
         )

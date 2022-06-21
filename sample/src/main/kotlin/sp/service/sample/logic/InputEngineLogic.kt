@@ -15,7 +15,6 @@ import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
-import sp.kx.lwjgl.util.drawRectangle
 import sp.kx.math.foundation.entity.geometry.Point
 import sp.kx.math.implementation.entity.geometry.pointOf
 import sp.kx.math.implementation.entity.geometry.updated
