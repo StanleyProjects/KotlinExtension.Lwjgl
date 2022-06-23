@@ -7,6 +7,7 @@ interface Color {
 
         val WHITE = color(MAX_VALUE, MAX_VALUE, MAX_VALUE)
         val BLACK = color(MIN_VALUE, MIN_VALUE, MIN_VALUE)
+        val RED = color(MAX_VALUE, MIN_VALUE, MIN_VALUE)
         val GREEN = color(MIN_VALUE, MAX_VALUE, MIN_VALUE)
         val BLUE = color(MIN_VALUE, MIN_VALUE, MAX_VALUE)
         val YELLOW = color(MAX_VALUE, MAX_VALUE, MIN_VALUE)
