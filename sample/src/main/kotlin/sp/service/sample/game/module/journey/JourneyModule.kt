@@ -10,6 +10,10 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.foundation.entity.geometry.Point
 import sp.kx.math.foundation.entity.geometry.Vector
 import sp.kx.math.implementation.entity.geometry.getAngle
+import sp.kx.math.implementation.entity.geometry.getDistance
+import sp.kx.math.implementation.entity.geometry.getIntersectionPointOrNull
+import sp.kx.math.implementation.entity.geometry.getPerpendicular
+import sp.kx.math.implementation.entity.geometry.getShortest
 import sp.kx.math.implementation.entity.geometry.isEmpty
 import sp.kx.math.implementation.entity.geometry.isSame
 import sp.kx.math.implementation.entity.geometry.pointOf
@@ -132,64 +136,6 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         )
     }
 
-    private fun getDistance(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double
-    ): Double {
-        val dX = xFinish - xStart
-        val dY = yFinish - yStart
-        return kotlin.math.sqrt(dY * dY + dX * dX)
-    }
-
-    private fun getDistance(
-        start: Point,
-        finish: Point
-    ): Double {
-        return getDistance(xStart = start.x, yStart = start.y, xFinish = finish.x, yFinish = finish.y)
-    }
-
-    private fun Vector.getDistance(): Double {
-        return getDistance(start = start, finish = finish)
-    }
-
-    private fun getPerpendicular(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double
-    ): Point {
-        if (bX == cX) return pointOf(x = bX, y = aY)
-        if (bY == cY) return pointOf(x = aX, y = bY)
-        val b = (bY * cX - cY * bX) / (cX - bX)
-        val k = (bY - b) / bX
-        val kH = -1 / k
-        val bH = aY - kH * aX
-        val hX = (b - bH) / (kH - k)
-        return pointOf(
-            x = hX,
-            y = k * hX + b
-        )
-    }
-
-    private fun getPerpendicular(
-        a: Point,
-        b: Point,
-        c: Point
-    ): Point {
-        return getPerpendicular(
-            aX = a.x,
-            aY = a.y,
-            bX = b.x,
-            bY = b.y,
-            cX = c.x,
-            cY = c.y
-        )
-    }
-
     /**
      *     a
      *    /|\
@@ -228,121 +174,6 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         )
     }
 
-    /**
-     *         b
-     *        /
-     *       /
-     * c ---*--- d
-     *     /
-     *    /
-     *   a
-     */
-    private fun getIntersectionPointOrNull(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double,
-        dX: Double,
-        dY: Double
-    ): Point? {
-//        if (kotlin.math.max(aX, bX) < kotlin.math.min(cX, dX)) return null
-//        if (kotlin.math.max(cX, dX) < kotlin.math.min(aX, bX)) return null
-//        if (kotlin.math.max(aY, bY) < kotlin.math.min(cY, dY)) return null
-//        if (kotlin.math.max(cY, dY) < kotlin.math.min(aY, bY)) return null
-        val iX: Double
-        val a1 = (aY - bY) / (aX - bX)
-        val b1 = aY - a1 * aX
-        val a2 = (cY - dY) / (cX - dX)
-        val b2 = cY - a2 * cX
-        if (aX == bX) {
-            if (cX == dX) {
-                if (aY == cY) return pointOf(x = aX, y = aY)
-                return null
-            }
-            iX = aX
-        } else if (cX == dX) {
-            iX = cX
-        } else {
-            iX = (b2 - b1) / (a1 - a2)
-        }
-        val iY = a2 * aX + b2
-        return pointOf(
-            x = iX,
-            y = iY
-        )
-    }
-
-    private fun getIntersectionPointOrNull(
-        a: Point,
-        b: Point,
-        c: Point,
-        d: Point
-    ): Point? {
-        return getIntersectionPointOrNull(
-            aX = a.x,
-            aY = a.y,
-            bX = b.x,
-            bY = b.y,
-            cX = c.x,
-            cY = c.y,
-            dX = d.x,
-            dY = d.y
-        )
-    }
-
-    private fun Vector.getIntersectionPointOrNull(that: Vector): Point? {
-        return getIntersectionPointOrNull(
-            a = this.start,
-            b = this.finish,
-            c = that.start,
-            d = that.finish
-        )
-    }
-
-    private fun getShortest(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double,
-        xTarget: Double,
-        yTarget: Double
-    ): Double {
-        val dX = xFinish - xStart
-        val dY = yFinish - yStart
-        val d = kotlin.math.sqrt(dY * dY + dX * dX)
-        val dS = kotlin.math.sqrt((yStart - yTarget) * (yStart - yTarget) + (xStart - xTarget) * (xStart - xTarget))
-        val dF = kotlin.math.sqrt((yFinish - yTarget) * (yFinish - yTarget) + (xFinish - xTarget) * (xFinish - xTarget))
-        val shortest = (dY * xTarget - dX * yTarget + xFinish * yStart - yFinish * xStart).absoluteValue / d
-        if (kotlin.math.sqrt(dS * dS - shortest * shortest) > d) return dF
-        if (kotlin.math.sqrt(dF * dF - shortest * shortest) > d) return dS
-        return shortest
-    }
-
-    private fun getShortest(
-        start: Point,
-        finish: Point,
-        target: Point
-    ): Double {
-        return getShortest(
-            xStart = start.x,
-            yStart = start.y,
-            xFinish = finish.x,
-            yFinish = finish.x,
-            xTarget = target.x,
-            yTarget = target.y
-        )
-    }
-
-    private fun Vector.getShortest(point: Point): Double {
-        return getShortest(
-            start = start,
-            finish = finish,
-            target = point
-        )
-    }
-
     private fun Double.isLessThan(that: Double, epsilon: Double): Boolean {
         check(epsilon < 1.0)
         val d = this - that
@@ -353,75 +184,6 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         check(epsilon < 1.0)
         val d = this - that
         return d.absoluteValue > epsilon && d > 0
-    }
-
-    private fun List<Vector>.isAllowed(
-        min: Double,
-        point: Point
-    ): Boolean {
-        val shortest = minOfOrNull {
-            it.getShortest(point = point)
-        } ?: return true
-        println("s: $shortest m: $min")
-        return !shortest.isLessThan(min, epsilon = 0.0001)
-    }
-
-    private fun move(canvas: Canvas, center: Point, angle: Double) {
-        val dTime = engine.property.timeNow - engine.property.timeLast
-        direction.expected = angle.normalize(kotlin.math.PI * 2)
-        if (!direction.expected.isSame(direction.actual, epsilon = 0.0001)) {
-            val difference = direction.actual - direction.expected
-            val d = direction.velocity * dTime
-            if (d > difference.absoluteValue) {
-                direction.actual = direction.expected
-            } else {
-                // todo
-                val actual: Double = if (difference.absoluteValue > kotlin.math.PI) {
-                    direction.actual + d * difference / difference.absoluteValue
-                } else {
-                    direction.actual + d * difference / difference.absoluteValue * -1
-                }
-                direction.actual = actual.normalize(kotlin.math.PI * 2)
-            }
-        }
-        val units = velocity * dTime * pixelsPerUnit
-        val vector = vectorOf(start = point, length = units, direction = direction.expected)
-//        val vectors = regions.getVectors()
-        val group = barriers.groupBy {
-            it.getShortest(point = vector.finish)
-        }
-        val shortest = group.keys.minOrNull()!!
-//        group[shortest]!!.also {
-        group.forEach { (k, list) ->
-            val dX = center.x - point.x
-            val dY = center.y - point.y
-            val v = list.first()
-            val start = point.updated(dX = dX, dY = dY)
-            canvas.drawLine(
-                color = Color.RED,
-                vector = vectorOf(start = start, finish = v.start.updated(dX = dX, dY = dY)),
-                lineWidth = 1f
-            )
-            canvas.drawLine(
-                color = Color.RED,
-                vector = vectorOf(start = start, finish = v.finish.updated(dX = dX, dY = dY)),
-                lineWidth = 1f
-            )
-            val info = FontInfoUtil.getFontInfo(height = 16f)
-            canvas.drawText(
-                color = Color.RED,
-                info = info,
-                pointTopLeft = v.finish.updated(dX = dX, dY = dY),
-                text = String.format("%05.1f", k)
-            )
-        }
-        println("shortest: $shortest min: $radius")
-        val allowed = !shortest.isLessThan(radius, epsilon = 0.0001)
-        if (allowed) {
-            point.x = vector.finish.x
-            point.y = vector.finish.y
-        }
-//        point.move(length = units, direction = direction.expected)
     }
 
     private fun onRenderPlayer(canvas: Canvas, point: Point) {
@@ -828,7 +590,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         val finish = vectorOf(start = point, length = units, direction = direction.expected).finish
 //        val vectors = regions.getVectors()
         val group = barriers.groupBy {
-            it.getShortest(point = finish)
+            it.getShortest(target = finish)
         }
         val shortest = group.keys.minOrNull()!!
         val colors = listOf(

@@ -30,7 +30,7 @@ tasks.getByName<JavaExec>("run") {
 }
 
 dependencies {
-    implementation(files("libs/KotlinExtension.Math-${Version.math}-SNAPSHOT.jar"))
+    implementation(files("libs/KotlinExtension.Math-${Version.math}.jar"))
     implementation(project(":lib"))
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
