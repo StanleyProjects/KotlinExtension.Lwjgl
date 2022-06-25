@@ -1,12 +1,15 @@
 package sp.service.sample.game.entity
 
 import sp.kx.math.foundation.entity.geometry.Point
-import sp.kx.math.implementation.entity.geometry.vectorOf
+import sp.kx.math.implementation.entity.geometry.moved
 
 class MutablePoint(override var x: Double, override var y: Double) : Point {
     fun move(length: Double, direction: Double) {
-        val vector = vectorOf(start = this, length = length, direction = direction)
-        x = vector.finish.x
-        y = vector.finish.y
+        set(moved(length = length, direction = direction))
+    }
+
+    fun set(that: Point) {
+        x = that.x
+        y = that.y
     }
 }
