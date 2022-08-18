@@ -18,7 +18,6 @@ import sp.kx.math.foundation.entity.geometry.Point
 import sp.kx.math.foundation.entity.geometry.Vector
 import sp.kx.math.implementation.entity.geometry.pointOf
 import sp.kx.math.implementation.entity.geometry.updated
-import sp.kx.math.implementation.entity.geometry.vectorOf
 import java.io.PrintStream
 
 object WindowUtil {

@@ -1,4 +1,7 @@
-repositories.mavenCentral()
+repositories {
+    mavenCentral()
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+}
 
 plugins {
     id("application")
@@ -30,7 +33,7 @@ tasks.getByName<JavaExec>("run") {
 }
 
 dependencies {
-    implementation(files("libs/KotlinExtension.Math-${Version.math}.jar"))
+    implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
     implementation(project(":lib"))
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))

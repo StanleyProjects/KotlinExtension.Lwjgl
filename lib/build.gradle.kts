@@ -1,4 +1,7 @@
-repositories.mavenCentral()
+repositories {
+    mavenCentral()
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+}
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
@@ -9,12 +12,14 @@ tasks.getByName<JavaCompile>("compileJava") {
 }
 
 tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin") {
-    kotlinOptions.jvmTarget = Version.jvmTarget
+    kotlinOptions {
+        jvmTarget = Version.jvmTarget
+        freeCompilerArgs = freeCompilerArgs + setOf("-module-name", "com.github.kepocnhh:KotlinExtension.Lwjgl")
+    }
 }
 
 dependencies {
-    implementation(files("libs/KotlinExtension.Math-${Version.math}.jar"))
-
+    implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
     LwjglUtil.modules.forEach { name ->
