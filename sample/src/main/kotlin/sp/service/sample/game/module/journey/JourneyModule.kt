@@ -9,6 +9,7 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.foundation.entity.geometry.Offset
 import sp.kx.math.foundation.entity.geometry.Point
 import sp.kx.math.foundation.entity.geometry.Vector
+import sp.kx.math.implementation.entity.geometry.getDifference
 import sp.kx.math.implementation.entity.geometry.moved
 import sp.kx.math.implementation.entity.geometry.offsetOf
 import sp.kx.math.implementation.entity.geometry.pointOf
@@ -230,6 +231,13 @@ private fun Vector.getPerpendicular(target: Point): Point {
     )
 }
 
+private fun Vector.getCenter(): Point {
+    return start.updated(
+        dX = (finish.x - start.x) * 0.5,
+        dY = (finish.y - start.y) * 0.5
+    )
+}
+
 class JourneyModule(private val engine: Engine, private val broadcast: (Broadcast) -> Unit) {
     sealed interface Broadcast {
         object Exit : Broadcast
@@ -372,9 +380,8 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         val offset = center.difference(point)
         val info = FontInfoUtil.getFontInfo(height = 16f)
         barriers.forEachIndexed { index, barrier ->
-            val start = point.updated(offset)
             val color = colors[index % colors.size]
-            val ab = start.toVector(finish = barrier.finish.updated(offset))
+            val ab = point.toVector(finish = barrier.start, offset = offset)
             canvas.drawLine(
                 color = color,
                 vector = ab,
@@ -383,13 +390,10 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             canvas.drawText(
                 color = color,
                 info = info,
-                pointTopLeft = ab.start.updated(
-                    dX = (ab.finish.x - ab.start.x) / 2,
-                    dY = (ab.finish.y - ab.start.y) / 2
-                ),
+                pointTopLeft = ab.getCenter(),
                 text = String.format("%05.2f", getDistance(start = point, finish = barrier.start))
             )
-            val ac = start.toVector(barrier.finish.updated(offset))
+            val ac = point.toVector(finish = barrier.finish, offset = offset)
             canvas.drawLine(
                 color = color,
                 vector = ac,
@@ -398,18 +402,13 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             canvas.drawText(
                 color = color,
                 info = info,
-                pointTopLeft = ac.start.updated(
-                    dX = (ac.finish.x - ac.start.x) / 2,
-                    dY = (ac.finish.y - ac.start.y) / 2
-                ),
+                pointTopLeft = ac.getCenter(),
                 text = String.format("%05.2f", getDistance(start = point, finish = barrier.finish))
             )
-            val tPoint = ab.finish.updated(
-                dX = (ac.finish.x - ab.finish.x) / 2,
-                dY = (ac.finish.y - ab.finish.y) / 2
-            )
+            val bc = ab.finish.toVector(ac.finish)
+            val tPoint = bc.getCenter()
             val aH = point.toVector(
-                finish = getPerpendicular(a = point, b = barrier.start, c = barrier.finish),
+                finish = barrier.getPerpendicular(target = point),
                 offset = offset
             )
             canvas.drawLine(
@@ -427,7 +426,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 color = color,
                 info = info,
                 pointTopLeft = tPoint.updated(dX = 0.0, dY = info.height.toDouble()),
-                text = String.format("%05.2f", getShortest(start = barrier.start, finish = barrier.finish, target = point))
+                text = String.format("%05.2f", barrier.getShortest(target = point))
             )
         }
     }
