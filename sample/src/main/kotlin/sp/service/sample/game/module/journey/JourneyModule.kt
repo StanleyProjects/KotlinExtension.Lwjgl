@@ -532,6 +532,9 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                     broadcast(Broadcast.Exit)
                 }
             }
+            else -> {
+                println("on button: $button $isPressed")
+            }
         }
     }
 }

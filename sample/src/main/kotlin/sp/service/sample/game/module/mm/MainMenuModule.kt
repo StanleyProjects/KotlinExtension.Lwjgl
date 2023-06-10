@@ -69,6 +69,9 @@ class MainMenuModule(private val engine: Engine, private val broadcast: (Broadca
                     }
                 }
             }
+            else -> {
+                println("on button: $button $isPressed")
+            }
         }
     }
 }

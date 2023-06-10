@@ -67,6 +67,9 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                         shouldEngineStopUnit = Unit
                     }
                 }
+                else -> {
+                    println("on button: $button $isPressed")
+                }
             }
         }
 
@@ -76,6 +79,9 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                     if (!isPressed) {
 //						shouldEngineStopUnit = Unit // todo
                     }
+                }
+                else -> {
+                    println("on button: $button $isPressed")
                 }
             }
         }
