@@ -16,7 +16,7 @@ object LwjglUtil {
             os.isMacOsX -> {
                 val architecture = DefaultNativePlatform.getCurrentArchitecture()
                 when (architecture.name) {
-                    "arm-v8" -> return "natives-macos-arm64"
+                    "arm-v8", "aarch64" -> return "natives-macos-arm64"
                 }
                 error("Operating System ${os.name} with architecture ${architecture.name} is not supported!")
             }
