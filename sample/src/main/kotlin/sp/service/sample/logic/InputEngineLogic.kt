@@ -23,6 +23,7 @@ import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.XBoxSeriesJoystickMapping
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class InputEngineLogic(private val engine: Engine) : EngineLogic {
     private lateinit var shouldEngineStopUnit: Unit
@@ -368,7 +369,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     override fun onRender(canvas: Canvas) {
-        val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
+        val fps = 1.seconds / engine.property.time.diff()
         canvas.drawText(
             info = getFontInfo(height = 16f),
             pointTopLeft = Point.Center,

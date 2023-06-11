@@ -16,6 +16,7 @@ import sp.service.sample.game.module.mm.MainMenuItem
 import sp.service.sample.game.module.mm.MainMenuModule
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 class GameEngineLogic(private val engine: Engine) : EngineLogic {
     private lateinit var shouldEngineStopUnit: Unit
@@ -77,7 +78,8 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
     override fun onRender(canvas: Canvas) {
         val pixelsPerUnit = 16.0 // todo
         val padding = pixelsPerUnit * 1
-        val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
+//        val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
+        val fps = 1.seconds / engine.property.time.diff()
         canvas.drawText(
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),

@@ -406,11 +406,12 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         }
         val dVector = point.toVector(mOffset)
         if (!dVector.isEmpty(points = 4)) {
-            val dTime = engine.property.timeNow - engine.property.timeLast
+//            val dTime = engine.property.timeNow - engine.property.timeLast
+            val diff = engine.property.time.diff()
             direction.expected = dVector.angle().normalize(kotlin.math.PI * 2)
             if (!direction.expected.isSame(direction.actual, epsilon = 0.0001)) {
                 val difference = direction.actual - direction.expected
-                val d = direction.velocity * dTime
+                val d = direction.velocity * diff.inWholeNanoseconds
                 if (d > difference.absoluteValue) {
                     direction.actual = direction.expected
                 } else {
@@ -425,7 +426,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             }
             val vector = vectorOf(
                 point,
-                length = velocity * dTime * pixelsPerUnit,
+                length = velocity * diff.inWholeNanoseconds * pixelsPerUnit,
                 angle = direction.expected,
             )
             val filtered = barriers.filter {

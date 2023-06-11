@@ -22,6 +22,7 @@ import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.stb.STBFontAgent
 import sp.kx.lwjgl.stb.STBFontDrawer
 import sp.kx.lwjgl.stb.STBFontStorage
+import kotlin.time.Duration.Companion.nanoseconds
 
 object EngineUtil {
     private fun getGLFWJoystickOrNull(id: Int): GLFWJoystick? {
@@ -94,12 +95,12 @@ object EngineUtil {
                 // todo
             },
             onRender = { windowId, canvas ->
-                val now = System.nanoTime().toDouble()
-                engine.property.timeNow = now
+                val now = System.nanoTime().toDouble().nanoseconds
+                engine.property.time.now = now
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                 joystickStorage.update(mapper = logic.joystickMapper, onButton = logic.inputCallback::onJoystickButton)
                 logic.onRender(canvas = canvas)
-                engine.property.timeLast = now
+                engine.property.time.last = now
                 if (logic.shouldEngineStop()) {
                     GLFW.glfwSetWindowShouldClose(windowId, true)
                 }
