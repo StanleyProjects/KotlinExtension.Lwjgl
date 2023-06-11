@@ -15,9 +15,9 @@ import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
-import sp.kx.math.foundation.entity.geometry.Point
-import sp.kx.math.implementation.entity.geometry.pointOf
-import sp.kx.math.implementation.entity.geometry.updated
+import sp.kx.math.Point
+import sp.kx.math.plus
+import sp.kx.math.pointOf
 import sp.service.sample.util.Dualshock4JoystickMapping
 import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.XBoxSeriesJoystickMapping
@@ -154,7 +154,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         val info = getFontInfo(height = textHeight)
         drawText(
             color = color,
-            pointTopLeft = pointTopLeft.updated(
+            pointTopLeft = pointTopLeft.plus(
                 dX = width / 2 - engine.fontAgent.getTextWidth(info, text) / 2,
                 dY = height / 2 - textHeight / 2.0
             ),
@@ -177,7 +177,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         val width = engine.fontAgent.getTextWidth(info, text)
         drawText(
             color = color,
-            pointTopLeft = pointCenter.updated(dX = - width / 2, dY = - textHeight / 2.0),
+            pointTopLeft = pointCenter.plus(dX = - width / 2, dY = - textHeight / 2.0),
             info = info,
             text = text
         )
@@ -235,7 +235,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
             color = Color.GREEN,
             points = setOf(
                 pointCenter,
-                pointCenter.updated(dX = radius * valueX, dY = radius * valueY)
+                pointCenter.plus(dX = radius * valueX, dY = radius * valueY)
             ),
             lineWidth = 2f
         )
@@ -243,13 +243,13 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         val info = getFontInfo(height = textHeight)
         drawText(
             color = Color.GREEN,
-            pointTopLeft = pointCenter.updated(dX = - radius, dY = radius + 16.0),
+            pointTopLeft = pointCenter.plus(dX = - radius, dY = radius + 16.0),
             info = info,
             text = String.format("x: %+.1f", valueX)
         )
         drawText(
             color = Color.GREEN,
-            pointTopLeft = pointCenter.updated(dX = - radius, dY = radius + 16.0 + textHeight),
+            pointTopLeft = pointCenter.plus(dX = - radius, dY = radius + 16.0 + textHeight),
             info = info,
             text = String.format("y: %+.1f", valueY)
         )
@@ -371,7 +371,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
         canvas.drawText(
             info = getFontInfo(height = 16f),
-            pointTopLeft = pointOf(x = 0, y = 0),
+            pointTopLeft = Point.Center,
             color = Color.GREEN,
             text = String.format("%.2f", fps)
         )

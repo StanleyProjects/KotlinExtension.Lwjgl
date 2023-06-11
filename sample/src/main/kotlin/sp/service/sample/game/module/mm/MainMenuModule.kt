@@ -4,7 +4,7 @@ import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.math.implementation.entity.geometry.pointOf
+import sp.kx.math.pointOf
 import sp.service.sample.util.FontInfoUtil
 
 class MainMenuModule(private val engine: Engine, private val broadcast: (Broadcast) -> Unit) {

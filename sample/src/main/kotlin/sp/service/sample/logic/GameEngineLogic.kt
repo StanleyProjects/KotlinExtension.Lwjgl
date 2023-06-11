@@ -9,7 +9,7 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.math.implementation.entity.geometry.pointOf
+import sp.kx.math.pointOf
 import sp.service.sample.game.entity.StateCommon
 import sp.service.sample.game.module.journey.JourneyModule
 import sp.service.sample.game.module.mm.MainMenuItem

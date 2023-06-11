@@ -14,10 +14,10 @@ import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
-import sp.kx.math.foundation.entity.geometry.Point
-import sp.kx.math.foundation.entity.geometry.Vector
-import sp.kx.math.implementation.entity.geometry.pointOf
-import sp.kx.math.implementation.entity.geometry.updated
+import sp.kx.math.Point
+import sp.kx.math.Vector
+import sp.kx.math.plus
+import sp.kx.math.pointOf
 import java.io.PrintStream
 
 object WindowUtil {
@@ -96,7 +96,7 @@ object WindowUtil {
         }
 
         override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Float) {
-            val pointBottomRight = pointTopLeft.updated(
+            val pointBottomRight = pointTopLeft.plus(
                 dX = size.width,
                 dY = size.height
             )
@@ -126,7 +126,7 @@ object WindowUtil {
                 GL11.glRotated(Math.toDegrees(direction), 0.0, 0.0, 1.0)
                 drawRectangle(
                     color = color,
-                    pointTopLeft = pointTopLeft.updated(
+                    pointTopLeft = pointTopLeft.plus(
                         dX = -pointOfRotation.x,
                         dY = -pointOfRotation.y
                     ),

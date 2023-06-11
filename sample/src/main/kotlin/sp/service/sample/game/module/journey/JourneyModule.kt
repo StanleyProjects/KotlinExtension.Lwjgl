@@ -6,17 +6,21 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
-import sp.kx.math.foundation.entity.geometry.Offset
-import sp.kx.math.foundation.entity.geometry.Point
-import sp.kx.math.foundation.entity.geometry.Vector
-import sp.kx.math.implementation.entity.geometry.getDifference
-import sp.kx.math.implementation.entity.geometry.moved
-import sp.kx.math.implementation.entity.geometry.offsetOf
-import sp.kx.math.implementation.entity.geometry.pointOf
-import sp.kx.math.implementation.entity.geometry.toVector
-import sp.kx.math.implementation.entity.geometry.updated
-import sp.service.sample.game.entity.MutableOffset
-import sp.service.sample.game.entity.MutablePoint
+import sp.kx.math.MutableOffset
+import sp.kx.math.MutablePoint
+import sp.kx.math.Point
+import sp.kx.math.Vector
+import sp.kx.math.minus
+import sp.kx.math.moved
+import sp.kx.math.plus
+import sp.kx.math.pointOf
+import sp.kx.math.toVector
+import sp.kx.math.isEmpty
+import sp.kx.math.length
+import sp.kx.math.distanceOf
+import sp.kx.math.angleOf
+import sp.kx.math.angle
+import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
@@ -36,49 +40,8 @@ private fun Double.normalize(k: Double): Double {
     return ((this % k) + k) % k
 }
 
-private fun Point.difference(that: Point): Offset {
-    return offsetOf(
-        dX = this.x - that.x,
-        dY = this.y - that.y
-    )
-}
-
-private fun getDistance(
-    xStart: Double,
-    yStart: Double,
-    xFinish: Double,
-    yFinish: Double
-): Double {
-    val dX = xFinish - xStart
-    val dY = yFinish - yStart
-    return kotlin.math.sqrt(dY * dY + dX * dX)
-}
-
-private fun getDistance(
-    start: Point,
-    finish: Point
-): Double {
-    return getDistance(xStart = start.x, yStart = start.y, xFinish = finish.x, yFinish = finish.y)
-}
-
-private fun Vector.getDistance(): Double {
-    return getDistance(start = start, finish = finish)
-}
-
 private fun Point.isSame(that: Point, epsilon: Double): Boolean {
     return x.isSame(that.x, epsilon = epsilon) && y.isSame(that.y, epsilon = epsilon)
-}
-
-private fun Vector.isEmpty(epsilon: Double): Boolean {
-    return start.isSame(finish, epsilon = epsilon)
-}
-
-private fun getAngle(startX: Double, startY: Double, finishX: Double, finishY: Double): Double {
-    return kotlin.math.atan2(y = finishY - startY, x = finishX - startX)
-}
-
-private fun getAngle(start: Point, finish: Point): Double {
-    return getAngle(startX = start.x, startY = start.y, finishX = finish.x, finishY = finish.y)
 }
 
 private fun getPerpendicular(
@@ -150,10 +113,6 @@ private fun getShortest(
         xTarget = target.x,
         yTarget = target.y
     )
-}
-
-private fun Vector.getAngle(): Double {
-    return getAngle(start = start, finish = finish)
 }
 
 private fun Vector.getShortest(target: Point): Double {
@@ -232,7 +191,7 @@ private fun Vector.getPerpendicular(target: Point): Point {
 }
 
 private fun Vector.getCenter(): Point {
-    return start.updated(
+    return start.plus(
         dX = (finish.x - start.x) * 0.5,
         dY = (finish.y - start.y) * 0.5
     )
@@ -258,19 +217,12 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     private val width = pixelsPerUnit * 2
     private val radius = kotlin.math.sqrt(2.0) * width / 2
     private val barriers = listOf(
-        pointOf(x = 7 + 0 * 2, y = 7 + 0 * 2).toVector(
-            pointOf(x = 7 + 3 * 2, y = 7 - 5 * 2)
-        ),
-        pointOf(x = 7 + 3 * 2, y = 7 - 5 * 2).toVector(
-            pointOf(x = 7 + 5 * 2, y = 7 - 5 * 2)
-        ),
-        pointOf(x = 7 + 5 * 2, y = 7 - 5 * 2).toVector(
-            pointOf(x = 7 + 5 * 2, y = 7 + 6 * 2)
-        )
+        pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
+        pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2),
+        pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 + 6 * 2)
     ).map { vector ->
-        pointOf(x = vector.start.x * pixelsPerUnit, y = vector.start.y * pixelsPerUnit).toVector(
-            pointOf(x = vector.finish.x * pixelsPerUnit, y = vector.finish.y * pixelsPerUnit)
-        )
+        pointOf(x = vector.start.x * pixelsPerUnit, y = vector.start.y * pixelsPerUnit) +
+                pointOf(x = vector.finish.x * pixelsPerUnit, y = vector.finish.y * pixelsPerUnit)
     }
 
     fun init() {
@@ -304,13 +256,13 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     private fun onRenderPlayer(canvas: Canvas, point: Point) {
         canvas.drawLine(
             color = Color.WHITE,
-            vector = point.toVector(length = radius, angle = direction.actual),
+            vector = vectorOf(point, length = radius, angle = direction.actual),
             lineWidth = 1f
         )
         val size = size(width = width, height = width)
         canvas.drawRectangle(
             color = Color.YELLOW,
-            pointTopLeft = point.updated(dX = - size.width / 2, dY = - size.height / 2),
+            pointTopLeft = point.plus(dX = - size.width / 2, dY = - size.height / 2),
             size = size,
             direction = direction.actual,
             pointOfRotation = point,
@@ -327,13 +279,13 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     }
 
     private fun onRenderBarriers(canvas: Canvas, center: Point, point: Point, barriers: List<Vector>) {
-        val offset = center.difference(point)
+        val offset = center - point
         barriers.forEach { barrier ->
             canvas.drawLine(
                 color = Color.GREEN,
                 vector = barrier.start.toVector(
                     finish = barrier.finish,
-                    offset = offset
+                    offset = offset,
                 ),
                 lineWidth = 1f
             )
@@ -341,20 +293,16 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     }
 
     private fun onRenderCenter(canvas: Canvas, center: Point) {
-        val relative = center.updated(dX = -point.x, dY = -point.y)
+        val relative = center.plus(dX = -point.x, dY = -point.y)
         val length = pixelsPerUnit * 2
         canvas.drawLine(
             color = Color.GREEN,
-            vector = relative.updated(dX = 0.0, dY = length).toVector(
-                relative.updated(dX = 0.0, dY = -length)
-            ),
+            vector = relative.plus(dX = 0.0, dY = length) + relative.plus(dX = 0.0, dY = -length),
             lineWidth = 1f
         )
         canvas.drawLine(
             color = Color.GREEN,
-            vector = relative.updated(dX = -length, dY = 0.0).toVector(
-                relative.updated(dX = length, dY = 0.0)
-            ),
+            vector = relative.plus(dX = -length, dY = 0.0) + relative.plus(dX = length, dY = 0.0),
             lineWidth = 1f
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
@@ -362,7 +310,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         canvas.drawText(
             color = Color.GREEN,
             info = info,
-            pointTopLeft = relative.updated(
+            pointTopLeft = relative.plus(
                 dX = (info.height / 2).toDouble(),
                 dY = (-info.height).toDouble()
             ),
@@ -377,7 +325,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             Color.BLUE,
             Color.GREEN,
         )
-        val offset = center.difference(point)
+        val offset = center - point
         val info = FontInfoUtil.getFontInfo(height = 16f)
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
@@ -391,7 +339,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 color = color,
                 info = info,
                 pointTopLeft = ab.getCenter(),
-                text = String.format("%05.2f", getDistance(start = point, finish = barrier.start))
+                text = String.format("%05.2f", distanceOf(a = point, b = barrier.start))
             )
             val ac = point.toVector(finish = barrier.finish, offset = offset)
             canvas.drawLine(
@@ -403,9 +351,9 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 color = color,
                 info = info,
                 pointTopLeft = ac.getCenter(),
-                text = String.format("%05.2f", getDistance(start = point, finish = barrier.finish))
+                text = String.format("%05.2f", distanceOf(a = point, b = barrier.finish))
             )
-            val bc = ab.finish.toVector(ac.finish)
+            val bc = ab.finish + ac.finish
             val tPoint = bc.getCenter()
             val aH = point.toVector(
                 finish = barrier.getPerpendicular(target = point),
@@ -420,12 +368,12 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 color = color,
                 info = info,
                 pointTopLeft = tPoint,
-                text = String.format("%05.2f", aH.getDistance())
+                text = String.format("%05.2f", aH.length())
             )
             canvas.drawText(
                 color = color,
                 info = info,
-                pointTopLeft = tPoint.updated(dX = 0.0, dY = info.height.toDouble()),
+                pointTopLeft = tPoint.plus(dX = 0.0, dY = info.height.toDouble()),
                 text = String.format("%05.2f", barrier.getShortest(target = point))
             )
         }
@@ -457,9 +405,9 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             }
         }
         val dVector = point.toVector(mOffset)
-        if (!dVector.isEmpty(epsilon = 0.0001)) {
+        if (!dVector.isEmpty(points = 4)) {
             val dTime = engine.property.timeNow - engine.property.timeLast
-            direction.expected = dVector.getAngle().normalize(kotlin.math.PI * 2)
+            direction.expected = dVector.angle().normalize(kotlin.math.PI * 2)
             if (!direction.expected.isSame(direction.actual, epsilon = 0.0001)) {
                 val difference = direction.actual - direction.expected
                 val d = direction.velocity * dTime
@@ -475,9 +423,10 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                     direction.actual = actual.normalize(kotlin.math.PI * 2)
                 }
             }
-            val vector = point.toVector(
+            val vector = vectorOf(
+                point,
                 length = velocity * dTime * pixelsPerUnit,
-                angle = direction.expected
+                angle = direction.expected,
             )
             val filtered = barriers.filter {
                 it.getShortest(vector.finish).isLessThan(radius, epsilon = 0.0001)
@@ -488,9 +437,9 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 val iPoints = filtered.mapNotNull { that ->
                     vector.getIntersectionPointOrNull(that)?.let { that to it }
                 }.filter { (_, iPoint) ->
-                    val sDistance = getDistance(start = vector.start, finish = iPoint)
-                    val fDistance = getDistance(start = vector.finish, finish = iPoint)
-                    val distance = vector.getDistance()
+                    val sDistance = distanceOf(a = vector.start, b = iPoint)
+                    val fDistance = distanceOf(a = vector.finish, b = iPoint)
+                    val distance = vector.length()
                     fDistance < sDistance && distance < sDistance
                 }
                 if (iPoints.isEmpty()) {
@@ -502,11 +451,11 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                     if (!fShortest.isLessThan(radius, epsilon = 0.0001)) {
                         point.set(vector.finish)
                     } else {
-                        val sDistance = getDistance(start = vector.start, finish = iPoint)
-                        val vDistance = vector.getDistance()
+                        val sDistance = distanceOf(a = vector.start, b = iPoint)
+                        val vDistance = vector.length()
                         if (vDistance < sDistance) {
                             val fPerpendicular = that.getPerpendicular(vector.finish)
-                            val fAngle = getAngle(start = fPerpendicular, finish = vector.finish)
+                            val fAngle = angleOf(a = fPerpendicular, b = vector.finish)
                             val m = fPerpendicular.moved(length = radius, angle = fAngle)
                             point.set(m)
                         } else {

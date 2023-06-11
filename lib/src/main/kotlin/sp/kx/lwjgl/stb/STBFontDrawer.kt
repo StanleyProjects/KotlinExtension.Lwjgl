@@ -8,7 +8,7 @@ import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.use
-import sp.kx.math.foundation.entity.geometry.Point
+import sp.kx.math.Point
 
 internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
     companion object {
