@@ -15,9 +15,13 @@ import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.angleOf
+import sp.kx.math.ct
+import sp.kx.math.isEmpty
+import sp.kx.math.minus
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil
 import kotlin.time.Duration.Companion.seconds
@@ -75,12 +79,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
         val v = velocity * 1.seconds.inWholeNanoseconds
-        val values = setOf(
-            String.format("x: %05.1f", point.x),
-            String.format("y: %05.1f", point.y),
+        val values = listOf(
+//            "x: ${point.x.toString(5, 1)}",
+//            "y: ${point.y.toString(5, 1)}",
+//            String.format("x: %+05.1f", point.x),
+//            String.format("y: %+05.1f", point.y),
+            String.format("x: %7s", String.format("%+.1f", point.x)),
+            String.format("y: %7s", String.format("%+.1f", point.y)),
 //            String.format("v: %03.1f", v),
-            String.format("a: %03.2f (%05.1f)", direction.actual, Math.toDegrees(direction.actual)),
-            String.format("e: %03.2f (%05.1f)", direction.expected, Math.toDegrees(direction.expected)),
+            String.format("a: %03.2f - %05.1f", direction.actual, Math.toDegrees(direction.actual)),
+            String.format("e: %03.2f - %05.1f", direction.expected, Math.toDegrees(direction.expected)),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -93,15 +101,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private fun Double.normalize(k: Double): Double {
-        return ((this % k) + k) % k
-    }
-
-    private fun Offset.isEmpty(): Boolean {
-        return dX == 0.0 && dY == 0.0
-    }
-
-    private fun Keyboard.getOffset(): Offset {
+    private fun Keyboard.getPlayerOffset(): Offset {
         val result = MutableOffset(dX = 0.0, dY = 0.0)
         if (isPressed(KeyboardButton.W)) {
             if (!isPressed(KeyboardButton.S)) {
@@ -131,24 +131,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),
             color = Color.GREEN,
-            text = fps.toString(2)
+            text = fps.toString(6, 2)
         )
         val center = pointOf(x = engine.property.pictureSize.width / 2, y = engine.property.pictureSize.height / 2)
-        val relative = center.plus(dX = -point.x, dY = -point.y)
+        val relative = center - point
         val length = pixelsPerUnit * 2
         canvas.drawLine(
             color = Color.GREEN,
-            vector = relative.plus(dX = 0.0, dY = length) + relative.plus(dX = 0.0, dY = -length),
+            vector = pointOf(x = 0.0, y = length).toVector(pointOf(x = 0.0, y = -length), relative),
             lineWidth = 1f
         )
         canvas.drawLine(
             color = Color.GREEN,
-            vector = relative.plus(dX = -length, dY = 0.0) + relative.plus(dX = length, dY = 0.0),
+            vector = pointOf(x = -length, y = 0.0).toVector(pointOf(x = length, y = 0.0), relative),
             lineWidth = 1f
         )
-        val offset = engine.input.keyboard.getOffset()
+        val offset = engine.input.keyboard.getPlayerOffset()
         if (!offset.isEmpty()) {
-            direction.expected = angleOf(point, point + offset).normalize(kotlin.math.PI * 2)
+            direction.expected = angleOf(point, offset).ct()
             direction.actual = direction.expected
             val diff = engine.property.time.diff()
             point.move(
