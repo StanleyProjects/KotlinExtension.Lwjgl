@@ -2,6 +2,7 @@ package sp.kx.lwjgl.entity
 
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.math.Point
+import sp.kx.math.Size
 import sp.kx.math.Vector
 
 interface Canvas {

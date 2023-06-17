@@ -9,9 +9,9 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil
-import sp.kx.lwjgl.entity.Size
-import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.system.use
+import sp.kx.math.Size
+import sp.kx.math.sizeOf
 import java.nio.ByteBuffer
 
 object GLFWUtil {
@@ -21,7 +21,7 @@ object GLFWUtil {
 
     fun getMonitorSize(monitorId: Long): Size {
         val mode = getVideoMode(monitorId)
-        return size(width = mode.width(), height = mode.height())
+        return sizeOf(width = mode.width().toDouble(), height = mode.height().toDouble())
     }
 
     fun createWindow(
@@ -63,7 +63,7 @@ object GLFWUtil {
         val widthBuffer = stack.mallocInt(1)
         val heightBuffer = stack.mallocInt(1)
         GLFW.glfwGetWindowSize(windowId, widthBuffer, heightBuffer)
-        return size(width = widthBuffer[0], height = heightBuffer[0])
+        return sizeOf(width = widthBuffer[0].toDouble(), height = heightBuffer[0].toDouble())
     }
 
     fun getWindowSize(windowId: Long): Size {

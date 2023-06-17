@@ -4,7 +4,6 @@ import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
@@ -20,6 +19,9 @@ import sp.kx.math.length
 import sp.kx.math.distanceOf
 import sp.kx.math.angleOf
 import sp.kx.math.angle
+import sp.kx.math.ct
+import sp.kx.math.measure.diff
+import sp.kx.math.sizeOf
 import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
@@ -34,10 +36,6 @@ private fun Double.isLessThan(that: Double, epsilon: Double): Boolean {
 private fun Double.isSame(that: Double, epsilon: Double): Boolean {
     check(epsilon < 1.0)
     return (this - that).absoluteValue < epsilon
-}
-
-private fun Double.normalize(k: Double): Double {
-    return ((this % k) + k) % k
 }
 
 private fun Point.isSame(that: Point, epsilon: Double): Boolean {
@@ -259,7 +257,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             vector = vectorOf(point, length = radius, angle = direction.actual),
             lineWidth = 1f
         )
-        val size = size(width = width, height = width)
+        val size = sizeOf(width = width, height = width)
         canvas.drawRectangle(
             color = Color.YELLOW,
             pointTopLeft = point.plus(dX = - size.width / 2, dY = - size.height / 2),
@@ -408,7 +406,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         if (!dVector.isEmpty(points = 4)) {
 //            val dTime = engine.property.timeNow - engine.property.timeLast
             val diff = engine.property.time.diff()
-            direction.expected = dVector.angle().normalize(kotlin.math.PI * 2)
+            direction.expected = dVector.angle().ct()
             if (!direction.expected.isSame(direction.actual, epsilon = 0.0001)) {
                 val difference = direction.actual - direction.expected
                 val d = direction.velocity * diff.inWholeNanoseconds
@@ -421,7 +419,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                     } else {
                         direction.actual + d * difference / difference.absoluteValue * -1
                     }
-                    direction.actual = actual.normalize(kotlin.math.PI * 2)
+                    direction.actual = actual.ct()
                 }
             }
             val vector = vectorOf(

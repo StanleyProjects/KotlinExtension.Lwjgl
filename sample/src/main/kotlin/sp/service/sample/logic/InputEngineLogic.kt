@@ -13,11 +13,12 @@ import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.input.JoystickAxis
 import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.Point
+import sp.kx.math.measure.diff
 import sp.kx.math.plus
 import sp.kx.math.pointOf
+import sp.kx.math.sizeOf
 import sp.service.sample.util.Dualshock4JoystickMapping
 import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.XBoxSeriesJoystickMapping
@@ -148,7 +149,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         drawRectangle(
             color = color,
             pointTopLeft = pointTopLeft,
-            size = size(width = width, height = height),
+            size = sizeOf(width = width, height = height),
             lineWidth = 2f
         )
         val textHeight = 16f
@@ -360,7 +361,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                     drawRectangle(
                         color = Color.YELLOW,
                         pointTopLeft = pointTopLeft,
-                        size = size(width = width, height = width),
+                        size = sizeOf(width = width, height = width),
                         lineWidth = 2f
                     )
                 }

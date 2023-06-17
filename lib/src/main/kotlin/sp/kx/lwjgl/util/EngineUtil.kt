@@ -13,7 +13,6 @@ import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
 import sp.kx.lwjgl.entity.input.GLFWJoystick
 import sp.kx.lwjgl.entity.input.JoystickButton
-import sp.kx.lwjgl.entity.size
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.getJoystickMappingOrNull
@@ -22,6 +21,8 @@ import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.stb.STBFontAgent
 import sp.kx.lwjgl.stb.STBFontDrawer
 import sp.kx.lwjgl.stb.STBFontStorage
+import sp.kx.math.MutableSize
+import sp.kx.math.sizeOf
 import kotlin.time.Duration.Companion.nanoseconds
 
 object EngineUtil {
@@ -62,7 +63,7 @@ object EngineUtil {
     }
 
     fun run(supplier: (Engine) -> EngineLogic) {
-        val size = size(640, 480)
+        val size = sizeOf(width = 640.0, height = 480.0)
         val keyboard = StatefulKeyboard()
         val joystickStorage = StatefulJoystickStorage()
         val fontStorage = STBFontStorage()
@@ -96,11 +97,11 @@ object EngineUtil {
             },
             onRender = { windowId, canvas ->
                 val now = System.nanoTime().toDouble().nanoseconds
-                engine.property.time.now = now
+                engine.property.time.b = now
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                 joystickStorage.update(mapper = logic.joystickMapper, onButton = logic.inputCallback::onJoystickButton)
                 logic.onRender(canvas = canvas)
-                engine.property.time.last = now
+                engine.property.time.a = now
                 if (logic.shouldEngineStop()) {
                     GLFW.glfwSetWindowShouldClose(windowId, true)
                 }

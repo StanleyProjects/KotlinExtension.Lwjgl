@@ -9,12 +9,12 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.Size
 import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
 import sp.kx.math.Point
+import sp.kx.math.Size
 import sp.kx.math.Vector
 import sp.kx.math.plus
 import sp.kx.math.pointOf

@@ -14,24 +14,41 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
+import sp.kx.math.Point
+import sp.kx.math.Vector
 import sp.kx.math.angleOf
+import sp.kx.math.center
 import sp.kx.math.ct
 import sp.kx.math.isEmpty
+import sp.kx.math.measure.Measure
+import sp.kx.math.measure.MutableDeviation
+import sp.kx.math.measure.Speed
+import sp.kx.math.measure.diff
+import sp.kx.math.measure.measureOf
+import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
+import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.toString
 import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
-    companion object {
-        private const val pixelsPerUnit = 16.0 // todo
-    }
+    class Player(
+        val point: MutablePoint = MutablePoint(x = 0.0, y = 0.0),
+        val speed: Speed = speedOf(5.0),
+        val direction: MutableDeviation<Double> = MutableDeviation(actual = 0.0, expected = 0.0),
+        val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
+        val width: Double = 2.0,
+        val radius: Double = kotlin.math.sqrt(2.0) * width / 2,
+    )
 
-    class Direction(var actual: Double, var expected: Double, val velocity: Double)
+    private val player = Player()
+    private val measure = measureOf(16.0)
 
     private lateinit var shouldEngineStopUnit: Unit
 
@@ -60,35 +77,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private val point = MutablePoint(x = 0.0, y = 0.0)
-    private val velocity: Double = 5.0 / 1.seconds.inWholeNanoseconds
-    private val direction: Direction = Direction(
-        actual = 0.0,
-        expected = 0.0,
-        velocity = kotlin.math.PI * 2 / 1.seconds.inWholeNanoseconds
-    )
-    private val width = pixelsPerUnit * 2
-    private val radius = kotlin.math.sqrt(2.0) * width / 2
-
     override fun shouldEngineStop(): Boolean {
         return ::shouldEngineStopUnit.isInitialized
     }
 
     private fun debug(canvas: Canvas) {
-        val padding = pixelsPerUnit * 1
+        val padding = measure.transform(1.0)
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
-        val v = velocity * 1.seconds.inWholeNanoseconds
         val values = listOf(
 //            "x: ${point.x.toString(5, 1)}",
 //            "y: ${point.y.toString(5, 1)}",
 //            String.format("x: %+05.1f", point.x),
 //            String.format("y: %+05.1f", point.y),
-            String.format("x: %7s", String.format("%+.1f", point.x)),
-            String.format("y: %7s", String.format("%+.1f", point.y)),
-//            String.format("v: %03.1f", v),
-            String.format("a: %03.2f - %05.1f", direction.actual, Math.toDegrees(direction.actual)),
-            String.format("e: %03.2f - %05.1f", direction.expected, Math.toDegrees(direction.expected)),
+            String.format("x: %7s", String.format("%+.1f", player.point.x)),
+            String.format("y: %7s", String.format("%+.1f", player.point.y)),
+            String.format("v: %s", player.speed.toString()),
+            String.format("a: %03.2f - %05.1f", player.direction.actual, Math.toDegrees(player.direction.actual)),
+            String.format("e: %03.2f - %05.1f", player.direction.expected, Math.toDegrees(player.direction.expected)),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -124,47 +130,113 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
+    private fun vec(
+        startX: Double,
+        startY: Double,
+        finishX: Double,
+        finishY: Double,
+        offset: Offset,
+    ): Vector {
+        return vectorOf(
+            startX = startX + offset.dX,
+            startY = startY + offset.dY,
+            finishX = finishX + offset.dX,
+            finishY = finishY + offset.dY,
+        )
+    }
+
+    private fun Offset.foo(transform: (Double) -> Double): Offset {
+        return offsetOf(
+            dX = transform(dX),
+            dY = transform(dY),
+        )
+    }
+
+    private fun Point.foo(transform: (Double) -> Double): Point {
+        return pointOf(
+            x = transform(x),
+            y = transform(y),
+        )
+    }
+
+    private fun Vector.foo(transform: (Double) -> Double): Vector {
+        return vectorOf(
+            startX = transform(start.x),
+            startY = transform(start.y),
+            finishX = transform(finish.x),
+            finishY = transform(finish.y),
+        )
+    }
+
+    private infix fun Vector.bar(offset: Offset): Vector {
+        return vectorOf(
+            startX = start.x + offset.dX,
+            startY = start.y + offset.dY,
+            finishX = finish.x + offset.dX,
+            finishY = finish.y + offset.dY,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
-        val padding = pixelsPerUnit * 1
-        val fps = 1.seconds / engine.property.time.diff()
+        val padding = measure.transform(1.0)
+        val diff = engine.property.time.diff()
+        val fps = 1.seconds / diff
         canvas.drawText(
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),
             color = Color.GREEN,
             text = fps.toString(6, 2)
         )
-        val center = pointOf(x = engine.property.pictureSize.width / 2, y = engine.property.pictureSize.height / 2)
-        val relative = center - point
-        val length = pixelsPerUnit * 2
+        val center = Point.Center + engine.property.pictureSize.center()
+//        val relative = center - pointOf(x = measure.transform(player.point.x), y = measure.transform(player.point.y))
+//        val relative = center - player.point
+        val relative = center - player.point.foo(measure::transform)
+//        val length = measure.transform(2.0)
+        measure.transform(2.0).also { length ->
+            canvas.drawLine(
+                color = Color.GREEN,
+                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length).bar(relative),
+                lineWidth = 1f
+            )
+            canvas.drawLine(
+                color = Color.GREEN,
+                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0).bar(relative),
+                lineWidth = 1f
+            )
+        }
+        /*
+        val length = 2.0
         canvas.drawLine(
             color = Color.GREEN,
-            vector = pointOf(x = 0.0, y = length).toVector(pointOf(x = 0.0, y = -length), relative),
+            vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length).foo(measure::transform).bar(relative),
+//            vector = pointOf(x = 0.0, y = length).toVector(pointOf(x = 0.0, y = -length), relative),
             lineWidth = 1f
         )
         canvas.drawLine(
             color = Color.GREEN,
-            vector = pointOf(x = -length, y = 0.0).toVector(pointOf(x = length, y = 0.0), relative),
+            vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0).foo(measure::transform).bar(relative),
+//            vector = pointOf(x = -length, y = 0.0).toVector(pointOf(x = length, y = 0.0), relative),
             lineWidth = 1f
         )
+        */
         val offset = engine.input.keyboard.getPlayerOffset()
         if (!offset.isEmpty()) {
-            direction.expected = angleOf(point, offset).ct()
-            direction.actual = direction.expected
-            val diff = engine.property.time.diff()
-            point.move(
-                length = velocity * diff.inWholeNanoseconds * pixelsPerUnit,
-                angle = direction.expected,
+            player.direction.expected = angleOf(offset).ct()
+            player.direction.actual = player.direction.expected
+            player.point.move(
+                length = player.speed.length(diff),
+                angle = player.direction.expected,
             )
         }
         canvas.drawLine(
             color = Color.WHITE,
-            vector = vectorOf(center, length = radius, angle = direction.actual),
+            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.actual),
             lineWidth = 1f
         )
         canvas.drawCircle(
             color = Color.WHITE,
             pointCenter = center,
-            radius = radius,
+            radius = measure.transform(player.radius),
             edgeCount = 16,
             lineWidth = 1f
         )
