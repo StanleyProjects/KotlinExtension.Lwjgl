@@ -19,9 +19,12 @@ import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
 import sp.kx.math.ct
+import sp.kx.math.eq
 import sp.kx.math.isEmpty
+import sp.kx.math.measure.Deviation
 import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
+import sp.kx.math.measure.MutableSpeed
 import sp.kx.math.measure.Speed
 import sp.kx.math.measure.diff
 import sp.kx.math.measure.measureOf
@@ -30,22 +33,35 @@ import sp.kx.math.minus
 import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
+import sp.kx.math.sizeOf
 import sp.kx.math.toString
 import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player(
         val point: MutablePoint = MutablePoint(x = 0.0, y = 0.0),
-        val speed: Speed = speedOf(5.0),
-        val direction: MutableDeviation<Double> = MutableDeviation(actual = 0.0, expected = 0.0),
-        val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
-        val width: Double = 2.0,
-        val radius: Double = kotlin.math.sqrt(2.0) * width / 2,
-    )
+        val speed: MutableSpeed = MutableSpeed(5.0, TimeUnit.SECONDS),
+        val direction: Direction = Direction(0.0, 0.0),
+    ) {
+        companion object {
+            val size = sizeOf(width = 2.0, height = 2.0)
+            val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
+        }
+
+        class Direction(
+            override var actual: Double,
+            override var expected: Double,
+        ) : Deviation<Double> {
+            companion object {
+                val speed: Speed = speedOf(kotlin.math.PI * 2)
+            }
+        }
+    }
 
     private val player = Player()
     private val measure = measureOf(16.0)
@@ -177,6 +193,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    private fun Double.baz(): Double {
+        return div(absoluteValue)
+//        return this / absoluteValue
+    }
+
+    private fun Double.orNull(): Double? {
+        if (isNaN()) return null
+        return this
+    }
+
     override fun onRender(canvas: Canvas) {
         val padding = measure.transform(1.0)
         val diff = engine.property.time.diff()
@@ -222,7 +248,37 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val offset = engine.input.keyboard.getPlayerOffset()
         if (!offset.isEmpty()) {
             player.direction.expected = angleOf(offset).ct()
-            player.direction.actual = player.direction.expected
+            if (player.direction.actual.isNaN()) error("actual before is NaN!")
+            if (!player.direction.expected.eq(player.direction.actual, points = 4)) {
+//                val difference = player.direction.actual - player.direction.expected
+//                val d = Player.Direction.speed.length(diff)
+//                if (d > difference.absoluteValue) {
+//                    player.direction.actual = player.direction.expected
+//                } else {
+//                    val actual: Double = if (difference.absoluteValue > kotlin.math.PI) {
+//                        player.direction.actual + d * difference / difference.absoluteValue
+//                    } else {
+//                        player.direction.actual + d * difference / difference.absoluteValue * -1
+//                    }
+//                    player.direction.actual = actual.ct()
+//                }
+                val angle = player.direction.actual - player.direction.expected
+                val alpha = Player.Direction.speed.length(diff)
+//                val k = angle / angle.absoluteValue
+                if (alpha > angle.absoluteValue) {
+                    player.direction.actual = player.direction.expected
+                } else {
+//                    val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
+                    val m = (kotlin.math.PI - angle.absoluteValue).baz().orNull() ?: 1.0
+//                    val actual = player.direction.actual - alpha * k * m
+                    val actual = player.direction.actual - alpha * angle.baz() * m
+                    player.direction.actual = actual.ct()
+                }
+//                val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
+//                val actual = player.direction.actual - alpha * k * m
+//                player.direction.actual = actual.ct()
+//                player.direction.actual += Player.Direction.speed.length(diff)
+            }
             player.point.move(
                 length = player.speed.length(diff),
                 angle = player.direction.expected,
@@ -230,13 +286,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         canvas.drawLine(
             color = Color.WHITE,
-            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.actual),
+            vector = vectorOf(center, length = measure.transform(Player.radius), angle = player.direction.actual),
             lineWidth = 1f
         )
         canvas.drawCircle(
             color = Color.WHITE,
             pointCenter = center,
-            radius = measure.transform(player.radius),
+            radius = measure.transform(Player.radius),
             edgeCount = 16,
             lineWidth = 1f
         )
