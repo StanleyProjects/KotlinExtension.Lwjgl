@@ -14,53 +14,40 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
-import sp.kx.math.Point
-import sp.kx.math.Vector
 import sp.kx.math.angleOf
-import sp.kx.math.center
-import sp.kx.math.ct
+import sp.kx.math.centerPoint
+import sp.kx.math.dby
 import sp.kx.math.eq
+import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
-import sp.kx.math.measure.Deviation
-import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableSpeed
 import sp.kx.math.measure.Speed
 import sp.kx.math.measure.diff
+import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
-import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
+import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.toString
-import sp.kx.math.toVector
 import sp.kx.math.vectorOf
+import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
-import kotlin.time.Duration.Companion.seconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player(
         val point: MutablePoint = MutablePoint(x = 0.0, y = 0.0),
         val speed: MutableSpeed = MutableSpeed(5.0, TimeUnit.SECONDS),
-        val direction: Direction = Direction(0.0, 0.0),
+        val direction: MutableDeviation<Double> = MutableDeviation(0.0, 0.0),
+        val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
     ) {
-        companion object {
-            val size = sizeOf(width = 2.0, height = 2.0)
-            val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
-        }
-
-        class Direction(
-            override var actual: Double,
-            override var expected: Double,
-        ) : Deviation<Double> {
-            companion object {
-                val speed: Speed = speedOf(kotlin.math.PI * 2)
-            }
-        }
+        val size = sizeOf(width = 2.0, height = 2.0)
+        val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
     }
 
     private val player = Player()
@@ -111,6 +98,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             String.format("v: %s", player.speed.toString()),
             String.format("a: %03.2f - %05.1f", player.direction.actual, Math.toDegrees(player.direction.actual)),
             String.format("e: %03.2f - %05.1f", player.direction.expected, Math.toDegrees(player.direction.expected)),
+            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
+            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -146,87 +135,33 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
-    private fun vec(
-        startX: Double,
-        startY: Double,
-        finishX: Double,
-        finishY: Double,
-        offset: Offset,
-    ): Vector {
-        return vectorOf(
-            startX = startX + offset.dX,
-            startY = startY + offset.dY,
-            finishX = finishX + offset.dX,
-            finishY = finishY + offset.dY,
-        )
-    }
-
-    private fun Offset.foo(transform: (Double) -> Double): Offset {
-        return offsetOf(
-            dX = transform(dX),
-            dY = transform(dY),
-        )
-    }
-
-    private fun Point.foo(transform: (Double) -> Double): Point {
-        return pointOf(
-            x = transform(x),
-            y = transform(y),
-        )
-    }
-
-    private fun Vector.foo(transform: (Double) -> Double): Vector {
-        return vectorOf(
-            startX = transform(start.x),
-            startY = transform(start.y),
-            finishX = transform(finish.x),
-            finishY = transform(finish.y),
-        )
-    }
-
-    private infix fun Vector.bar(offset: Offset): Vector {
-        return vectorOf(
-            startX = start.x + offset.dX,
-            startY = start.y + offset.dY,
-            finishX = finish.x + offset.dX,
-            finishY = finish.y + offset.dY,
-        )
-    }
-
+    @Deprecated(message = "replace with dby", level = DeprecationLevel.ERROR)
     private fun Double.baz(): Double {
         return div(absoluteValue)
 //        return this / absoluteValue
     }
 
-    private fun Double.orNull(): Double? {
-        if (isNaN()) return null
-        return this
-    }
-
     override fun onRender(canvas: Canvas) {
         val padding = measure.transform(1.0)
-        val diff = engine.property.time.diff()
-        val fps = 1.seconds / diff
+        val timeDiff = engine.property.time.diff()
+        val fps = engine.property.time.frequency()
         canvas.drawText(
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),
             color = Color.GREEN,
             text = fps.toString(6, 2)
         )
-        val center = Point.Center + engine.property.pictureSize.center()
-//        val relative = center - pointOf(x = measure.transform(player.point.x), y = measure.transform(player.point.y))
-//        val relative = center - player.point
-        val relative = center - player.point.foo(measure::transform)
-//        val length = measure.transform(2.0)
+        val center = engine.property.pictureSize.centerPoint()
+        val relative = center - (player.point + measure)
         measure.transform(2.0).also { length ->
             canvas.drawLine(
                 color = Color.GREEN,
-                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length).bar(relative),
+                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length, relative),
                 lineWidth = 1f
             )
             canvas.drawLine(
                 color = Color.GREEN,
-                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0).bar(relative),
+                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0, relative),
                 lineWidth = 1f
             )
         }
@@ -247,9 +182,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         */
         val offset = engine.input.keyboard.getPlayerOffset()
         if (!offset.isEmpty()) {
-            player.direction.expected = angleOf(offset).ct()
-            if (player.direction.actual.isNaN()) error("actual before is NaN!")
-            if (!player.direction.expected.eq(player.direction.actual, points = 4)) {
+            player.direction.expected = angleOf(offset).radians()
+            val dirDiff = player.direction.diff()
+//            val dirDiff = kotlin.math.PI - player.direction.diff().absoluteValue
+            if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
 //                val difference = player.direction.actual - player.direction.expected
 //                val d = Player.Direction.speed.length(diff)
 //                if (d > difference.absoluteValue) {
@@ -262,17 +198,23 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                    }
 //                    player.direction.actual = actual.ct()
 //                }
-                val angle = player.direction.actual - player.direction.expected
-                val alpha = Player.Direction.speed.length(diff)
+                val alpha = player.directionSpeed.length(timeDiff)
 //                val k = angle / angle.absoluteValue
-                if (alpha > angle.absoluteValue) {
-                    player.direction.actual = player.direction.expected
+                if (alpha > dirDiff.absoluteValue) {
+                    player.direction.commit()
                 } else {
-//                    val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
-                    val m = (kotlin.math.PI - angle.absoluteValue).baz().orNull() ?: 1.0
-//                    val actual = player.direction.actual - alpha * k * m
-                    val actual = player.direction.actual - alpha * angle.baz() * m
-                    player.direction.actual = actual.ct()
+                    //
+//                  //val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
+//                  //val m = (kotlin.math.PI - angle.absoluteValue).baz().orDefault(1.0)
+                    //val m = (kotlin.math.PI - dirDiff.absoluteValue).sign.orDefault()
+//                  //  val actual = player.direction.actual - alpha * k * m
+                    //val actual = player.direction.actual - alpha * dirDiff.baz() * m
+//                    val k = (kotlin.math.PI - dirDiff).baz().orDefault(1.0)
+                    val k = dirDiff.absoluteValue.whc().ifNaN(1.0)
+                    val m = dirDiff.dby()
+                    val actual = player.direction.actual + alpha * m * k
+                    player.direction.actual = actual.radians()
+                    //
                 }
 //                val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
 //                val actual = player.direction.actual - alpha * k * m
@@ -280,19 +222,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                player.direction.actual += Player.Direction.speed.length(diff)
             }
             player.point.move(
-                length = player.speed.length(diff),
+                length = player.speed.length(timeDiff),
                 angle = player.direction.expected,
             )
         }
         canvas.drawLine(
             color = Color.WHITE,
-            vector = vectorOf(center, length = measure.transform(Player.radius), angle = player.direction.actual),
+            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.actual),
             lineWidth = 1f
+        )
+        canvas.drawLine(
+            color = Color.YELLOW,
+            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.expected),
+            lineWidth = 1f,
         )
         canvas.drawCircle(
             color = Color.WHITE,
             pointCenter = center,
-            radius = measure.transform(Player.radius),
+            radius = measure.transform(player.radius),
             edgeCount = 16,
             lineWidth = 1f
         )

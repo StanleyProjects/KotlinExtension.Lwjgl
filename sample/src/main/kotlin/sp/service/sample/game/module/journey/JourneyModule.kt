@@ -19,7 +19,7 @@ import sp.kx.math.length
 import sp.kx.math.distanceOf
 import sp.kx.math.angleOf
 import sp.kx.math.angle
-import sp.kx.math.ct
+import sp.kx.math.radians
 import sp.kx.math.measure.diff
 import sp.kx.math.sizeOf
 import sp.kx.math.vectorOf
@@ -406,7 +406,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         if (!dVector.isEmpty(points = 4)) {
 //            val dTime = engine.property.timeNow - engine.property.timeLast
             val diff = engine.property.time.diff()
-            direction.expected = dVector.angle().ct()
+            direction.expected = dVector.angle().radians()
             if (!direction.expected.isSame(direction.actual, epsilon = 0.0001)) {
                 val difference = direction.actual - direction.expected
                 val d = direction.velocity * diff.inWholeNanoseconds
@@ -419,7 +419,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                     } else {
                         direction.actual + d * difference / difference.absoluteValue * -1
                     }
-                    direction.actual = actual.ct()
+                    direction.actual = actual.radians()
                 }
             }
             val vector = vectorOf(
