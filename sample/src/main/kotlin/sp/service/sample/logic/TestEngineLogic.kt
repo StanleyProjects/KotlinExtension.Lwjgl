@@ -14,12 +14,16 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
+import sp.kx.math.Point
+import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.centerPoint
 import sp.kx.math.dby
 import sp.kx.math.eq
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
+import sp.kx.math.map
+import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableSpeed
 import sp.kx.math.measure.Speed
@@ -28,11 +32,13 @@ import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
+import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
@@ -52,6 +58,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private val player = Player()
     private val measure = measureOf(16.0)
+    private val barriers = listOf(
+        pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
+        pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2),
+        pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 + 6 * 2)
+    )
 
     private lateinit var shouldEngineStopUnit: Unit
 
@@ -135,10 +146,86 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
-    @Deprecated(message = "replace with dby", level = DeprecationLevel.ERROR)
-    private fun Double.baz(): Double {
-        return div(absoluteValue)
-//        return this / absoluteValue
+    private fun Point.toOffset(other: Point, measure: Measure<Double, Double>): Offset {
+        return offsetOf(
+            dX = x - other.x,
+            dY = y - other.y,
+        )
+    }
+
+    private fun Point.toOffsetMeasured(other: Point, measure: Measure<Double, Double>): Offset {
+        return offsetOf(
+            dX = x - measure.transform(other.x),
+            dY = y - measure.transform(other.y),
+        )
+    }
+
+    private fun Vector.map(measure: Measure<Double, Double>, offset: Offset): Vector {
+        return vectorOf(
+            startX = measure.transform(start.x) + offset.dX,
+            startY = measure.transform(start.y) + offset.dY,
+            finishX = measure.transform(finish.x) + offset.dX,
+            finishY = measure.transform(finish.y) + offset.dY,
+        )
+    }
+
+    private fun onRenderBarriers(
+        canvas: Canvas,
+        center: Point,
+        barriers: List<Vector>,
+        measure: Measure<Double, Double>,
+    ) {
+//        val offset = center - (player.point + measure)
+//        val offset = offsetOf(
+//            dX = center.x - measure.transform(player.point.x),
+//            dY = center.y - measure.transform(player.point.y),
+//        )
+        val offset = center.toOffsetMeasured(player.point, measure)
+        barriers.forEach { barrier ->
+            barrier + measure
+            canvas.drawLine(
+                color = Color.GREEN,
+                vector = barrier.map(measure, offset),
+                lineWidth = 1f,
+            )
+        }
+    }
+
+    private fun onRenderTriangles(
+        canvas: Canvas,
+        center: Point,
+        player: Player,
+        barriers: List<Vector>,
+        measure: Measure<Double, Double>,
+    ) {
+        val colors = listOf(
+            Color.YELLOW,
+            Color.RED,
+            Color.BLUE,
+            Color.GREEN,
+        )
+//        val offset = center - (player.point + measure)
+//        val offset = offsetOf(
+//            dX = center.x - measure.transform(player.point.x),
+//            dY = center.y - measure.transform(player.point.y),
+//        )
+        val offset = center.toOffsetMeasured(player.point, measure)
+        barriers.forEachIndexed { index, barrier ->
+            val color = colors[index % colors.size]
+//            val ab = vectorOf(
+//                startX = player.point.x + offset.dX,
+//                startY = player.point.y + offset.dY,
+//                finishX = barrier.start.x + offset.dX,
+//                finishY = barrier.start.y + offset.dY,
+//            )
+            val ab = (player.point + barrier.start).map(measure, offset)
+            canvas.drawLine(
+                color = color,
+                vector = ab,
+                lineWidth = 1f,
+            )
+            // todo
+        }
     }
 
     override fun onRender(canvas: Canvas) {
@@ -184,42 +271,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         if (!offset.isEmpty()) {
             player.direction.expected = angleOf(offset).radians()
             val dirDiff = player.direction.diff()
-//            val dirDiff = kotlin.math.PI - player.direction.diff().absoluteValue
             if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
-//                val difference = player.direction.actual - player.direction.expected
-//                val d = Player.Direction.speed.length(diff)
-//                if (d > difference.absoluteValue) {
-//                    player.direction.actual = player.direction.expected
-//                } else {
-//                    val actual: Double = if (difference.absoluteValue > kotlin.math.PI) {
-//                        player.direction.actual + d * difference / difference.absoluteValue
-//                    } else {
-//                        player.direction.actual + d * difference / difference.absoluteValue * -1
-//                    }
-//                    player.direction.actual = actual.ct()
-//                }
                 val alpha = player.directionSpeed.length(timeDiff)
-//                val k = angle / angle.absoluteValue
                 if (alpha > dirDiff.absoluteValue) {
                     player.direction.commit()
                 } else {
-                    //
-//                  //val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
-//                  //val m = (kotlin.math.PI - angle.absoluteValue).baz().orDefault(1.0)
-                    //val m = (kotlin.math.PI - dirDiff.absoluteValue).sign.orDefault()
-//                  //  val actual = player.direction.actual - alpha * k * m
-                    //val actual = player.direction.actual - alpha * dirDiff.baz() * m
-//                    val k = (kotlin.math.PI - dirDiff).baz().orDefault(1.0)
                     val k = dirDiff.absoluteValue.whc().ifNaN(1.0)
                     val m = dirDiff.dby()
                     val actual = player.direction.actual + alpha * m * k
                     player.direction.actual = actual.radians()
-                    //
                 }
-//                val m = (kotlin.math.PI - angle.absoluteValue) / (kotlin.math.PI - angle.absoluteValue).absoluteValue
-//                val actual = player.direction.actual - alpha * k * m
-//                player.direction.actual = actual.ct()
-//                player.direction.actual += Player.Direction.speed.length(diff)
             }
             player.point.move(
                 length = player.speed.length(timeDiff),
@@ -243,6 +304,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             edgeCount = 16,
             lineWidth = 1f
         )
+        onRenderBarriers(
+            canvas = canvas,
+            center = center,
+            barriers = barriers,
+            measure = measure,
+        ) // todo
+        onRenderTriangles(
+            canvas = canvas,
+            player = player,
+            center = center,
+            barriers = barriers,
+            measure = measure,
+        ) // todo
         debug(canvas)
         // todo
     }
