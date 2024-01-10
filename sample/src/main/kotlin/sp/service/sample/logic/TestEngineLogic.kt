@@ -17,11 +17,14 @@ import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
+import sp.kx.math.center
 import sp.kx.math.centerPoint
 import sp.kx.math.dby
+import sp.kx.math.distanceOf
 import sp.kx.math.eq
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
+import sp.kx.math.length
 import sp.kx.math.map
 import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
@@ -191,6 +194,46 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun getPerpendicular(
+        aX: Double,
+        aY: Double,
+        bX: Double,
+        bY: Double,
+        cX: Double,
+        cY: Double
+    ): Point {
+        if (bX == cX) return pointOf(x = bX, y = aY)
+        if (bY == cY) return pointOf(x = aX, y = bY)
+        val b = (bY * cX - cY * bX) / (cX - bX)
+        val k = (bY - b) / bX
+        val kH = -1 / k
+        val bH = aY - kH * aX
+        val hX = (b - bH) / (kH - k)
+        return pointOf(
+            x = hX,
+            y = k * hX + b
+        )
+    }
+
+    private fun getShortest(
+        xStart: Double,
+        yStart: Double,
+        xFinish: Double,
+        yFinish: Double,
+        xTarget: Double,
+        yTarget: Double
+    ): Double {
+        val dX = xFinish - xStart
+        val dY = yFinish - yStart
+        val d = kotlin.math.sqrt(dY * dY + dX * dX)
+        val dS = kotlin.math.sqrt((yStart - yTarget) * (yStart - yTarget) + (xStart - xTarget) * (xStart - xTarget))
+        val dF = kotlin.math.sqrt((yFinish - yTarget) * (yFinish - yTarget) + (xFinish - xTarget) * (xFinish - xTarget))
+        val shortest = (dY * xTarget - dX * yTarget + xFinish * yStart - yFinish * xStart).absoluteValue / d
+        if (kotlin.math.sqrt(dS * dS - shortest * shortest) > d) return dF
+        if (kotlin.math.sqrt(dF * dF - shortest * shortest) > d) return dS
+        return shortest
+    }
+
     private fun onRenderTriangles(
         canvas: Canvas,
         center: Point,
@@ -204,6 +247,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Color.BLUE,
             Color.GREEN,
         )
+        val info = FontInfoUtil.getFontInfo(height = 16f)
 //        val offset = center - (player.point + measure)
 //        val offset = offsetOf(
 //            dX = center.x - measure.transform(player.point.x),
@@ -224,7 +268,64 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = ab,
                 lineWidth = 1f,
             )
-            // todo
+            canvas.drawText(
+                color = color,
+                info = info,
+                pointTopLeft = ab.center(),
+                text = distanceOf(a = player.point, b = barrier.start).toString(total = 4, points = 2),
+            )
+            val ac = (player.point + barrier.finish).map(measure, offset)
+            canvas.drawLine(
+                color = color,
+                vector = ac,
+                lineWidth = 1f
+            )
+            canvas.drawText(
+                color = color,
+                info = info,
+                pointTopLeft = ac.center(),
+                text = distanceOf(a = player.point, b = barrier.finish).toString(total = 4, points = 2),
+            )
+            val bc = ab.finish + ac.finish
+            val perpendicular = getPerpendicular(
+                aX = player.point.x,
+                aY = player.point.y,
+                bX = barrier.start.x,
+                bY = barrier.start.y,
+                cX = barrier.finish.x,
+                cY = barrier.finish.y,
+            )
+            val aH = (player.point + perpendicular).map(measure, offset)
+//            val aH = player.point.toVector(
+//                finish = barrier.getPerpendicular(target = point),
+//                offset = offset
+//            )
+            canvas.drawLine(
+                color = color,
+                vector = aH,
+                lineWidth = 1f,
+            )
+            val tPoint = bc.center()
+            canvas.drawText(
+                color = color,
+                info = info,
+                pointTopLeft = tPoint,
+                text = (player.point + perpendicular).length().toString(total = 4, points = 2),
+            )
+            val shortest = getShortest(
+                xStart = barrier.start.x,
+                yStart = barrier.start.y,
+                xFinish = barrier.finish.x,
+                yFinish = barrier.finish.y,
+                xTarget = player.point.x,
+                yTarget = player.point.y,
+            )
+            canvas.drawText(
+                color = color,
+                info = info,
+                pointTopLeft = tPoint.plus(dX = 0.0, dY = info.height.toDouble()),
+                text = shortest.toString(total = 4, points = 2),
+            )
         }
     }
 

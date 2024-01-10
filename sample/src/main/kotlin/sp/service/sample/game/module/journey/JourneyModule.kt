@@ -38,10 +38,6 @@ private fun Double.isSame(that: Double, epsilon: Double): Boolean {
     return (this - that).absoluteValue < epsilon
 }
 
-private fun Point.isSame(that: Point, epsilon: Double): Boolean {
-    return x.isSame(that.x, epsilon = epsilon) && y.isSame(that.y, epsilon = epsilon)
-}
-
 private fun getPerpendicular(
     aX: Double,
     aY: Double,
