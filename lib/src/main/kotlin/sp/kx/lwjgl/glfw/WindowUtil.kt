@@ -16,6 +16,7 @@ import sp.kx.lwjgl.system.checked
 import sp.kx.math.Point
 import sp.kx.math.Size
 import sp.kx.math.Vector
+import sp.kx.math.measure.Measure
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import java.io.PrintStream
@@ -59,6 +60,7 @@ object WindowUtil {
     }
 
     private class WindowCanvas(private val fontDrawer: FontDrawer) : Canvas {
+        override val vectors: Canvas.VectorDrawer = GLVectorDrawer
 
         override fun drawPoint(color: Color, point: Point) {
             GLUtil.colorOf(color)
@@ -83,15 +85,6 @@ object WindowUtil {
                 points.forEach {
                     GLUtil.vertexOf(it)
                 }
-            }
-        }
-
-        override fun drawLine(color: Color, vector: Vector, lineWidth: Float) {
-            GL11.glLineWidth(lineWidth)
-            GLUtil.colorOf(color)
-            GLUtil.transaction(GL11.GL_LINE_STRIP) {
-                GLUtil.vertexOf(vector.start)
-                GLUtil.vertexOf(vector.finish)
             }
         }
 

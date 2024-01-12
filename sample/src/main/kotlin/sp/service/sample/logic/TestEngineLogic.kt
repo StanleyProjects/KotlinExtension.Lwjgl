@@ -149,13 +149,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
-    private fun Point.toOffset(other: Point, measure: Measure<Double, Double>): Offset {
-        return offsetOf(
-            dX = x - other.x,
-            dY = y - other.y,
-        )
-    }
-
+//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
     private fun Point.toOffsetMeasured(other: Point, measure: Measure<Double, Double>): Offset {
         return offsetOf(
             dX = x - measure.transform(other.x),
@@ -163,6 +157,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
     private fun Vector.map(measure: Measure<Double, Double>, offset: Offset): Vector {
         return vectorOf(
             startX = measure.transform(start.x) + offset.dX,
@@ -174,26 +169,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun onRenderBarriers(
         canvas: Canvas,
-        center: Point,
+        offset: Offset,
         barriers: List<Vector>,
         measure: Measure<Double, Double>,
     ) {
-//        val offset = center - (player.point + measure)
-//        val offset = offsetOf(
-//            dX = center.x - measure.transform(player.point.x),
-//            dY = center.y - measure.transform(player.point.y),
-//        )
-        val offset = center.toOffsetMeasured(player.point, measure)
         barriers.forEach { barrier ->
-            barrier + measure
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = Color.GREEN,
-                vector = barrier.map(measure, offset),
+                vector = barrier,
+                offset = offset,
+                measure = measure,
                 lineWidth = 1f,
             )
         }
     }
 
+//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
     private fun getPerpendicular(
         aX: Double,
         aY: Double,
@@ -248,12 +239,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Color.GREEN,
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
-//        val offset = center - (player.point + measure)
-//        val offset = offsetOf(
-//            dX = center.x - measure.transform(player.point.x),
-//            dY = center.y - measure.transform(player.point.y),
-//        )
-        val offset = center.toOffsetMeasured(player.point, measure)
+        val offset = center - player.point
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
 //            val ab = vectorOf(
@@ -262,7 +248,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                finishX = barrier.start.x + offset.dX,
 //                finishY = barrier.start.y + offset.dY,
 //            )
-            val ab = (player.point + barrier.start).map(measure, offset)
+            val ab = (player.point + barrier.start) + offset + measure
             canvas.drawLine(
                 color = color,
                 vector = ab,
@@ -274,7 +260,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 pointTopLeft = ab.center(),
                 text = distanceOf(a = player.point, b = barrier.start).toString(total = 4, points = 2),
             )
-            val ac = (player.point + barrier.finish).map(measure, offset)
+            val ac = (player.point + barrier.finish) + offset + measure
             canvas.drawLine(
                 color = color,
                 vector = ac,
@@ -295,7 +281,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 cX = barrier.finish.x,
                 cY = barrier.finish.y,
             )
-            val aH = (player.point + perpendicular).map(measure, offset)
+            val aH = (player.point + perpendicular) + offset + measure
 //            val aH = player.point.toVector(
 //                finish = barrier.getPerpendicular(target = point),
 //                offset = offset
@@ -339,18 +325,23 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             color = Color.GREEN,
             text = fps.toString(6, 2)
         )
-        val center = engine.property.pictureSize.centerPoint()
-        val relative = center - (player.point + measure)
-        measure.transform(2.0).also { length ->
+//        val center = engine.property.pictureSize.centerPoint()
+        val center = pointOf(
+            x = measure.units(engine.property.pictureSize.width / 2),
+            y = measure.units(engine.property.pictureSize.height / 2),
+        )
+//        val relative = center - (player.point + measure)
+        val relative = center - player.point
+        2.0.also { length ->
             canvas.drawLine(
                 color = Color.GREEN,
-                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length, relative),
-                lineWidth = 1f
+                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length, relative) + measure,
+                lineWidth = 1f,
             )
             canvas.drawLine(
                 color = Color.GREEN,
-                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0, relative),
-                lineWidth = 1f
+                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0, relative) + measure,
+                lineWidth = 1f,
             )
         }
         /*
@@ -390,24 +381,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         canvas.drawLine(
             color = Color.WHITE,
-            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.actual),
+            vector = vectorOf(center, length = player.radius, angle = player.direction.actual) + measure,
             lineWidth = 1f
         )
         canvas.drawLine(
             color = Color.YELLOW,
-            vector = vectorOf(center, length = measure.transform(player.radius), angle = player.direction.expected),
+            vector = vectorOf(center, length = player.radius, angle = player.direction.expected) + measure,
             lineWidth = 1f,
         )
         canvas.drawCircle(
             color = Color.WHITE,
-            pointCenter = center,
+            pointCenter = center + measure,
             radius = measure.transform(player.radius),
             edgeCount = 16,
             lineWidth = 1f
         )
         onRenderBarriers(
             canvas = canvas,
-            center = center,
+            offset = relative,
             barriers = barriers,
             measure = measure,
         ) // todo

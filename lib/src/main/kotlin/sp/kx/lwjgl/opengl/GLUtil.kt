@@ -2,7 +2,9 @@ package sp.kx.lwjgl.opengl
 
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Color
+import sp.kx.math.Offset
 import sp.kx.math.Point
+import sp.kx.math.measure.Measure
 
 object GLUtil {
     fun clearColor(color: Color) {
@@ -23,6 +25,18 @@ object GLUtil {
 
     fun vertexOf(point: Point) {
         vertexOf(point.x, point.y)
+    }
+
+    fun vertexOf(point: Point, measure: Measure<Double, Double>) {
+        vertexOf(measure.transform(point.x), measure.transform(point.y))
+    }
+
+    fun vertexOf(point: Point, offset: Offset) {
+        vertexOf(point.x + offset.dX, point.y + offset.dY)
+    }
+
+    fun vertexOf(point: Point, offset: Offset, measure: Measure<Double, Double>) {
+        vertexOf(measure.transform(point.x + offset.dX), measure.transform(point.y + offset.dY))
     }
 
     fun transaction(mode: Int, block: () -> Unit) {

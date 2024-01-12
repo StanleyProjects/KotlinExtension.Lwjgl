@@ -74,7 +74,6 @@ private fun getPerpendicular(
     )
 }
 
-
 private fun getShortest(
     xStart: Double,
     yStart: Double,
