@@ -9,6 +9,8 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.TextDrawer
+import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
@@ -60,22 +62,14 @@ object WindowUtil {
     }
 
     private class WindowCanvas(private val fontDrawer: FontDrawer) : Canvas {
-        override val vectors: Canvas.VectorDrawer = GLVectorDrawer
+        override val vectors: VectorDrawer = GLVectorDrawer
+        override val texts: TextDrawer = GLTextDrawer(fontDrawer = fontDrawer)
 
         override fun drawPoint(color: Color, point: Point) {
             GLUtil.colorOf(color)
             GLUtil.transaction(GL11.GL_POINTS) {
                 GLUtil.vertexOf(point)
             }
-        }
-
-        override fun drawText(color: Color, info: FontInfo, pointTopLeft: Point, text: CharSequence) {
-            fontDrawer.drawText(
-                info = info,
-                pointTopLeft = pointTopLeft,
-                color = color,
-                text = text
-            )
         }
 
         override fun drawLineLoop(color: Color, points: Iterable<Point>, lineWidth: Float) {

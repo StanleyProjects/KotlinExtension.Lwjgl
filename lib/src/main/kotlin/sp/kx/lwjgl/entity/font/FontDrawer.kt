@@ -7,7 +7,8 @@ interface FontDrawer {
     fun drawText(
         info: FontInfo,
         color: Color,
-        pointTopLeft: Point,
-        text: CharSequence
+        xTopLeft: Double,
+        yTopLeft: Double,
+        text: CharSequence,
     )
 }

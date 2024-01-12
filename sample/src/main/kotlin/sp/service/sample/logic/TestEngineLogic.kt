@@ -149,24 +149,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
-//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
-    private fun Point.toOffsetMeasured(other: Point, measure: Measure<Double, Double>): Offset {
-        return offsetOf(
-            dX = x - measure.transform(other.x),
-            dY = y - measure.transform(other.y),
-        )
-    }
-
-//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
-    private fun Vector.map(measure: Measure<Double, Double>, offset: Offset): Vector {
-        return vectorOf(
-            startX = measure.transform(start.x) + offset.dX,
-            startY = measure.transform(start.y) + offset.dY,
-            finishX = measure.transform(finish.x) + offset.dX,
-            finishY = measure.transform(finish.y) + offset.dY,
-        )
-    }
-
     private fun onRenderBarriers(
         canvas: Canvas,
         offset: Offset,
@@ -227,7 +209,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun onRenderTriangles(
         canvas: Canvas,
-        center: Point,
+        offset: Offset,
         player: Player,
         barriers: List<Vector>,
         measure: Measure<Double, Double>,
@@ -239,7 +221,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Color.GREEN,
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
-        val offset = center - player.point
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
 //            val ab = vectorOf(
@@ -248,28 +229,36 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                finishX = barrier.start.x + offset.dX,
 //                finishY = barrier.start.y + offset.dY,
 //            )
-            val ab = (player.point + barrier.start) + offset + measure
-            canvas.drawLine(
+            val ab = player.point + barrier.start
+            canvas.vectors.draw(
                 color = color,
                 vector = ab,
+                offset = offset,
+                measure = measure,
                 lineWidth = 1f,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = ab.center(),
+                offset = offset,
+                measure = measure,
                 text = distanceOf(a = player.point, b = barrier.start).toString(total = 4, points = 2),
             )
-            val ac = (player.point + barrier.finish) + offset + measure
-            canvas.drawLine(
+            val ac = player.point + barrier.finish
+            canvas.vectors.draw(
                 color = color,
                 vector = ac,
-                lineWidth = 1f
+                offset = offset,
+                measure = measure,
+                lineWidth = 1f,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = ac.center(),
+                offset = offset,
+                measure = measure,
                 text = distanceOf(a = player.point, b = barrier.finish).toString(total = 4, points = 2),
             )
             val bc = ab.finish + ac.finish
@@ -281,22 +270,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 cX = barrier.finish.x,
                 cY = barrier.finish.y,
             )
-            val aH = (player.point + perpendicular) + offset + measure
-//            val aH = player.point.toVector(
-//                finish = barrier.getPerpendicular(target = point),
-//                offset = offset
-//            )
-            canvas.drawLine(
+            val aH = player.point + perpendicular
+            canvas.vectors.draw(
                 color = color,
                 vector = aH,
+                offset = offset,
+                measure = measure,
                 lineWidth = 1f,
             )
             val tPoint = bc.center()
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = tPoint,
-                text = (player.point + perpendicular).length().toString(total = 4, points = 2),
+                offset = offset,
+                measure = measure,
+                text = aH.length().toString(total = 4, points = 2),
             )
             val shortest = getShortest(
                 xStart = barrier.start.x,
@@ -306,10 +295,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 xTarget = player.point.x,
                 yTarget = player.point.y,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
-                pointTopLeft = tPoint.plus(dX = 0.0, dY = info.height.toDouble()),
+                pointTopLeft = tPoint.plus(dX = 0.0, dY = 1.0),
+                offset = offset,
+                measure = measure,
                 text = shortest.toString(total = 4, points = 2),
             )
         }
@@ -331,16 +322,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             y = measure.units(engine.property.pictureSize.height / 2),
         )
 //        val relative = center - (player.point + measure)
-        val relative = center - player.point
+        val offset = center - player.point
         2.0.also { length ->
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = Color.GREEN,
-                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length, relative) + measure,
+                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length),
+                offset = offset,
+                measure = measure,
                 lineWidth = 1f,
             )
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = Color.GREEN,
-                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0, relative) + measure,
+                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0),
+                offset = offset,
+                measure = measure,
                 lineWidth = 1f,
             )
         }
@@ -359,9 +354,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             lineWidth = 1f
         )
         */
-        val offset = engine.input.keyboard.getPlayerOffset()
-        if (!offset.isEmpty()) {
-            player.direction.expected = angleOf(offset).radians()
+        val playerOffset = engine.input.keyboard.getPlayerOffset()
+        if (!playerOffset.isEmpty()) {
+            player.direction.expected = angleOf(playerOffset).radians()
             val dirDiff = player.direction.diff()
             if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
                 val alpha = player.directionSpeed.length(timeDiff)
@@ -398,14 +393,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         onRenderBarriers(
             canvas = canvas,
-            offset = relative,
+            offset = offset,
             barriers = barriers,
             measure = measure,
         ) // todo
         onRenderTriangles(
             canvas = canvas,
             player = player,
-            center = center,
+            offset = offset,
             barriers = barriers,
             measure = measure,
         ) // todo

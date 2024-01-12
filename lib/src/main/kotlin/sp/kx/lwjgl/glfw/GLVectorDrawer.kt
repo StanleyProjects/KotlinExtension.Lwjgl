@@ -1,14 +1,14 @@
 package sp.kx.lwjgl.glfw
 
 import org.lwjgl.opengl.GL11
-import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
 import sp.kx.math.Vector
 import sp.kx.math.measure.Measure
 
-internal object GLVectorDrawer : Canvas.VectorDrawer {
+internal object GLVectorDrawer : VectorDrawer {
     override fun draw(color: Color, vector: Vector, lineWidth: Float) {
         GL11.glLineWidth(lineWidth)
         GLUtil.colorOf(color)

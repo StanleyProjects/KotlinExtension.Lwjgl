@@ -26,17 +26,16 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
 
     private fun drawText(
         info: STBFontInfo,
-        pointTopLeft: Point,
+        xTopLeft: Double,
+        yTopLeft: Double,
         color: Color,
-        text: CharSequence
+        text: CharSequence,
     ) {
-        val x = pointTopLeft.x
         val fontHeight = info.metrics.ascent - info.metrics.descent
-        val y = pointTopLeft.y + info.metrics.ascent
         val xBuffer = BufferUtils.createFloatBuffer(1)
         val yBuffer = BufferUtils.createFloatBuffer(1)
-        xBuffer.put(0, x.toFloat())
-        yBuffer.put(0, y.toFloat())
+        xBuffer.put(0, xTopLeft.toFloat())
+        yBuffer.put(0, (yTopLeft + info.metrics.ascent).toFloat())
 
         GLUtil.enabled(GL11.GL_TEXTURE_2D) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, info.textureId)
@@ -65,7 +64,13 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
         }
     }
 
-    override fun drawText(info: FontInfo, color: Color, pointTopLeft: Point, text: CharSequence) {
-        drawText(storage.getInfo(info), pointTopLeft, color, text)
+    override fun drawText(
+        info: FontInfo,
+        color: Color,
+        xTopLeft: Double,
+        yTopLeft: Double,
+        text: CharSequence,
+    ) {
+        drawText(storage.getInfo(info), xTopLeft = xTopLeft, yTopLeft = yTopLeft, color, text)
     }
 }
