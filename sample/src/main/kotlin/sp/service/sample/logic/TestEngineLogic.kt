@@ -14,18 +14,17 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
-import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
-import sp.kx.math.centerPoint
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
+import sp.kx.math.getPerpendicular
+import sp.kx.math.getShortest
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
 import sp.kx.math.length
-import sp.kx.math.map
 import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableSpeed
@@ -35,13 +34,11 @@ import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
-import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.toString
-import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
@@ -166,47 +163,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-//    @Deprecated(message = "", level = DeprecationLevel.ERROR) // todo
-    private fun getPerpendicular(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double
-    ): Point {
-        if (bX == cX) return pointOf(x = bX, y = aY)
-        if (bY == cY) return pointOf(x = aX, y = bY)
-        val b = (bY * cX - cY * bX) / (cX - bX)
-        val k = (bY - b) / bX
-        val kH = -1 / k
-        val bH = aY - kH * aX
-        val hX = (b - bH) / (kH - k)
-        return pointOf(
-            x = hX,
-            y = k * hX + b
-        )
-    }
-
-    private fun getShortest(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double,
-        xTarget: Double,
-        yTarget: Double
-    ): Double {
-        val dX = xFinish - xStart
-        val dY = yFinish - yStart
-        val d = kotlin.math.sqrt(dY * dY + dX * dX)
-        val dS = kotlin.math.sqrt((yStart - yTarget) * (yStart - yTarget) + (xStart - xTarget) * (xStart - xTarget))
-        val dF = kotlin.math.sqrt((yFinish - yTarget) * (yFinish - yTarget) + (xFinish - xTarget) * (xFinish - xTarget))
-        val shortest = (dY * xTarget - dX * yTarget + xFinish * yStart - yFinish * xStart).absoluteValue / d
-        if (kotlin.math.sqrt(dS * dS - shortest * shortest) > d) return dF
-        if (kotlin.math.sqrt(dF * dF - shortest * shortest) > d) return dS
-        return shortest
-    }
-
     private fun onRenderTriangles(
         canvas: Canvas,
         offset: Offset,
@@ -262,14 +218,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 text = distanceOf(a = player.point, b = barrier.finish).toString(total = 4, points = 2),
             )
             val bc = ab.finish + ac.finish
-            val perpendicular = getPerpendicular(
-                aX = player.point.x,
-                aY = player.point.y,
-                bX = barrier.start.x,
-                bY = barrier.start.y,
-                cX = barrier.finish.x,
-                cY = barrier.finish.y,
-            )
+            val perpendicular = barrier.getPerpendicular(target = player.point)
             val aH = player.point + perpendicular
             canvas.vectors.draw(
                 color = color,
@@ -287,14 +236,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
                 text = aH.length().toString(total = 4, points = 2),
             )
-            val shortest = getShortest(
-                xStart = barrier.start.x,
-                yStart = barrier.start.y,
-                xFinish = barrier.finish.x,
-                yFinish = barrier.finish.y,
-                xTarget = player.point.x,
-                yTarget = player.point.y,
-            )
+            val shortest = barrier.getShortest(target = player.point)
             canvas.texts.draw(
                 color = color,
                 info = info,
