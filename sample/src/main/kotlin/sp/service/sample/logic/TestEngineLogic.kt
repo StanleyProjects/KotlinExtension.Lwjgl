@@ -14,9 +14,11 @@ import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
+import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
+import sp.kx.math.contains
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
@@ -34,11 +36,13 @@ import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
+import sp.kx.math.moved
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
@@ -146,6 +150,209 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
+    private fun getSlope(
+        xStart: Double,
+        yStart: Double,
+        xFinish: Double,
+        yFinish: Double,
+    ): Double {
+        return (yFinish - yStart) / (xFinish - xStart)
+    }
+
+    private fun isCollinear(
+        xStart: Double,
+        yStart: Double,
+        xFinish: Double,
+        yFinish: Double,
+        xTarget: Double,
+        yTarget: Double,
+    ): Boolean {
+        return (yFinish - yStart) * (xTarget - xFinish) - (xFinish - xStart) * (yTarget - yFinish) == 0.0
+    }
+
+    private fun isCollinear(
+        aX: Double,
+        aY: Double,
+        bX: Double,
+        bY: Double,
+        cX: Double,
+        cY: Double,
+        dX: Double,
+        dY: Double,
+    ): Boolean {
+        return isCollinear(
+            xStart = aX,
+            yStart = aY,
+            xFinish = bX,
+            yFinish = bY,
+            xTarget = cX,
+            yTarget = cY,
+        ) && isCollinear(
+            xStart = aX,
+            yStart = aY,
+            xFinish = bX,
+            yFinish = bY,
+            xTarget = dX,
+            yTarget = dY,
+        )
+    }
+
+    private fun isParallel(
+        aX: Double,
+        aY: Double,
+        bX: Double,
+        bY: Double,
+        cX: Double,
+        cY: Double,
+        dX: Double,
+        dY: Double,
+    ): Boolean {
+        val slope1 = getSlope(
+            xStart = aX,
+            yStart = aY,
+            xFinish = bX,
+            yFinish = bY,
+        )
+        val slope2 = getSlope(
+            xStart = cX,
+            yStart = cY,
+            xFinish = dX,
+            yFinish = dY,
+        )
+        return slope1 == slope2
+    }
+
+    private fun getIntersectionPointOrNull(
+        v1: Vector,
+        v2: Vector,
+    ): Point? {
+        return getIntersectionPointOrNull(
+            aX = v1.start.x,
+            aY = v1.start.y,
+            bX = v1.finish.x,
+            bY = v1.finish.y,
+            cX = v2.start.x,
+            cY = v2.start.y,
+            dX = v2.finish.x,
+            dY = v2.finish.y,
+        )
+    }
+
+    private fun isCollinear(
+        v1: Vector,
+        v2: Vector,
+    ): Boolean {
+        return isCollinear(
+            aX = v1.start.x,
+            aY = v1.start.y,
+            bX = v1.finish.x,
+            bY = v1.finish.y,
+            cX = v2.start.x,
+            cY = v2.start.y,
+            dX = v2.finish.x,
+            dY = v2.finish.y,
+        )
+    }
+
+    private fun getIntersectionPointOrNull(
+        aX: Double,
+        aY: Double,
+        bX: Double,
+        bY: Double,
+        cX: Double,
+        cY: Double,
+        dX: Double,
+        dY: Double,
+    ): Point? {
+        val isCollinear = isCollinear(
+            aX = aX,
+            aY = aY,
+            bX = bX,
+            bY = bY,
+            cX = cX,
+            cY = cY,
+            dX = dX,
+            dY = dY,
+        )
+        if (isCollinear) {
+            val cContains = contains(
+                xStart = aX,
+                yStart = aY,
+                xFinish = bX,
+                yFinish = bY,
+                xTarget = cX,
+                yTarget = cY,
+            )
+            if (cContains) return pointOf(x = cX, y = cY)
+            val dContains = contains(
+                xStart = aX,
+                yStart = aY,
+                xFinish = bX,
+                yFinish = bY,
+                xTarget = dX,
+                yTarget = dY,
+            )
+            if (dContains) return pointOf(x = dX, y = dY)
+            TODO("isCollinear: $isCollinear!")
+        }
+        val isParallel = isParallel(
+            aX = aX,
+            aY = aY,
+            bX = bX,
+            bY = bY,
+            cX = cX,
+            cY = cY,
+            dX = dX,
+            dY = dY,
+        )
+        if (isParallel) return null
+        val xT = (aX * bY - aY * bX) * (cX - dX) - (aX - bX) * (cX * dY - cY * dX)
+        val xB = (aX - bX) * (cY - dY) - (aY - bY) * (cX - dX)
+        val x = xT / xB
+        val yT = (aX * bY - aY * bX) * (cY - dY) - (aY - bY) * (cX * dY - cY * dX)
+        val yB = (aX - bX) * (cY - dY) - (aY - bY) * (cX - dX)
+        val y = yT / yB
+        return pointOf(x = x, y = y)
+    }
+
+    private fun onRenderIntersections(
+        canvas: Canvas,
+        actual: Point,
+        target: Point,
+        offset: Offset,
+        barriers: List<Vector>,
+        measure: Measure<Double, Double>,
+    ) {
+        val info = FontInfoUtil.getFontInfo(height = 16f)
+        barriers.forEachIndexed { index, barrier ->
+//            val isCollinear = isCollinear(v1 = barrier, v2 = actual + target)
+//            if (isCollinear) {
+//                println("$index] collinear")
+//            }
+            val intersection = getIntersectionPointOrNull(
+                v1 = barrier,
+                v2 = actual + target,
+            )
+            if (intersection != null) {
+                canvas.vectors.draw(
+                    color = Color.YELLOW,
+                    vector = intersection + intersection.moved(length = 0.1),
+                    offset = offset,
+                    measure = measure,
+                    lineWidth = 3f,
+                )
+                canvas.texts.draw(
+                    color = Color.YELLOW,
+                    info = info,
+                    pointTopLeft = intersection.moved(length = 0.2),
+                    offset = offset,
+                    measure = measure,
+                    text = "$index]",
+                )
+            }
+        }
+    }
+
     private fun onRenderBarriers(
         canvas: Canvas,
         offset: Offset,
@@ -248,6 +455,47 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun getFinalPoint(
+        player: Player,
+        target: Point,
+        barriers: List<Vector>,
+    ): Point? {
+        val filtered = barriers.filter {
+            it.getShortest(target) < player.radius
+        }
+        if (filtered.isEmpty()) {
+            return target
+        }
+//        val intersections = filtered.mapNotNull {
+//            getIntersectionPointOrNull(
+//                v1 = it,
+//                v2 = player.point + target,
+//            )
+//        } // todo
+        return null // todo
+    }
+
+    private fun allowed(
+        player: Player,
+        target: Point,
+        barriers: List<Vector>,
+    ): Boolean {
+        val filtered = barriers.filter {
+            it.getShortest(target) < player.radius
+        }
+        if (filtered.isEmpty()) {
+            return true
+        }
+//        val intersections = filtered.mapNotNull {
+//            getIntersectionPointOrNull(
+//                v1 = it,
+//                v2 = player.point + target,
+//            )
+//        } // todo
+        return false // todo
+//        return true // todo
+    }
+
     override fun onRender(canvas: Canvas) {
         val padding = measure.transform(1.0)
         val timeDiff = engine.property.time.diff()
@@ -311,10 +559,38 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     player.direction.actual = actual.radians()
                 }
             }
-            player.point.move(
+            val target = player.point.moved(
                 length = player.speed.length(timeDiff),
                 angle = player.direction.expected,
             )
+            val finalPoint = getFinalPoint(
+                player = player,
+                target = target,
+                barriers = barriers,
+            )
+            if (finalPoint != null) {
+                player.point.set(finalPoint)
+            }
+//            val allowed = allowed(
+//                player = player,
+//                target = target,
+//                barriers = barriers,
+//            )
+//            if (allowed) {
+//                player.point.set(target)
+//            } // todo
+//            onRenderIntersections(
+//                canvas = canvas,
+//                actual = player.point,
+//                target = target,
+//                offset = offset,
+//                barriers = barriers,
+//                measure = measure,
+//            ) // todo
+//            player.point.move(
+//                length = player.speed.length(timeDiff),
+//                angle = player.direction.expected,
+//            ) // todo
         }
         canvas.drawLine(
             color = Color.WHITE,
@@ -339,13 +615,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             barriers = barriers,
             measure = measure,
         ) // todo
-        onRenderTriangles(
-            canvas = canvas,
-            player = player,
-            offset = offset,
-            barriers = barriers,
-            measure = measure,
-        ) // todo
+//        onRenderTriangles(
+//            canvas = canvas,
+//            player = player,
+//            offset = offset,
+//            barriers = barriers,
+//            measure = measure,
+//        ) // todo
         debug(canvas)
         // todo
     }
