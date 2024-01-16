@@ -19,6 +19,7 @@ import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
 import sp.kx.math.contains
+import sp.kx.math.copy
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
@@ -48,6 +49,7 @@ import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
+import kotlin.math.pow
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player(
@@ -99,10 +101,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return ::shouldEngineStopUnit.isInitialized
     }
 
-    private fun debug(canvas: Canvas) {
+    private fun debug(previous: Point, canvas: Canvas) {
         val padding = measure.transform(1.0)
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
+        val (bi, barrier, shortest) = barriers
+            .mapIndexed { index, it -> Triple(index, it, it.getShortest(player.point)) }
+            .minBy { (_, _, shortest) ->
+                shortest
+            }
+        val currentSpeed = speedOf(magnitude = distanceOf(previous, player.point), engine.property.time.diff())
         val values = listOf(
 //            "x: ${point.x.toString(5, 1)}",
 //            "y: ${point.y.toString(5, 1)}",
@@ -110,11 +118,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            String.format("y: %+05.1f", point.y),
             String.format("x: %7s", String.format("%+.1f", player.point.x)),
             String.format("y: %7s", String.format("%+.1f", player.point.y)),
-            String.format("v: %s", player.speed.toString()),
+            String.format("max speed: %s/s", player.speed.per(TimeUnit.SECONDS).toString(points = 2)),
+            String.format("cur speed: %s/s", currentSpeed.per(TimeUnit.SECONDS).toString(points = 2)),
             String.format("a: %03.2f - %05.1f", player.direction.actual, Math.toDegrees(player.direction.actual)),
             String.format("e: %03.2f - %05.1f", player.direction.expected, Math.toDegrees(player.direction.expected)),
-            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
-            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
+//            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
+//            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
+            String.format("barrier: %s", barrier.toString()),
+            String.format("barrier: $bi] $shortest"),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -457,22 +468,64 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun getFinalPoint(
         player: Player,
+        minLength: Double,
         target: Point,
         barriers: List<Vector>,
     ): Point? {
         val filtered = barriers.filter {
-            it.getShortest(target) < player.radius
+//            it.getShortest(target) < minLength
+            lt(it = it.getShortest(target), other = minLength, points = 12)
         }
         if (filtered.isEmpty()) {
             return target
         }
-//        val intersections = filtered.mapNotNull {
-//            getIntersectionPointOrNull(
-//                v1 = it,
-//                v2 = player.point + target,
-//            )
-//        } // todo
-        return null // todo
+        val intersections = filtered.map {
+            it to getIntersectionPointOrNull(
+                v1 = it,
+                v2 = player.point + target,
+            )
+        } // todo
+        if (intersections.isEmpty()) {
+            println("Intersection points are empty!")
+            return null // todo
+        }
+        if (intersections.size != 1) {
+            println("Intersection size: ${intersections.size}!")
+            return null // todo
+        }
+        val (barrier, intersection) = intersections.single()
+        if (intersection == null) {
+            // dis: 1.414213562373095
+            // min: 1.4142135623730951
+            val shortestBarrier = barriers.firstOrNull {
+//                it.getShortest(target) < minLength
+                lt(it = it.getShortest(target), other = minLength, points = 12)
+            }
+            if (shortestBarrier != null) {
+                println("No intersection with: $barrier!")
+                val distance = shortestBarrier.getShortest(target)
+                println("Shortest barrier: $shortestBarrier\ndistance: $distance\nmin: $minLength")
+                return null // todo
+            }
+//            val allowed = !barriers.any { it.getShortest(target) < minLength}
+//            if (!allowed) {
+//                println("No intersection with $barrier!")
+//                println("Couldn't calculate the final point!")
+//                return null // todo
+//            }
+            return target
+        }
+        // todo check (player.point + target) contains intersection
+        val perpendicular = barrier.getPerpendicular(target = target)
+        val angle = angleOf(a = perpendicular, b = target)
+        val finalPoint = perpendicular.moved(length = minLength, angle = angle)
+//        val barrier = barriers.firstOrNull { it.getShortest(finalPoint) < minLength}
+//        if () {
+//            println("Couldn't calculate the final point!")
+//            return null // todo
+//        }
+        return finalPoint
+//        return null // todo
     }
 
     private fun allowed(
@@ -496,7 +549,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //        return true // todo
     }
 
+    private fun lt(it: Double, other: Double, points: Int): Boolean {
+        val diff = it - other
+        return (diff).absoluteValue > 10.0.pow(-points) && diff < 0
+    }
+
     override fun onRender(canvas: Canvas) {
+        val previous = player.point.copy()
         val padding = measure.transform(1.0)
         val timeDiff = engine.property.time.diff()
         val fps = engine.property.time.frequency()
@@ -545,6 +604,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         */
         val playerOffset = engine.input.keyboard.getPlayerOffset()
+        onRenderIntersections(
+            canvas = canvas,
+            actual = player.point,
+            target = player.point.moved(
+                length = player.speed.length(timeDiff),
+                angle = player.direction.expected,
+            ),
+            offset = offset,
+            barriers = barriers,
+            measure = measure,
+        ) // todo
         if (!playerOffset.isEmpty()) {
             player.direction.expected = angleOf(playerOffset).radians()
             val dirDiff = player.direction.diff()
@@ -563,8 +633,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 length = player.speed.length(timeDiff),
                 angle = player.direction.expected,
             )
+//            onRenderIntersections(
+//                canvas = canvas,
+//                actual = player.point,
+//                target = target,
+//                offset = offset,
+//                barriers = barriers,
+//                measure = measure,
+//            ) // todo
             val finalPoint = getFinalPoint(
                 player = player,
+                minLength = player.radius,
                 target = target,
                 barriers = barriers,
             )
@@ -579,14 +658,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            if (allowed) {
 //                player.point.set(target)
 //            } // todo
-//            onRenderIntersections(
-//                canvas = canvas,
-//                actual = player.point,
-//                target = target,
-//                offset = offset,
-//                barriers = barriers,
-//                measure = measure,
-//            ) // todo
 //            player.point.move(
 //                length = player.speed.length(timeDiff),
 //                angle = player.direction.expected,
@@ -622,7 +693,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            barriers = barriers,
 //            measure = measure,
 //        ) // todo
-        debug(canvas)
+        debug(
+            previous = previous,
+            canvas = canvas,
+        )
         // todo
     }
 }
