@@ -58,8 +58,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val direction: MutableDeviation<Double> = MutableDeviation(0.0, 0.0),
         val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
     ) {
-        val size = sizeOf(width = 2.0, height = 2.0)
+//        private val width = 2.0
+        private val width = 6.0 // todo
+        private val size = sizeOf(width = width, height = width)
         val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
+
+        fun copy(): Player {
+            return Player(
+                point = MutablePoint(x = point.x, y = point.y),
+                speed = MutableSpeed(magnitude = speed.per(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS),
+                direction = MutableDeviation(actual = direction.actual, expected = direction.expected),
+                directionSpeed = MutableSpeed(magnitude = directionSpeed.per(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS),
+            )
+        }
     }
 
     private val player = Player()
@@ -101,7 +112,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return ::shouldEngineStopUnit.isInitialized
     }
 
-    private fun debug(previous: Point, canvas: Canvas) {
+    private fun debug(previous: Player, canvas: Canvas) {
         val padding = measure.transform(1.0)
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
@@ -110,7 +121,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             .minBy { (_, _, shortest) ->
                 shortest
             }
-        val currentSpeed = speedOf(magnitude = distanceOf(previous, player.point), engine.property.time.diff())
+        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, player.point), engine.property.time.diff())
         val values = listOf(
 //            "x: ${point.x.toString(5, 1)}",
 //            "y: ${point.y.toString(5, 1)}",
@@ -125,7 +136,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
 //            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
             String.format("barrier: %s", barrier.toString()),
-            String.format("barrier: $bi] $shortest"),
+            String.format("barrier: $bi] ${shortest.toString(points = 4)}"),
+            String.format("player:radius: ${player.radius.toString(points = 4)}"),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -326,6 +338,71 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return pointOf(x = x, y = y)
     }
 
+    private fun getShortestPoint(
+        xStart: Double,
+        yStart: Double,
+        xFinish: Double,
+        yFinish: Double,
+        xTarget: Double,
+        yTarget: Double,
+    ): Point {
+        val p = getPerpendicular(
+            aX = xTarget,
+            aY = yTarget,
+            bX = xStart,
+            bY = yStart,
+            cX = xFinish,
+            cY = yFinish,
+        )
+        val contains = contains(
+            xStart = xStart,
+            yStart = yStart,
+            xFinish = xFinish,
+            yFinish = yFinish,
+            xTarget = p.x,
+            yTarget = p.y,
+        )
+        if (contains) return p
+        val dS = distanceOf(aX = xStart, aY = yStart, bX = xTarget, bY = yTarget)
+        val dF = distanceOf(aX = xFinish, aY = yFinish, bX = xTarget, bY = yTarget)
+        if (dS < dF) {
+            return pointOf(x = xStart, y = yStart)
+        }
+        return pointOf(x = xFinish, y = yFinish)
+    }
+
+    private fun getShortestPoint(
+        start: Point,
+        finish: Point,
+        target: Point,
+    ): Point {
+        val p = getPerpendicular(
+            b = start,
+            c = finish,
+            a = target,
+        )
+        val contains = contains(
+            xStart = start.x,
+            yStart = start.y,
+            xFinish = finish.x,
+            yFinish = finish.y,
+            xTarget = p.x,
+            yTarget = p.y,
+        )
+        if (contains) return p
+        val dS = distanceOf(a = start, b = target)
+        val dF = distanceOf(a = finish, b = target)
+        return if (dS < dF) start else finish
+    }
+
+    private fun Vector.getShortestPoint(target: Point): Point {
+        return getShortestPoint(
+            start = start,
+            finish = finish,
+            target = target,
+        )
+    }
+
     private fun onRenderIntersections(
         canvas: Canvas,
         actual: Point,
@@ -516,9 +593,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             return target
         }
         // todo check (player.point + target) contains intersection
-        val perpendicular = barrier.getPerpendicular(target = target)
-        val angle = angleOf(a = perpendicular, b = target)
-        val finalPoint = perpendicular.moved(length = minLength, angle = angle)
+        //
+//        val perpendicular = barrier.getPerpendicular(target = target)
+//        val angle = angleOf(a = perpendicular, b = target)
+//        val finalPoint = perpendicular.moved(length = minLength, angle = angle)
+        //
+        val shortestPoint = barrier.getShortestPoint(target = target)
+        val angle = angleOf(a = shortestPoint, b = target)
+        val finalPoint = shortestPoint.moved(length = minLength, angle = angle)
+        //
 //        val barrier = barriers.firstOrNull { it.getShortest(finalPoint) < minLength}
 //        if () {
 //            println("Couldn't calculate the final point!")
@@ -555,7 +638,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     override fun onRender(canvas: Canvas) {
-        val previous = player.point.copy()
+        val previous = player.copy()
         val padding = measure.transform(1.0)
         val timeDiff = engine.property.time.diff()
         val fps = engine.property.time.frequency()
