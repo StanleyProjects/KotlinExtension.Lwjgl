@@ -173,6 +173,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getSlope", level = DeprecationLevel.ERROR)
     private fun getSlope(
         xStart: Double,
         yStart: Double,
@@ -182,6 +183,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return (yFinish - yStart) / (xFinish - xStart)
     }
 
+    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
     private fun isCollinear(
         xStart: Double,
         yStart: Double,
@@ -193,6 +195,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return (yFinish - yStart) * (xTarget - xFinish) - (xFinish - xStart) * (yTarget - yFinish) == 0.0
     }
 
+    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
     private fun isCollinear(
         aX: Double,
         aY: Double,
@@ -220,6 +223,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    @Deprecated(message = "replace with sp.kx.math.isParallel", level = DeprecationLevel.ERROR)
     private fun isParallel(
         aX: Double,
         aY: Double,
@@ -245,6 +249,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return slope1 == slope2
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getIntersection", level = DeprecationLevel.ERROR)
     private fun getIntersectionPointOrNull(
         v1: Vector,
         v2: Vector,
@@ -261,6 +266,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
     private fun isCollinear(
         v1: Vector,
         v2: Vector,
@@ -277,6 +283,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getIntersection", level = DeprecationLevel.ERROR)
     private fun getIntersectionPointOrNull(
         aX: Double,
         aY: Double,
@@ -338,6 +345,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return pointOf(x = x, y = y)
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
     private fun getShortestPoint(
         xStart: Double,
         yStart: Double,
@@ -371,6 +379,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return pointOf(x = xFinish, y = yFinish)
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
     private fun getShortestPoint(
         start: Point,
         finish: Point,
@@ -395,6 +404,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return if (dS < dF) start else finish
     }
 
+    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
     private fun Vector.getShortestPoint(target: Point): Point {
         return getShortestPoint(
             start = start,
@@ -632,6 +642,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //        return true // todo
     }
 
+    @Deprecated(message = "replace with sp.kx.math.lt", level = DeprecationLevel.ERROR)
     private fun lt(it: Double, other: Double, points: Int): Boolean {
         val diff = it - other
         return (diff).absoluteValue > 10.0.pow(-points) && diff < 0
