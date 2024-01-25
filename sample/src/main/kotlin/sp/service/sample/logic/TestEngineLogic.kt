@@ -18,16 +18,17 @@ import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
-import sp.kx.math.contains
-import sp.kx.math.copy
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
+import sp.kx.math.getIntersection
 import sp.kx.math.getPerpendicular
-import sp.kx.math.getShortest
+import sp.kx.math.getShortestDistance
+import sp.kx.math.getShortestPoint
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
 import sp.kx.math.length
+import sp.kx.math.lt
 import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableSpeed
@@ -43,7 +44,6 @@ import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.toString
-import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
@@ -117,7 +117,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
         val (bi, barrier, shortest) = barriers
-            .mapIndexed { index, it -> Triple(index, it, it.getShortest(player.point)) }
+            .mapIndexed { index, it -> Triple(index, it, it.getShortestDistance(player.point)) }
             .minBy { (_, _, shortest) ->
                 shortest
             }
@@ -173,246 +173,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return result
     }
 
-    @Deprecated(message = "replace with sp.kx.math.getSlope", level = DeprecationLevel.ERROR)
-    private fun getSlope(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double,
-    ): Double {
-        return (yFinish - yStart) / (xFinish - xStart)
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
-    private fun isCollinear(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double,
-        xTarget: Double,
-        yTarget: Double,
-    ): Boolean {
-        return (yFinish - yStart) * (xTarget - xFinish) - (xFinish - xStart) * (yTarget - yFinish) == 0.0
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
-    private fun isCollinear(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double,
-        dX: Double,
-        dY: Double,
-    ): Boolean {
-        return isCollinear(
-            xStart = aX,
-            yStart = aY,
-            xFinish = bX,
-            yFinish = bY,
-            xTarget = cX,
-            yTarget = cY,
-        ) && isCollinear(
-            xStart = aX,
-            yStart = aY,
-            xFinish = bX,
-            yFinish = bY,
-            xTarget = dX,
-            yTarget = dY,
-        )
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.isParallel", level = DeprecationLevel.ERROR)
-    private fun isParallel(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double,
-        dX: Double,
-        dY: Double,
-    ): Boolean {
-        val slope1 = getSlope(
-            xStart = aX,
-            yStart = aY,
-            xFinish = bX,
-            yFinish = bY,
-        )
-        val slope2 = getSlope(
-            xStart = cX,
-            yStart = cY,
-            xFinish = dX,
-            yFinish = dY,
-        )
-        return slope1 == slope2
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.getIntersection", level = DeprecationLevel.ERROR)
-    private fun getIntersectionPointOrNull(
-        v1: Vector,
-        v2: Vector,
-    ): Point? {
-        return getIntersectionPointOrNull(
-            aX = v1.start.x,
-            aY = v1.start.y,
-            bX = v1.finish.x,
-            bY = v1.finish.y,
-            cX = v2.start.x,
-            cY = v2.start.y,
-            dX = v2.finish.x,
-            dY = v2.finish.y,
-        )
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.isCollinear", level = DeprecationLevel.ERROR)
-    private fun isCollinear(
-        v1: Vector,
-        v2: Vector,
-    ): Boolean {
-        return isCollinear(
-            aX = v1.start.x,
-            aY = v1.start.y,
-            bX = v1.finish.x,
-            bY = v1.finish.y,
-            cX = v2.start.x,
-            cY = v2.start.y,
-            dX = v2.finish.x,
-            dY = v2.finish.y,
-        )
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.getIntersection", level = DeprecationLevel.ERROR)
-    private fun getIntersectionPointOrNull(
-        aX: Double,
-        aY: Double,
-        bX: Double,
-        bY: Double,
-        cX: Double,
-        cY: Double,
-        dX: Double,
-        dY: Double,
-    ): Point? {
-        val isCollinear = isCollinear(
-            aX = aX,
-            aY = aY,
-            bX = bX,
-            bY = bY,
-            cX = cX,
-            cY = cY,
-            dX = dX,
-            dY = dY,
-        )
-        if (isCollinear) {
-            val cContains = contains(
-                xStart = aX,
-                yStart = aY,
-                xFinish = bX,
-                yFinish = bY,
-                xTarget = cX,
-                yTarget = cY,
-            )
-            if (cContains) return pointOf(x = cX, y = cY)
-            val dContains = contains(
-                xStart = aX,
-                yStart = aY,
-                xFinish = bX,
-                yFinish = bY,
-                xTarget = dX,
-                yTarget = dY,
-            )
-            if (dContains) return pointOf(x = dX, y = dY)
-            TODO("isCollinear: $isCollinear!")
-        }
-        val isParallel = isParallel(
-            aX = aX,
-            aY = aY,
-            bX = bX,
-            bY = bY,
-            cX = cX,
-            cY = cY,
-            dX = dX,
-            dY = dY,
-        )
-        if (isParallel) return null
-        val xT = (aX * bY - aY * bX) * (cX - dX) - (aX - bX) * (cX * dY - cY * dX)
-        val xB = (aX - bX) * (cY - dY) - (aY - bY) * (cX - dX)
-        val x = xT / xB
-        val yT = (aX * bY - aY * bX) * (cY - dY) - (aY - bY) * (cX * dY - cY * dX)
-        val yB = (aX - bX) * (cY - dY) - (aY - bY) * (cX - dX)
-        val y = yT / yB
-        return pointOf(x = x, y = y)
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
-    private fun getShortestPoint(
-        xStart: Double,
-        yStart: Double,
-        xFinish: Double,
-        yFinish: Double,
-        xTarget: Double,
-        yTarget: Double,
-    ): Point {
-        val p = getPerpendicular(
-            aX = xTarget,
-            aY = yTarget,
-            bX = xStart,
-            bY = yStart,
-            cX = xFinish,
-            cY = yFinish,
-        )
-        val contains = contains(
-            xStart = xStart,
-            yStart = yStart,
-            xFinish = xFinish,
-            yFinish = yFinish,
-            xTarget = p.x,
-            yTarget = p.y,
-        )
-        if (contains) return p
-        val dS = distanceOf(aX = xStart, aY = yStart, bX = xTarget, bY = yTarget)
-        val dF = distanceOf(aX = xFinish, aY = yFinish, bX = xTarget, bY = yTarget)
-        if (dS < dF) {
-            return pointOf(x = xStart, y = yStart)
-        }
-        return pointOf(x = xFinish, y = yFinish)
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
-    private fun getShortestPoint(
-        start: Point,
-        finish: Point,
-        target: Point,
-    ): Point {
-        val p = getPerpendicular(
-            b = start,
-            c = finish,
-            a = target,
-        )
-        val contains = contains(
-            xStart = start.x,
-            yStart = start.y,
-            xFinish = finish.x,
-            yFinish = finish.y,
-            xTarget = p.x,
-            yTarget = p.y,
-        )
-        if (contains) return p
-        val dS = distanceOf(a = start, b = target)
-        val dF = distanceOf(a = finish, b = target)
-        return if (dS < dF) start else finish
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.getShortestPoint", level = DeprecationLevel.ERROR)
-    private fun Vector.getShortestPoint(target: Point): Point {
-        return getShortestPoint(
-            start = start,
-            finish = finish,
-            target = target,
-        )
-    }
-
     private fun onRenderIntersections(
         canvas: Canvas,
         actual: Point,
@@ -427,9 +187,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            if (isCollinear) {
 //                println("$index] collinear")
 //            }
-            val intersection = getIntersectionPointOrNull(
-                v1 = barrier,
-                v2 = actual + target,
+            val intersection = barrier.getIntersection(
+                c = actual,
+                d = target,
             )
             if (intersection != null) {
                 canvas.vectors.draw(
@@ -541,7 +301,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
                 text = aH.length().toString(total = 4, points = 2),
             )
-            val shortest = barrier.getShortest(target = player.point)
+            val shortest = barrier.getShortestDistance(target = player.point)
             canvas.texts.draw(
                 color = color,
                 info = info,
@@ -560,16 +320,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         barriers: List<Vector>,
     ): Point? {
         val filtered = barriers.filter {
-//            it.getShortest(target) < minLength
-            lt(it = it.getShortest(target), other = minLength, points = 12)
+            it.getShortestDistance(target).lt(other = minLength, points = 12)
         }
         if (filtered.isEmpty()) {
             return target
         }
-        val intersections = filtered.map {
-            it to getIntersectionPointOrNull(
-                v1 = it,
-                v2 = player.point + target,
+        val intersections = filtered.map { vector ->
+            vector to vector.getIntersection(
+                c = player.point,
+                d = target,
             )
         } // todo
         if (intersections.isEmpty()) {
@@ -585,12 +344,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             // dis: 1.414213562373095
             // min: 1.4142135623730951
             val shortestBarrier = barriers.firstOrNull {
-//                it.getShortest(target) < minLength
-                lt(it = it.getShortest(target), other = minLength, points = 12)
+                it.getShortestDistance(target).lt(other = minLength, points = 12)
             }
             if (shortestBarrier != null) {
                 println("No intersection with: $barrier!")
-                val distance = shortestBarrier.getShortest(target)
+                val distance = shortestBarrier.getShortestDistance(target)
                 println("Shortest barrier: $shortestBarrier\ndistance: $distance\nmin: $minLength")
                 return null // todo
             }
@@ -627,7 +385,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         barriers: List<Vector>,
     ): Boolean {
         val filtered = barriers.filter {
-            it.getShortest(target) < player.radius
+            it.getShortestDistance(target) < player.radius
         }
         if (filtered.isEmpty()) {
             return true
