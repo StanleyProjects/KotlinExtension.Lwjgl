@@ -26,7 +26,9 @@ import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
 import sp.kx.math.ifNaN
+import sp.kx.math.isCollinear
 import sp.kx.math.isEmpty
+import sp.kx.math.isParallel
 import sp.kx.math.length
 import sp.kx.math.lt
 import sp.kx.math.measure.Measure
@@ -313,6 +315,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun <K : Any, V : Any> Iterable<K>.associateWithNotNull(valueSelector: (K) -> V?): Map<K, V> {
+        val result = mutableMapOf<K, V>()
+        for (key in this) {
+            val value = valueSelector(key)
+            if (value != null) result[key] = value
+        }
+        return result
+    }
+
     private fun getFinalPoint(
         player: Player,
         minLength: Double,
@@ -323,23 +334,55 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             it.getShortestDistance(target).lt(other = minLength, points = 12)
         }
         if (filtered.isEmpty()) {
+//            println("Filtered points are empty!")
             return target
         }
-        val intersections = filtered.map { vector ->
-            vector to vector.getIntersection(
+        val parallels = filtered.filter { vector ->
+            vector.isParallel(
                 c = player.point,
                 d = target,
             )
-        } // todo
+        }
+        val intersections = filtered.associateWithNotNull { vector ->
+//            val cd = player.point + target
+//            if (vector.isParallel(cd)) println("Vector $vector is parallel to $cd!")
+//            if (vector.isCollinear(cd.start)) println("Vector $vector is collinear to ${cd.start}!")
+//            if (vector.isCollinear(cd.finish)) println("Vector $vector is collinear to ${cd.finish}!")
+            vector.getIntersection(
+                c = player.point,
+                d = target,
+            )
+        }
         if (intersections.isEmpty()) {
-            println("Intersection points are empty!")
-            return null // todo
+            if (filtered.size == 1) {
+                val barrier = filtered.single()
+                val isParallel = barrier.isParallel(
+                    c = player.point,
+                    d = target,
+                )
+//                if (isParallel) return target // todo
+                return null // todo
+            } else {
+                val message = """
+                    |Intersection points are empty!
+                    |point: ${player.point + target}
+                    |filtered:
+                    ${filtered.joinToString(separator = "\n") { "| - $it" }}
+                """.trimMargin()
+                println(message)
+                return null // todo
+            }
         }
         if (intersections.size != 1) {
             println("Intersection size: ${intersections.size}!")
             return null // todo
         }
-        val (barrier, intersection) = intersections.single()
+        if (parallels.isNotEmpty()) {
+            println("Parallels size: ${parallels.size}!")
+            return null // todo
+        }
+        val (barrier, intersection) = intersections.entries.single()
+        /*
         if (intersection == null) {
             // dis: 1.414213562373095
             // min: 1.4142135623730951
@@ -360,6 +403,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            }
             return target
         }
+        */
         // todo check (player.point + target) contains intersection
         //
 //        val perpendicular = barrier.getPerpendicular(target = target)
@@ -375,6 +419,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            println("Couldn't calculate the final point!")
 //            return null // todo
 //        }
+        println("final: $finalPoint")
+        val finals = barriers.filter {
+            it.getShortestDistance(finalPoint).lt(other = minLength, points = 12)
+        }
+        if (finals.isNotEmpty()) {
+            println("Finals:\n${finals.joinToString(separator = "\n")}\n")
+            return null // todo
+        }
         return finalPoint
 //        return null // todo
     }
@@ -398,12 +450,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //        } // todo
         return false // todo
 //        return true // todo
-    }
-
-    @Deprecated(message = "replace with sp.kx.math.lt", level = DeprecationLevel.ERROR)
-    private fun lt(it: Double, other: Double, points: Int): Boolean {
-        val diff = it - other
-        return (diff).absoluteValue > 10.0.pow(-points) && diff < 0
     }
 
     override fun onRender(canvas: Canvas) {
