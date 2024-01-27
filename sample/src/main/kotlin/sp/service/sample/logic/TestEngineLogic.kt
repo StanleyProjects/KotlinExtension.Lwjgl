@@ -347,6 +347,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         println(message)
     }
 
+    private fun Vector.closerThan(point: Point, minDistance: Double): Boolean {
+        return getShortestDistance(point).lt(other = minDistance, points = 12)
+    }
+
     private fun getFinalPoint(
         player: Player,
         minLength: Double,
@@ -355,39 +359,39 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ): Point? {
         val targetDistance = distanceOf(player.point, target)
         val nearest = barriers.filter {
-            it.getShortestDistance(player.point).lt(other = targetDistance + minLength, points = 12)
+            it.closerThan(point = player.point, minDistance = targetDistance + minLength)
         }
         val filtered = nearest.filter {
-            it.getShortestDistance(target).lt(other = minLength, points = 12)
+            it.closerThan(point = target, minDistance = minLength)
         }
         if (filtered.isEmpty()) return target
         filtered.print(title = "filtered")
-        val intersections = filtered.filter { vector ->
+        val intersected = filtered.filter { vector ->
             vector.getIntersection(
                 c = player.point,
                 d = target,
             ) != null
         }
-        if (intersections.size != 1) {
-            println("Intersection size: ${intersections.size}!")
+        if (intersected.isEmpty()) {
+            println("Intersected is empty!")
             return null // todo
         }
-        val barrier = intersections.single()
-        println("barrier: $barrier")
-        val correctedPoint = getCorrectedPoint(
-            minLength = minLength,
-            target = target,
-            barrier = barrier,
-        )
-        println("corrected: $correctedPoint")
-        val finals = nearest.filter {
-            it.getShortestDistance(correctedPoint).lt(other = minLength, points = 12)
+        val correctedPoints = intersected.map { vector ->
+            getCorrectedPoint(
+                minLength = minLength,
+                target = target,
+                barrier = vector,
+            )
         }
-        if (finals.isNotEmpty()) {
-            finals.print(title = "finals")
-            return null // todo
+        val finalPoint = correctedPoints.firstOrNull { point ->
+            nearest.none {
+                it.closerThan(point = point, minDistance = minLength)
+            }
         }
-        return correctedPoint
+        if (finalPoint == null) {
+            println("No final point!")
+        }
+        return finalPoint
     }
 
     @Deprecated(message = "getFinalPoint")
