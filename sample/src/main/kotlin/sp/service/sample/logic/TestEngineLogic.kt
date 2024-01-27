@@ -423,30 +423,34 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         if (filtered.isEmpty()) return target
         filtered.print(title = "filtered")
-        val intersected = filtered.filter { vector ->
-            vector.getIntersection(
-                c = player.point,
-                d = target,
-            ) != null
-        }
-        if (intersected.isEmpty()) {
-            println("Intersected is empty!")
-            return null // todo
-        }
-        val correctedPoints = intersected.map { vector ->
+//        val intersected = filtered.filter { vector ->
+//            vector.getIntersection(
+//                c = player.point,
+//                d = target,
+//            ) != null
+//        }
+//        if (intersected.isEmpty()) {
+//            println("Intersected is empty!")
+//            return null // todo
+//        }
+        val correctedPoints = nearest.map { vector ->
             getCorrectedPoint(
                 minLength = minLength,
                 target = target,
                 barrier = vector,
             )
         }
-        val finalPoint = correctedPoints.firstOrNull { point ->
+        val allowedPoints = correctedPoints.filter { point ->
             nearest.none {
                 it.closerThan(point = point, minDistance = minLength)
             }
         }
-        if (finalPoint == null) {
-            println("No final point!")
+        if (allowedPoints.isEmpty()) {
+            println("No allowed point!")
+            return null // todo
+        }
+        val finalPoint = allowedPoints.maxBy {
+            distanceOf(player.point, it)
         }
         return finalPoint
     }
