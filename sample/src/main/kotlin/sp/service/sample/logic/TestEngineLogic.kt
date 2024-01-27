@@ -15,6 +15,7 @@ import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.Point
+import sp.kx.math.Size
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
@@ -41,11 +42,14 @@ import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.minus
 import sp.kx.math.moved
+import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.kx.math.sizeOf
+import sp.kx.math.times
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
@@ -78,11 +82,30 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private val player = Player()
     private val measure = measureOf(16.0)
+
+    private fun List<Point>.toVectors(): List<Vector> {
+        if (isEmpty()) return emptyList()
+        if (size == 1) TODO()
+        val list = mutableListOf<Vector>()
+        for (index in 1 until size) {
+            list += get(index - 1) + get(index)
+        }
+        return list
+    }
+
     private val barriers = listOf(
         pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
         pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2),
         pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 + 6 * 2)
-    )
+    ) + (-12).let { x ->
+        listOf(
+            pointOf(x = x + 0, y = x + 0),
+            pointOf(x = x + 4, y = x + 4),
+            pointOf(x = x + 4 + 4, y = x + 4 + 2),
+            pointOf(x = x + 4 + 4 + 4, y = x + 4),
+            pointOf(x = x + 4 + 4 + 4 + 4, y = x + 4 - 4),
+        ).toVectors()
+    }
 
     private lateinit var shouldEngineStopUnit: Unit
 
@@ -214,19 +237,53 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    @Deprecated(message = "sp.kx.math.plus")
+    private operator fun Size.plus(
+        measure: Measure<Double, Double>,
+    ): Size {
+        return sizeOf(
+            width = measure.transform(width),
+            height = measure.transform(height),
+        )
+    }
+
+    @Deprecated(message = "sp.kx.math.plus")
+    private operator fun Offset.plus(other: Offset): Offset {
+        return offsetOf(
+            dX = dX + other.dX,
+            dY = dY + other.dY,
+        )
+    }
+
     private fun onRenderBarriers(
         canvas: Canvas,
         offset: Offset,
         barriers: List<Vector>,
         measure: Measure<Double, Double>,
     ) {
+        val dotSize = sizeOf(width = 0.25, height = 0.25)
+        val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
         barriers.forEach { barrier ->
             canvas.vectors.draw(
-                color = Color.GREEN,
+                color = Color.BLUE,
                 vector = barrier,
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = 4f,
+            )
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = barrier.start + offset + dotOffset + measure,
+                size = dotSize + measure,
+                lineWidth = 2f,
+            )
+        }
+        barriers.lastOrNull()?.also {
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = it.finish + offset + dotOffset + measure,
+                size = dotSize + measure,
+                lineWidth = 2f,
             )
         }
     }
