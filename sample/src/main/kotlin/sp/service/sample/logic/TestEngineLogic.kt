@@ -66,7 +66,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
     ) {
 //        private val width = 2.0
-        private val width = 6.0 // todo
+        private val width = 4.0 // todo
+//        private val width = 6.0 // todo
         private val size = sizeOf(width = width, height = width)
         val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
 
@@ -105,6 +106,34 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             pointOf(x = x + 4 + 4 + 4, y = x + 4),
             pointOf(x = x + 4 + 4 + 4 + 4, y = x + 4 - 4),
         ).toVectors()
+    } + listOf(
+        pointOf(x = 0 - 32, y = 0 - 8),
+        pointOf(x = 0 - 32, y = 0 - 8 + 16),
+    ).toVectors() + listOf(
+        pointOf(x = 0 - 32 - 8, y = 0),
+        pointOf(x = 0 - 32 + 8, y = 0),
+    ).toVectors() + (-8 to 8).let { (dX, dY) ->
+        listOf(
+            pointOf(x = dX, y = dY),
+            pointOf(x = dX, y = dY + 16),
+        ).toVectors() + listOf(
+            pointOf(x = dX + 4, y = dY),
+            pointOf(x = dX + 4, y = dY + 4),
+        ).toVectors() + listOf(
+            pointOf(x = dX - 2, y = dY),
+            pointOf(x = dX - 2, y = dY + 4),
+        ).toVectors()
+    } + (0 to 0).let { (dX, dY) ->
+        listOf(
+            pointOf(x = dX - 16 + 0, y = dY + 2),
+            pointOf(x = dX - 16 - 4, y = dY + 2),
+        ).toVectors() + listOf(
+            pointOf(x = dX - 16 + 0, y = dY - 2),
+            pointOf(x = dX - 16 - 4, y = dY - 2),
+        ).toVectors() + listOf(
+            pointOf(x = dX - 16 + 0, y = dY + 4),
+            pointOf(x = dX - 16 - 4, y = dY + 4),
+        ).toVectors()
     }
 
     private lateinit var shouldEngineStopUnit: Unit
@@ -142,11 +171,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val padding = measure.transform(1.0)
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val x = padding
-        val (bi, barrier, shortest) = barriers
-            .mapIndexed { index, it -> Triple(index, it, it.getShortestDistance(player.point)) }
-            .minBy { (_, _, shortest) ->
-                shortest
-            }
+//        val (bi, barrier, shortest) = barriers
+//            .mapIndexed { index, it -> Triple(index, it, it.getShortestDistance(player.point)) }
+//            .minBy { (_, _, shortest) ->
+//                shortest
+//            } // todo
         val currentSpeed = speedOf(magnitude = distanceOf(previous.point, player.point), engine.property.time.diff())
         val values = listOf(
 //            "x: ${point.x.toString(5, 1)}",
@@ -159,11 +188,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             String.format("cur speed: %s/s", currentSpeed.per(TimeUnit.SECONDS).toString(points = 2)),
             String.format("a: %03.2f - %05.1f", player.direction.actual, Math.toDegrees(player.direction.actual)),
             String.format("e: %03.2f - %05.1f", player.direction.expected, Math.toDegrees(player.direction.expected)),
+            String.format("time: %sms", engine.property.time.diff().inWholeNanoseconds.toDouble().div(1_000_000).toString(total = 6, points = 3)),
 //            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
 //            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
-            String.format("barrier: %s", barrier.toString()),
-            String.format("barrier: $bi] ${shortest.toString(points = 4)}"),
-            String.format("player:radius: ${player.radius.toString(points = 4)}"),
+//            String.format("barrier: %s", barrier.toString()),
+//            String.format("barrier: $bi] ${shortest.toString(points = 4)}"),
+//            String.format("player:radius: ${player.radius.toString(points = 4)}"),
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
@@ -277,11 +307,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 size = dotSize + measure,
                 lineWidth = 2f,
             )
-        }
-        barriers.lastOrNull()?.also {
             canvas.drawRectangle(
                 color = Color.YELLOW,
-                pointTopLeft = it.finish + offset + dotOffset + measure,
+                pointTopLeft = barrier.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
                 lineWidth = 2f,
             )
@@ -422,7 +450,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             it.closerThan(point = target, minDistance = minLength)
         }
         if (filtered.isEmpty()) return target
-        filtered.print(title = "filtered")
+//        filtered.print(title = "filtered")
 //        val intersected = filtered.filter { vector ->
 //            vector.getIntersection(
 //                c = player.point,
@@ -642,17 +670,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         */
         val playerOffset = engine.input.keyboard.getPlayerOffset()
-        onRenderIntersections(
-            canvas = canvas,
-            actual = player.point,
-            target = player.point.moved(
-                length = player.speed.length(timeDiff),
-                angle = player.direction.expected,
-            ),
-            offset = offset,
-            barriers = barriers,
-            measure = measure,
-        ) // todo
+//        onRenderIntersections(
+//            canvas = canvas,
+//            actual = player.point,
+//            target = player.point.moved(
+//                length = player.speed.length(timeDiff),
+//                angle = player.direction.expected,
+//            ),
+//            offset = offset,
+//            barriers = barriers,
+//            measure = measure,
+//        ) // todo
         if (!playerOffset.isEmpty()) {
             player.direction.expected = angleOf(playerOffset).radians()
             val dirDiff = player.direction.diff()
