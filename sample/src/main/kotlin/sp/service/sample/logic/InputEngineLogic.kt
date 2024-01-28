@@ -19,6 +19,7 @@ import sp.kx.math.measure.diff
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
+import sp.kx.math.toString
 import sp.service.sample.util.Dualshock4JoystickMapping
 import sp.service.sample.util.FlydigiMapping
 import sp.service.sample.util.ResourceUtil
@@ -29,6 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class InputEngineLogic(private val engine: Engine) : EngineLogic {
     private lateinit var shouldEngineStopUnit: Unit
+    private val joysticks = mutableMapOf<String, Pair<ByteArray, FloatArray>>()
 
     private fun getFontInfo(name: String, height: Float): FontInfo {
         return object : FontInfo {
@@ -86,6 +88,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         }
 
         override fun onJoystick(guid: String, buttons: ByteArray, axes: FloatArray) {
+            joysticks[guid] = buttons to axes
 //            println("Joystick: $guid\n\tbuttons: ${buttons.contentToString()}\n\taxes: ${axes.contentToString()}\n")
         }
     }
@@ -370,6 +373,65 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun drawJoystick(canvas: Canvas, x: Double, y: Double, guid: String, buttons: ByteArray, axes: FloatArray) {
+        canvas.drawText(
+            color = Color.WHITE,
+            pointTopLeft = pointOf(x = x, y = y),
+            info = getFontInfo(height = 16f),
+            text = "GUID: $guid",
+        )
+        val info14 = getFontInfo(height = 14f)
+        buttons.forEachIndexed { index, it ->
+            val padding = 4
+            val value = it.toInt()
+            canvas.drawText(
+                color = Color.WHITE,
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 0),
+                info = info14,
+                text = String.format("%2d", index),
+            )
+            canvas.drawText(
+                color = if (value == 1) Color.YELLOW else Color.GREEN,
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 1),
+                info = info14,
+                text = String.format("%2d", value),
+            )
+        }
+        axes.forEachIndexed { index, it ->
+            val padding = 24
+            canvas.drawText(
+                color = Color.WHITE,
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 2),
+                info = info14,
+                text = String.format("%2d", index),
+            )
+            canvas.drawText(
+                color = Color.GREEN,
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 3),
+                info = info14,
+                text = String.format("%+.2f", it),
+            )
+        }
+//        canvas.drawText(
+//            color = Color.GREEN,
+//            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 0),
+//            info = getFontInfo(height = 14f),
+//            text = "     |${buttons.mapIndexed { index, _ -> String.format("%2d", index) }}",
+//        )
+//        canvas.drawText(
+//            color = Color.GREEN,
+//            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 1),
+//            info = getFontInfo(height = 14f),
+//            text = "btns: ${buttons.map { String.format("%2d", it) }}",
+//        )
+//        canvas.drawText(
+//            color = Color.GREEN,
+//            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 2),
+//            info = getFontInfo(height = 14f),
+//            text = "axes: ${axes.map { it.toDouble().toString(points = 2) }}",
+//        )
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = 1.seconds / engine.property.time.diff()
         canvas.drawText(
@@ -379,9 +441,15 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
             text = String.format("%.2f", fps)
         )
         canvas.drawKeyboard(x = 16.0, y = 16.0, engine.input.keyboard)
+        val gj = joysticks.entries.firstOrNull()
+        if (gj != null) {
+            val (buttons, axes) = gj.value
+            drawJoystick(canvas, x = 16.0, y = 16.0 + 25.0 * 3, guid = gj.key, buttons = buttons, axes = axes)
+            // todo
+        }
         val joystick = engine.input.joysticks[0]
         if (joystick != null) {
-            canvas.drawJoystick(x = 16.0, y = 16.0 + 25.0 * 4, joystick)
+            canvas.drawJoystick(x = 16.0, y = 16.0 + 25.0 * 6 + 16, joystick)
             // todo
         }
     }
