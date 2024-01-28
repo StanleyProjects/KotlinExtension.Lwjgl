@@ -100,6 +100,10 @@ object EngineUtil {
                 engine.property.time.b = now
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                 joystickStorage.update(mapper = logic.joystickMapper, onButton = logic.inputCallback::onJoystickButton)
+                for (id in GLFW.GLFW_JOYSTICK_1..GLFW.GLFW_JOYSTICK_LAST) {
+                    val gj = getGLFWJoystickOrNull(id) ?: continue
+                    logic.inputCallback.onJoystick(guid = gj.guid, buttons = gj.buttons, axes = gj.axes)
+                }
                 logic.onRender(canvas = canvas)
                 engine.property.time.a = now
                 if (logic.shouldEngineStop()) {
@@ -107,6 +111,14 @@ object EngineUtil {
                 }
             },
             onPreLoop = { windowId ->
+                for (id in GLFW.GLFW_JOYSTICK_1..GLFW.GLFW_JOYSTICK_LAST) {
+                    val gj = getGLFWJoystickOrNull(id) ?: continue
+                    val mapping = logic.joystickMapper.getJoystickMappingOrNull(gj)
+                    if (mapping == null) {
+                        println("Joystick ${gj.guid} is not mapped!\n\tbuttons: ${gj.buttons.size} / axes: ${gj.axes.size}")
+                        continue
+                    }
+                }
                 // todo
             },
             onPostLoop = {

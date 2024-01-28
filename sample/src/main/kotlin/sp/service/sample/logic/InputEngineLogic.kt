@@ -20,6 +20,7 @@ import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
 import sp.service.sample.util.Dualshock4JoystickMapping
+import sp.service.sample.util.FlydigiMapping
 import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.XBoxSeriesJoystickMapping
 import java.io.InputStream
@@ -46,6 +47,11 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
     override val joystickMapper: JoystickMapper = object : JoystickMapper {
         override fun map(guid: String, buttons: ByteArray, axes: FloatArray): JoystickMapping? {
             when (guid) {
+                "030000005e040000e002000003090000" -> {
+                    if (buttons.size == 15 && axes.size == 6) {
+                        return FlydigiMapping.Vader3Pro
+                    }
+                }
                 "030000005e040000130b000013050000" -> {
                     if (buttons.size == 20 && axes.size == 6) {
                         return XBoxSeriesJoystickMapping
@@ -76,16 +82,11 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         }
 
         override fun onJoystickButton(button: JoystickButton, isPressed: Boolean) {
-            when (button) {
-                JoystickButton.B -> {
-                    if (!isPressed) {
-//						shouldEngineStopUnit = Unit // todo
-                    }
-                }
-                else -> {
-                    println("on button: $button $isPressed")
-                }
-            }
+            println("Joystick: $button $isPressed")
+        }
+
+        override fun onJoystick(guid: String, buttons: ByteArray, axes: FloatArray) {
+//            println("Joystick: $guid\n\tbuttons: ${buttons.contentToString()}\n\taxes: ${axes.contentToString()}\n")
         }
     }
 
