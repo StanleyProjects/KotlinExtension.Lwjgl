@@ -3,34 +3,43 @@ package sp.service.sample.logic
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogic
-import sp.kx.lwjgl.engine.input.Joystick
-import sp.kx.lwjgl.engine.input.JoystickMapper
-import sp.kx.lwjgl.engine.input.JoystickMapping
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.font.FontInfo
-import sp.kx.lwjgl.entity.input.JoystickAxis
-import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.Point
-import sp.kx.math.measure.diff
+import sp.kx.math.measure.frequency
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
-import sp.kx.math.toString
-import sp.service.sample.util.Dualshock4JoystickMapping
-import sp.service.sample.util.FlydigiMapping
+import sp.lwjgl.joysticks.GLFWJoystick
+import sp.lwjgl.joysticks.GLFWJoystickUtil
+import sp.lwjgl.joysticks.Joystick
+import sp.lwjgl.joysticks.JoystickAxis
+import sp.lwjgl.joysticks.JoystickButton
+import sp.lwjgl.joysticks.JoystickMapper
+import sp.lwjgl.joysticks.JoystickMapping
+import sp.lwjgl.joysticks.JoystickMetaData
+import sp.lwjgl.joysticks.JoysticksStorage
+import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
-import sp.service.sample.util.XBoxSeriesJoystickMapping
 import java.io.InputStream
-import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.seconds
 
 class InputEngineLogic(private val engine: Engine) : EngineLogic {
     private lateinit var shouldEngineStopUnit: Unit
-    private val joysticks = mutableMapOf<String, Pair<ByteArray, FloatArray>>()
+    private val ds4Mapping = JsonJoystickMapping(
+        ResourceUtil.requireResourceAsStream("dualshock4.json").reader().readText(),
+    )
+    private val joystickStorage = JoysticksStorage(
+        mappings = mapOf(
+            "030000004c050000cc09000000010000" to ds4Mapping,
+        ),
+        onPressButton = { metaData, button, isPressed ->
+            println("Joystick #${metaData.number} $button pressed: $isPressed")
+        },
+    )
 
     private fun getFontInfo(name: String, height: Float): FontInfo {
         return object : FontInfo {
@@ -46,24 +55,22 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         return getFontInfo(name = "JetBrainsMono.ttf", height = height)
     }
 
-    override val joystickMapper: JoystickMapper = object : JoystickMapper {
-        override fun map(guid: String, buttons: ByteArray, axes: FloatArray): JoystickMapping? {
-            when (guid) {
-                "030000005e040000e002000003090000" -> {
-                    if (buttons.size == 15 && axes.size == 6) {
-                        return FlydigiMapping.Vader3Pro
-                    }
-                }
-                "030000005e040000130b000013050000" -> {
-                    if (buttons.size == 20 && axes.size == 6) {
-                        return XBoxSeriesJoystickMapping
-                    }
-                }
-                "030000004c050000cc09000000010000" -> {
-                    if (buttons.size == 18 && axes.size == 6) {
-                        return Dualshock4JoystickMapping
-                    }
-                }
+    private val joystickMapper: JoystickMapper = object : JoystickMapper {
+        override fun map(metaData: JoystickMetaData): JoystickMapping? {
+            when (metaData.id) {
+//                "030000005e040000e002000003090000" -> {
+////                    if (buttons.size == 15 && axes.size == 6)
+//                        return flydigiMapping
+//                }
+//                "030000005e040000130b000013050000" -> {
+//                    if (buttons.size == 20 && axes.size == 6) {
+//                        return XBoxSeriesJoystickMapping
+//                    }
+//                }
+//                "030000004c050000cc09000000010000" -> {
+////                    if (buttons.size == 18 && axes.size == 6)
+//                        return joystickMapping
+//                }
             }
             return null
         }
@@ -81,15 +88,6 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                     println("on button: $button $isPressed")
                 }
             }
-        }
-
-        override fun onJoystickButton(button: JoystickButton, isPressed: Boolean) {
-            println("Joystick: $button $isPressed")
-        }
-
-        override fun onJoystick(guid: String, buttons: ByteArray, axes: FloatArray) {
-            joysticks[guid] = buttons to axes
-//            println("Joystick: $guid\n\tbuttons: ${buttons.contentToString()}\n\taxes: ${axes.contentToString()}\n")
         }
     }
 
@@ -227,7 +225,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         joystick: Joystick,
         button: JoystickButton,
         axisX: JoystickAxis,
-        axisY: JoystickAxis
+        axisY: JoystickAxis,
     ) {
         drawJoystickButtonCircle(
             pointCenter = pointCenter,
@@ -373,26 +371,32 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private fun drawJoystick(canvas: Canvas, x: Double, y: Double, guid: String, buttons: ByteArray, axes: FloatArray) {
+    private fun drawJoystick(canvas: Canvas, x: Double, y: Double, metaData: JoystickMetaData, buttons: ByteArray, axes: FloatArray) {
+        val info14 = getFontInfo(height = 14f)
         canvas.drawText(
             color = Color.WHITE,
             pointTopLeft = pointOf(x = x, y = y),
-            info = getFontInfo(height = 16f),
-            text = "GUID: $guid",
+            info = info14,
+            text = "#${metaData.number}: \"${metaData.name}\"",
         )
-        val info14 = getFontInfo(height = 14f)
+        canvas.drawText(
+            color = Color.GREEN,
+            pointTopLeft = pointOf(x = x, y = y + 14),
+            info = info14,
+            text = "ID: " + metaData.id,
+        )
         buttons.forEachIndexed { index, it ->
             val padding = 4
             val value = it.toInt()
             canvas.drawText(
                 color = Color.WHITE,
-                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 0),
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 0),
                 info = info14,
                 text = String.format("%2d", index),
             )
             canvas.drawText(
                 color = if (value == 1) Color.YELLOW else Color.GREEN,
-                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 1),
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 1),
                 info = info14,
                 text = String.format("%2d", value),
             )
@@ -401,13 +405,13 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
             val padding = 24
             canvas.drawText(
                 color = Color.WHITE,
-                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 2),
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 2),
                 info = info14,
                 text = String.format("%2d", index),
             )
             canvas.drawText(
                 color = Color.GREEN,
-                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 20 + 14 * 3),
+                pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 3),
                 info = info14,
                 text = String.format("%+.2f", it),
             )
@@ -432,22 +436,31 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 //        )
     }
 
+    private fun onJoystick(canvas: Canvas, joystick: GLFWJoystick) {
+        drawJoystick(canvas, x = 16.0, y = 16.0 + 25.0 * 3, metaData = joystick.metaData, buttons = joystick.buttons, axes = joystick.axes)
+    }
+
     override fun onRender(canvas: Canvas) {
-        val fps = 1.seconds / engine.property.time.diff()
-        canvas.drawText(
+        joystickStorage.update()
+        val fps = engine.property.time.frequency()
+        canvas.texts.draw(
             info = getFontInfo(height = 16f),
             pointTopLeft = Point.Center,
             color = Color.GREEN,
-            text = String.format("%.2f", fps)
+            text = String.format("%.2f", fps),
         )
         canvas.drawKeyboard(x = 16.0, y = 16.0, engine.input.keyboard)
-        val gj = joysticks.entries.firstOrNull()
+//        val joystick = joystickStorage.joysticks.entries.firstOrNull()
+//        if (joystick != null) {
+//            val (buttons, axes) = gj.value
+//            drawJoystick(canvas, x = 16.0, y = 16.0 + 25.0 * 3, guid = gj.key, buttons = buttons, axes = axes)
+//            // todo
+//        }
+        val gj = GLFWJoystickUtil.getJoystickOrNull(0)
         if (gj != null) {
-            val (buttons, axes) = gj.value
-            drawJoystick(canvas, x = 16.0, y = 16.0 + 25.0 * 3, guid = gj.key, buttons = buttons, axes = axes)
-            // todo
+            onJoystick(canvas, gj)
         }
-        val joystick = engine.input.joysticks[0]
+        val joystick = joystickStorage.getJoysticks()[0]
         if (joystick != null) {
             canvas.drawJoystick(x = 16.0, y = 16.0 + 25.0 * 6 + 16, joystick)
             // todo

@@ -5,70 +5,23 @@ import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineImpl
 import sp.kx.lwjgl.engine.EngineInputState
 import sp.kx.lwjgl.engine.EngineLogic
-import sp.kx.lwjgl.engine.input.Joystick
-import sp.kx.lwjgl.engine.input.JoystickMapper
-import sp.kx.lwjgl.engine.input.MappedJoystick
-import sp.kx.lwjgl.engine.input.StatefulJoystickStorage
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
-import sp.kx.lwjgl.entity.input.GLFWJoystick
-import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
-import sp.kx.lwjgl.glfw.getJoystickMappingOrNull
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.glfw.toPressedOrNull
-import sp.kx.lwjgl.stb.STBFontAgent
-import sp.kx.lwjgl.stb.STBFontDrawer
 import sp.kx.lwjgl.stb.STBFontStorage
-import sp.kx.math.MutableSize
 import sp.kx.math.sizeOf
 import kotlin.time.Duration.Companion.nanoseconds
 
 object EngineUtil {
-    private fun getGLFWJoystickOrNull(id: Int): GLFWJoystick? {
-        val isPresent = GLFW.glfwJoystickPresent(id)
-        if (!isPresent) return null
-        val guid = GLFW.glfwGetJoystickGUID(id)
-        if (guid.isNullOrEmpty()) return null
-        val buttons = GLFW.glfwGetJoystickButtons(id)?.toArray() ?: return null
-        val axes = GLFW.glfwGetJoystickAxes(id)?.toArray() ?: return null
-        return GLFWJoystick(guid = guid, buttons = buttons, axes = axes)
-    }
-
-    private fun StatefulJoystickStorage.update(mapper: JoystickMapper, onButton: (JoystickButton, Boolean) -> Unit) {
-        for (id in GLFW.GLFW_JOYSTICK_1..GLFW.GLFW_JOYSTICK_LAST) {
-            val gj = getGLFWJoystickOrNull(id)
-            if (gj == null) {
-                joysticks.remove(id)
-                continue
-            }
-            val mapping = mapper.getJoystickMappingOrNull(gj)
-            if (mapping == null) {
-                joysticks.remove(id)
-                continue
-            }
-            val old = joysticks[id]
-            joysticks[id] = MappedJoystick(gj, mapping)
-//            println("axes: " + gj.axes.toList())
-            if (old == null) continue
-            JoystickButton.values().forEach { button ->
-                val newValue = gj.buttons[mapping.getIndex(button)].toInt() == 1
-                if (old.isPressed(button) != newValue) {
-                    println("on -> joystick callback: $button $newValue")
-                    onButton(button, newValue)
-                }
-            }
-        }
-    }
-
     fun run(supplier: (Engine) -> EngineLogic) {
         val size = sizeOf(width = 640.0, height = 480.0)
         val keyboard = StatefulKeyboard()
-        val joystickStorage = StatefulJoystickStorage()
         val fontStorage = STBFontStorage()
         val engine = EngineImpl(
-            input = EngineInputState(keyboard, joystickStorage.joysticks),
+            input = EngineInputState(keyboard),
             property = MutableEngineProperty(pictureSize = size),
             fontAgent = fontStorage.agent
         )
@@ -99,11 +52,6 @@ object EngineUtil {
                 val now = System.nanoTime().toDouble().nanoseconds
                 engine.property.time.b = now
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
-                joystickStorage.update(mapper = logic.joystickMapper, onButton = logic.inputCallback::onJoystickButton)
-                for (id in GLFW.GLFW_JOYSTICK_1..GLFW.GLFW_JOYSTICK_LAST) {
-                    val gj = getGLFWJoystickOrNull(id) ?: continue
-                    logic.inputCallback.onJoystick(guid = gj.guid, buttons = gj.buttons, axes = gj.axes)
-                }
                 logic.onRender(canvas = canvas)
                 engine.property.time.a = now
                 if (logic.shouldEngineStop()) {
@@ -111,14 +59,6 @@ object EngineUtil {
                 }
             },
             onPreLoop = { windowId ->
-                for (id in GLFW.GLFW_JOYSTICK_1..GLFW.GLFW_JOYSTICK_LAST) {
-                    val gj = getGLFWJoystickOrNull(id) ?: continue
-                    val mapping = logic.joystickMapper.getJoystickMappingOrNull(gj)
-                    if (mapping == null) {
-                        println("Joystick ${gj.guid} is not mapped!\n\tbuttons: ${gj.buttons.size} / axes: ${gj.axes.size}")
-                        continue
-                    }
-                }
                 // todo
             },
             onPostLoop = {

@@ -1,12 +1,7 @@
 package sp.kx.lwjgl.glfw
 
 import org.lwjgl.glfw.GLFW
-import sp.kx.lwjgl.engine.input.Joystick
-import sp.kx.lwjgl.engine.input.JoystickMapper
-import sp.kx.lwjgl.engine.input.JoystickMapping
-import sp.kx.lwjgl.entity.input.GLFWJoystick
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.util.toArray
 
 fun Int.toPressedOrNull(): Boolean? {
     return when (this) {
@@ -88,36 +83,3 @@ fun Key.toInt(): Int {
     }
 }
 */
-
-internal fun JoystickMapper.getJoystickMappingOrNull(joystick: GLFWJoystick): JoystickMapping? {
-    return map(guid = joystick.guid, buttons = joystick.buttons, axes = joystick.axes)
-}
-
-fun JoystickMapper.getJoystickMappingOrNull(id: Int): JoystickMapping? {
-    val isPresent = GLFW.glfwJoystickPresent(id)
-//    println("Joystick $id is present: $isPresent")
-    if (!isPresent) return null
-    val GUID = GLFW.glfwGetJoystickGUID(id)
-    if (GUID.isNullOrEmpty()) return null
-    println("Joystick $id GUID \"$GUID\"")
-//    val name = GLFW.glfwGetJoystickName(id)
-//    if (name.isNullOrEmpty()) return null
-//    println("Joystick $id name \"$name\"")
-//    val gamepadName = GLFW.glfwGetGamepadName(id)
-//    println("Joystick $id gamepad name \"$gamepadName\"")
-    val buttons = GLFW.glfwGetJoystickButtons(id)?.toArray() ?: return null
-    val axes = GLFW.glfwGetJoystickAxes(id)?.toArray() ?: return null
-    //
-    val indexes = Array<String>(buttons.size) { index ->
-        String.format("%2d", index)
-    }
-    println("""
-        -
-        ------- ${indexes.toList()}
-        buttons ${buttons.map { if (it.toInt() == 1) " +" else "_ "}}
-        axes ${axes.toList()}
-        -
-    """.trimIndent())
-    //
-    return map(guid = GUID, buttons = buttons, axes = axes)
-}

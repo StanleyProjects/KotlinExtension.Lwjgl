@@ -3,11 +3,8 @@ package sp.service.sample.logic
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogic
-import sp.kx.lwjgl.engine.input.JoystickMapper
-import sp.kx.lwjgl.engine.input.JoystickMapping
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.measure.diff
 import sp.kx.math.pointOf
@@ -16,17 +13,10 @@ import sp.service.sample.game.module.journey.JourneyModule
 import sp.service.sample.game.module.mm.MainMenuItem
 import sp.service.sample.game.module.mm.MainMenuModule
 import sp.service.sample.util.FontInfoUtil
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 class GameEngineLogic(private val engine: Engine) : EngineLogic {
     private lateinit var shouldEngineStopUnit: Unit
-
-    override val joystickMapper: JoystickMapper = object : JoystickMapper {
-        override fun map(guid: String, buttons: ByteArray, axes: FloatArray): JoystickMapping? {
-            return null
-        }
-    }
 
     private var state: StateCommon = StateCommon.MAIN_MENU
     private val mm = MainMenuModule(
@@ -65,10 +55,6 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
                 StateCommon.MAIN_MENU -> mm.onKeyboardButton(button, isPressed)
                 StateCommon.JOURNEY -> jm.onKeyboardButton(button, isPressed)
             }
-        }
-
-        override fun onJoystickButton(button: JoystickButton, isPressed: Boolean) {
-            // todo
         }
     }
 

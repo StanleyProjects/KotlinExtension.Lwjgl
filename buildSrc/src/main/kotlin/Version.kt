@@ -3,4 +3,8 @@ object Version {
     const val kotlin = "1.9.20"
     const val lwjgl = "3.3.3"
     const val math = "0.7.3-SNAPSHOT"
+
+    object Lwjgl {
+        const val joysticks = "0.1.1u-SNAPSHOT"
+    }
 }

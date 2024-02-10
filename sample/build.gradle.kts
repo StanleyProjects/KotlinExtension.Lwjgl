@@ -33,11 +33,14 @@ tasks.getByName<JavaExec>("run") {
 }
 
 dependencies {
+    implementation("org.json:json:20231013")
     implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
+    implementation("com.github.kepocnhh:LwjglJoysticks:${Version.Lwjgl.joysticks}")
     implementation(project(":lib"))
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
     val classifier = LwjglUtil.requireNativesName()
+//    implementation(group = group, name = "lwjgl-glfw") // todo
     LwjglUtil.modules.forEach { name ->
         runtimeOnly(group = group, name = name, classifier = classifier)
     }

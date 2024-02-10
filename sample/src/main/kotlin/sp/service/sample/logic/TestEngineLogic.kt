@@ -3,12 +3,9 @@ package sp.service.sample.logic
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogic
-import sp.kx.lwjgl.engine.input.JoystickMapper
-import sp.kx.lwjgl.engine.input.JoystickMapping
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.input.JoystickButton
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
@@ -27,7 +24,6 @@ import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
 import sp.kx.math.ifNaN
-import sp.kx.math.isCollinear
 import sp.kx.math.isEmpty
 import sp.kx.math.isParallel
 import sp.kx.math.length
@@ -49,13 +45,11 @@ import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.toString
-import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.service.sample.util.FontInfoUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
-import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
@@ -138,12 +132,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private lateinit var shouldEngineStopUnit: Unit
 
-    override val joystickMapper: JoystickMapper = object : JoystickMapper {
-        override fun map(guid: String, buttons: ByteArray, axes: FloatArray): JoystickMapping? {
-            return null
-        }
-    }
-
     override val inputCallback: EngineInputCallback = object : EngineInputCallback {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
             when (button) {
@@ -156,10 +144,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     // todo
                 }
             }
-        }
-
-        override fun onJoystickButton(button: JoystickButton, isPressed: Boolean) {
-            // todo
         }
     }
 
