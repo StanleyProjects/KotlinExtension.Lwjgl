@@ -763,6 +763,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             vector = vectorOf(center, length = player.radius, angle = player.direction.actual) + measure,
             lineWidth = 1f
         )
+        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, player.point), engine.property.time.diff())
+        canvas.vectors.draw(
+            color = Color.GREEN,
+            vector = vectorOf(center, length = player.radius * currentSpeed.per(TimeUnit.SECONDS) / player.speed.per(TimeUnit.SECONDS), angle = player.direction.expected),
+            measure = measure,
+            lineWidth = 4f,
+        )
+        // todo
         canvas.drawCircle(
             color = Color.WHITE,
             pointCenter = center + measure,
