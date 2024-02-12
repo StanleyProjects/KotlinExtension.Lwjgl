@@ -45,9 +45,15 @@ import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
+import sp.lwjgl.joysticks.Joystick
+import sp.lwjgl.joysticks.JoystickAxis
+import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.util.FontInfoUtil
+import sp.service.sample.util.JsonJoystickMapping
+import sp.service.sample.util.ResourceUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.milliseconds
@@ -131,6 +137,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private lateinit var shouldEngineStopUnit: Unit
+    private val ds4Mapping = JsonJoystickMapping(
+        ResourceUtil.requireResourceAsStream("dualshock4.json").reader().readText(),
+    )
+    private val joystickStorage = JoysticksStorage(
+        mappings = mapOf(
+            "030000004c050000cc09000000010000" to ds4Mapping,
+        ),
+        onPressButton = { metaData, button, isPressed ->
+            println("Joystick #${metaData.number} $button pressed: $isPressed")
+        },
+    )
 
     override val inputCallback: EngineInputCallback = object : EngineInputCallback {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
@@ -211,6 +228,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
         }
         return result
+    }
+
+    private fun Joystick.getPlayerOffset(): Offset {
+        val min = 0.1
+        val dX = getValue(JoystickAxis.LEFT_X).toDouble()
+        val dY = getValue(JoystickAxis.LEFT_Y).toDouble()
+        if (dX.absoluteValue < min && dY.absoluteValue < min) return Offset.Empty
+        return offsetOf(
+            dX = dX,
+            dY = dY,
+        )
     }
 
     private fun onRenderIntersections(
@@ -605,6 +633,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     override fun onRender(canvas: Canvas) {
+        joystickStorage.update()
         val previous = player.copy()
         val padding = measure.transform(1.0)
         val timeDiff = engine.property.time.diff()
@@ -653,7 +682,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             lineWidth = 1f
         )
         */
-        val playerOffset = engine.input.keyboard.getPlayerOffset()
+//        val playerOffset = engine.input.keyboard.getPlayerOffset()
+        val joystick = joystickStorage.getJoysticks()[0]
+        val playerOffset = if (joystick == null) {
+            engine.input.keyboard.getPlayerOffset()
+        } else {
+            joystick.getPlayerOffset()
+        }
 //        onRenderIntersections(
 //            canvas = canvas,
 //            actual = player.point,
@@ -679,8 +714,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     player.direction.actual = actual.radians()
                 }
             }
+            val length = player.speed.length(timeDiff)
+//            val multiplier = distanceOf(playerOffset) / distanceOf(offsetOf(1, 1))
+            val multiplier = kotlin.math.min(1.0, distanceOf(playerOffset))
+//            val multiplier = kotlin.math.sqrt(playerOffset.dX * playerOffset.dX + playerOffset.dY * playerOffset.dY)
             val target = player.point.moved(
-                length = player.speed.length(timeDiff),
+                length = length * multiplier,
                 angle = player.direction.expected,
             )
 //            onRenderIntersections(
@@ -731,13 +770,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             edgeCount = 16,
             lineWidth = 1f
         )
-        canvas.drawCircle(
-            color = Color.BLUE,
-            pointCenter = center + measure,
-            radius = measure.transform(player.radius + player.speed.length(16.milliseconds)),
-            edgeCount = 32,
-            lineWidth = 1f
-        ) // todo
         onRenderBarriers(
             canvas = canvas,
             offset = offset,

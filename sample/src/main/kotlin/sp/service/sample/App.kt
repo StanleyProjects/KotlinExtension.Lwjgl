@@ -7,6 +7,6 @@ import sp.service.sample.logic.TestEngineLogic
 
 fun main() {
 //	EngineUtil.run(::GameEngineLogic)
-//	EngineUtil.run(::TestEngineLogic)
-	EngineUtil.run(::InputEngineLogic)
+	EngineUtil.run(::TestEngineLogic)
+//	EngineUtil.run(::InputEngineLogic)
 }
