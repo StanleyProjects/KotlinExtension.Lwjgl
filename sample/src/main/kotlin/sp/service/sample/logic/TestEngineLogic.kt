@@ -17,6 +17,7 @@ import sp.kx.math.Size
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
+import sp.kx.math.centerPoint
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
@@ -67,10 +68,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val direction: MutableDeviation<Double> = MutableDeviation(0.0, 0.0),
         val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
     ) {
-//        private val width = 2.0
-        private val width = 4.0 // todo
+        private val width = 2.0
+//        private val width = 4.0 // todo
 //        private val width = 6.0 // todo
-        private val size = sizeOf(width = width, height = width)
+        val size = sizeOf(width = width, height = width)
         val radius: Double = kotlin.math.sqrt(2.0) * size.width / 2
 
         fun copy(): Player {
@@ -96,18 +97,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return list
     }
 
-    private val barriers = listOf(
-        Barrier(
-            color = Color.GREEN,
-            vector = pointOf(-5, 7) + pointOf(5, 7),
-            passable = Barrier.Passable.Not,
-        ),
-        Barrier(
-            color = Color.BLUE,
-            vector = pointOf(-5, -7) + pointOf(5, -7),
-            passable = Barrier.Passable.Full,
-        ),
-    )
+    private val walls = listOf(
+        pointOf(x = -13, y = 3),
+        pointOf(x = -7, y = 3),
+        pointOf(x = -7, y = 6),
+        pointOf(x = 7, y = 6),
+        pointOf(x = 7, y = 3),
+    ).toVectors()
 
     /*
     private val barriers = listOf(
@@ -306,19 +302,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    private fun onRenderBarriers(
+    private fun onRenderVectors(
         canvas: Canvas,
         offset: Offset,
-        barriers: List<Barrier>,
+        vectors: List<Vector>,
         measure: Measure<Double, Double>,
     ) {
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val dotSize = sizeOf(width = 0.25, height = 0.25)
         val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
-        barriers.forEach { barrier ->
-            val vector = barrier.vector
+        vectors.forEach { vector ->
             canvas.vectors.draw(
-                color = barrier.color,
+                color = Color.BLUE,
                 vector = vector,
                 offset = offset,
                 measure = measure,
@@ -336,28 +331,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 size = dotSize + measure,
                 lineWidth = 2f,
             )
-            when (barrier.passable) {
-                Barrier.Passable.Full -> {
-                    canvas.texts.draw(
-                        color = Color.GREEN,
-                        info = info,
-                        pointTopLeft = vector.start,
-                        offset = offset,
-                        measure = measure,
-                        text = "f",
-                    )
-                }
-                Barrier.Passable.Not -> {
-                    canvas.texts.draw(
-                        color = Color.RED,
-                        info = info,
-                        pointTopLeft = vector.start,
-                        offset = offset,
-                        measure = measure,
-                        text = "n",
-                    )
-                }
-            }
         }
     }
 
@@ -456,13 +429,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun getCorrectedPoint(
-        minLength: Double,
+        minDistance: Double,
         target: Point,
         vector: Vector,
     ): Point {
         val shortestPoint = vector.getShortestPoint(target = target)
         val angle = angleOf(a = shortestPoint, b = target)
-        return shortestPoint.moved(length = minLength, angle = angle)
+        return shortestPoint.moved(length = minDistance, angle = angle)
     }
 
     private fun angleOf(p1: Point, p2: Point, p3: Point): Double {
@@ -471,17 +444,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val c = distanceOf(p1, p2)
         val cosA = (a * a + c * c - b * b) / 2 * a * c
         return kotlin.math.acos(cosA)
-    }
-
-    private fun getCorrectedPoint(
-        minLength: Double,
-        target: Point,
-        barrier: Barrier,
-    ): Point {
-        return when (barrier.passable) {
-            Barrier.Passable.Full -> target
-            Barrier.Passable.Not -> getCorrectedPoint(minLength = minLength, target = target, vector = barrier.vector)
-        }
     }
 
     private fun <T : Any> Iterable<T>.print(
@@ -500,37 +462,30 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return getShortestDistance(point).lt(other = minDistance, points = 12)
     }
 
-    private fun Barrier.isAllowed(point: Point, minDistance: Double): Boolean {
-        return when (passable) {
-            Barrier.Passable.Full -> true
-            Barrier.Passable.Not -> !vector.closerThan(point = point, minDistance = minDistance)
-        }
-    }
-
     private fun getFinalPoint(
         player: Player,
-        minLength: Double,
+        minDistance: Double,
         target: Point,
-        barriers: List<Barrier>,
+        vectors: List<Vector>,
     ): Point? {
         val targetDistance = distanceOf(player.point, target)
-        val nearest = barriers.filter { barrier ->
-            barrier.vector.closerThan(point = player.point, minDistance = targetDistance + minLength)
+        val nearest = vectors.filter { vector ->
+            vector.closerThan(point = player.point, minDistance = targetDistance + minDistance)
         }
-        val filtered = nearest.filter { barrier ->
-            barrier.vector.closerThan(point = target, minDistance = minLength)
+        val filtered = nearest.filter { vector ->
+            vector.closerThan(point = target, minDistance = minDistance)
         }
         if (filtered.isEmpty()) return target
-        val correctedPoints = nearest.map { barrier ->
+        val correctedPoints = nearest.map { vector ->
             getCorrectedPoint(
-                minLength = minLength,
+                minDistance = minDistance,
                 target = target,
-                barrier = barrier,
+                vector = vector,
             )
         }
         val allowedPoints = correctedPoints.filter { point ->
-            nearest.all { barrier ->
-                barrier.isAllowed(point = point, minDistance = minLength)
+            nearest.none { vector ->
+                vector.closerThan(point = point, minDistance = minDistance)
             }
         }
         if (allowedPoints.isEmpty()) {
@@ -643,9 +598,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            ) // todo
             val finalPoint = getFinalPoint(
                 player = player,
-                minLength = player.radius,
+                minDistance = player.radius,
                 target = target,
-                barriers = barriers.filter { it.passable != Barrier.Passable.Full },
+                vectors = walls,
             )
             if (finalPoint != null) {
                 player.point.set(finalPoint)
@@ -681,18 +636,25 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
             lineWidth = 4f,
         )
-        // todo
-        canvas.drawCircle(
-            color = Color.WHITE,
-            pointCenter = center + measure,
-            radius = measure.transform(player.radius),
-            edgeCount = 16,
-            lineWidth = 1f
+//        canvas.drawCircle(
+//            color = Color.WHITE,
+//            pointCenter = center + measure,
+//            radius = measure.transform(player.radius),
+//            edgeCount = 16,
+//            lineWidth = 1f,
+//        ) // todo
+        canvas.drawRectangle(
+            color = Color.BLUE,
+            pointTopLeft = center - player.size.center() + measure,
+            size = player.size + measure,
+            direction = player.direction.actual,
+            pointOfRotation = center + measure,
+            lineWidth = 1f,
         )
-        onRenderBarriers(
+        onRenderVectors(
             canvas = canvas,
             offset = offset,
-            barriers = barriers,
+            vectors = walls,
             measure = measure,
         ) // todo
 //        onRenderTriangles(
