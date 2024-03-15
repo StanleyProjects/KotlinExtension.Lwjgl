@@ -119,11 +119,28 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val vector: Vector,
     )
 
+    private val barrierId = UUID.randomUUID()
     private val barriers = listOf(
         Barrier(
-            id = UUID.randomUUID(),
+            id = barrierId,
             vector = pointOf(x = 7, y = 3) + pointOf(x = 7, y = -3),
         ),
+    )
+
+    private class Relay(
+        val id: UUID,
+        val enabled: Boolean,
+    )
+
+    private val relayId = UUID.randomUUID()
+    private val relays = listOf(
+        Relay(
+            id = relayId,
+            enabled = false,
+        ),
+    )
+    private val relaysPoints = mapOf(
+        relayId to pointOf(-10, 0),
     )
 
     /*
@@ -330,7 +347,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         measure: Measure<Double, Double>,
     ) {
         val dotSize = sizeOf(width = 0.25, height = 0.25)
-        val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
+        val dotOffset = dotSize.center() * -1.0
         barriers.forEach { barrier ->
             val vector = barrier.vector
             canvas.vectors.draw(
@@ -363,7 +380,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         measure: Measure<Double, Double>,
     ) {
         val dotSize = sizeOf(width = 0.1, height = 0.1)
-        val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
+        val dotOffset = dotSize.center() * -1.0
         vectors.forEach { vector ->
             canvas.vectors.draw(
                 color = color,
@@ -383,6 +400,34 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 pointTopLeft = vector.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
                 lineWidth = 2f,
+            )
+        }
+    }
+
+    private fun onRenderRelays(
+        canvas: Canvas,
+        offset: Offset,
+        relays: List<Relay>,
+        measure: Measure<Double, Double>,
+    ) {
+        val info = FontInfoUtil.getFontInfo(height = 14f)
+        val size = sizeOf(2, 2)
+        val itemOffset = size.center() * -1.0
+        for (relay in relays) {
+            val point = relaysPoints[relay.id] ?: continue
+            canvas.drawRectangle(
+                color = colorOf(0xff888888),
+                pointTopLeft = point + offset + itemOffset + measure,
+                size = size + measure,
+                lineWidth = 2f,
+            )
+            canvas.texts.draw(
+                color = if (relay.enabled) Color.GREEN else Color.RED,
+                info = info,
+                pointTopLeft = point + itemOffset,
+                offset = offset,
+                measure = measure,
+                text = if (relay.enabled) "on" else "off",
             )
         }
     }
@@ -715,6 +760,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas = canvas,
             offset = offset,
             barriers = barriers,
+            measure = measure,
+        ) // todo
+        onRenderRelays(
+            canvas = canvas,
+            offset = offset,
+            relays = relays,
             measure = measure,
         ) // todo
 //        onRenderTriangles(
