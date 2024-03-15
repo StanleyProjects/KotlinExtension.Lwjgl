@@ -56,6 +56,7 @@ import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -103,7 +104,27 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -7, y = 6),
         pointOf(x = 7, y = 6),
         pointOf(x = 7, y = 3),
+        pointOf(x = 13, y = 3),
+        pointOf(x = 13, y = -3),
+        pointOf(x = 7, y = -3),
+        pointOf(x = 7, y = -6),
+        pointOf(x = -7, y = -6),
+        pointOf(x = -7, y = -3),
+        pointOf(x = -13, y = -3),
+        pointOf(x = -13, y = 3),
     ).toVectors()
+
+    private class Barrier(
+        val id: UUID,
+        val vector: Vector,
+    )
+
+    private val barriers = listOf(
+        Barrier(
+            id = UUID.randomUUID(),
+            vector = pointOf(x = 7, y = 3) + pointOf(x = 7, y = -3),
+        ),
+    )
 
     /*
     private val barriers = listOf(
@@ -302,18 +323,50 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    private fun onRenderBarriers(
+        canvas: Canvas,
+        offset: Offset,
+        barriers: List<Barrier>,
+        measure: Measure<Double, Double>,
+    ) {
+        val dotSize = sizeOf(width = 0.25, height = 0.25)
+        val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
+        barriers.forEach { barrier ->
+            val vector = barrier.vector
+            canvas.vectors.draw(
+                color = Color.RED,
+                vector = vector,
+                offset = offset,
+                measure = measure,
+                lineWidth = 4f,
+            )
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = vector.start + offset + dotOffset + measure,
+                size = dotSize + measure,
+                lineWidth = 2f,
+            )
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = vector.finish + offset + dotOffset + measure,
+                size = dotSize + measure,
+                lineWidth = 2f,
+            )
+        }
+    }
+
     private fun onRenderVectors(
         canvas: Canvas,
+        color: Color,
         offset: Offset,
         vectors: List<Vector>,
         measure: Measure<Double, Double>,
     ) {
-        val info = FontInfoUtil.getFontInfo(height = 16f)
-        val dotSize = sizeOf(width = 0.25, height = 0.25)
+        val dotSize = sizeOf(width = 0.1, height = 0.1)
         val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
         vectors.forEach { vector ->
             canvas.vectors.draw(
-                color = Color.BLUE,
+                color = color,
                 vector = vector,
                 offset = offset,
                 measure = measure,
@@ -653,8 +706,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         onRenderVectors(
             canvas = canvas,
+            color = Color.BLUE,
             offset = offset,
             vectors = walls,
+            measure = measure,
+        ) // todo
+        onRenderBarriers(
+            canvas = canvas,
+            offset = offset,
+            barriers = barriers,
             measure = measure,
         ) // todo
 //        onRenderTriangles(
