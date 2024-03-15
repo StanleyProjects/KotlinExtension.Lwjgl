@@ -52,6 +52,7 @@ import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.lwjgl.joysticks.Joystick
 import sp.lwjgl.joysticks.JoystickAxis
+import sp.lwjgl.joysticks.JoystickButton
 import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
@@ -203,6 +204,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         ),
         onPressButton = { metaData, button, isPressed ->
             println("Joystick #${metaData.number} $button pressed: $isPressed")
+            when (button) {
+                JoystickButton.A -> {
+                    if (isPressed) {
+                        relays.change(
+                            keySupplier = ::getNearestRelayId,
+                            valueTransform = Relay::toggled,
+                        )
+                    }
+                }
+                else -> {
+                    // todo
+                }
+            }
         },
     )
 
@@ -437,7 +451,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             edgeCount = 16,
             lineWidth = 1f,
         )
-        val text = "F"
+        val text = if (joystickStorage.getJoysticks().isEmpty()) "F" else "A"
         val textWidth = engine.fontAgent.getTextWidth(info, text)
         val textOffset = offsetOf(
             dX = measure.units(-textWidth / 2),
