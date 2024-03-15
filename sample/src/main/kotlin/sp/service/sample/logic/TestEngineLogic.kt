@@ -128,14 +128,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     )
 
     private class Relay(
-        val id: UUID,
         val enabled: Boolean,
-    )
+    ) {
+        fun toggled(): Relay {
+            return Relay(enabled = !enabled)
+        }
+    }
 
     private val relayId = UUID.randomUUID()
-    private val relays = listOf(
-        Relay(
-            id = relayId,
+    private val relays = mutableMapOf(
+        relayId to Relay(
             enabled = false,
         ),
     )
@@ -206,6 +208,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 KeyboardButton.ESCAPE -> {
                     if (isPressed) {
                         shouldEngineStopUnit = Unit
+                    }
+                }
+                KeyboardButton.F -> {
+                    if (isPressed) {
+                        relays.change(
+                            keySupplier = ::getNearestRelayId,
+                            valueTransform = Relay::toggled,
+                        )
                     }
                 }
                 else -> {
@@ -404,30 +414,70 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onRenderRelayInteraction(
+        canvas: Canvas,
+        offset: Offset,
+        id: UUID,
+        measure: Measure<Double, Double>,
+    ) {
+        val point = relaysPoints[id] ?: return
+        val info = FontInfoUtil.getFontInfo(height = 14f)
+        val rOffset = offsetOf(1.75, -1.75)
+        val radius = 0.75
+        canvas.drawCircle(
+            color = Color.GREEN,
+            pointCenter = point + offset + rOffset + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            lineWidth = 1f,
+        )
+        val text = "F"
+        val textWidth = engine.fontAgent.getTextWidth(info, text)
+        val textOffset = offsetOf(
+            dX = measure.units(-textWidth / 2),
+            dY = measure.units(-info.height.toDouble() / 2),
+        )
+        // todo offset - measure
+        canvas.texts.draw(
+            color = Color.GREEN,
+            info = info,
+            pointTopLeft = point + rOffset + textOffset,
+            offset = offset,
+            measure = measure,
+            text = text,
+        )
+    }
+
     private fun onRenderRelays(
         canvas: Canvas,
         offset: Offset,
-        relays: List<Relay>,
         measure: Measure<Double, Double>,
     ) {
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val size = sizeOf(2, 2)
         val itemOffset = size.center() * -1.0
-        for (relay in relays) {
-            val point = relaysPoints[relay.id] ?: continue
+        for ((id, relay) in relays) {
+            val point = relaysPoints[id] ?: continue
             canvas.drawRectangle(
                 color = colorOf(0xff888888),
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
                 lineWidth = 2f,
             )
+            val text = if (relay.enabled) "on" else "off"
+            val textWidth = engine.fontAgent.getTextWidth(info, text)
+            val textOffset = offsetOf(
+                dX = measure.units(-textWidth / 2),
+                dY = measure.units(-info.height.toDouble() / 2),
+            )
+            // todo offset - measure
             canvas.texts.draw(
                 color = if (relay.enabled) Color.GREEN else Color.RED,
                 info = info,
-                pointTopLeft = point + itemOffset,
+                pointTopLeft = point + textOffset,
                 offset = offset,
                 measure = measure,
-                text = if (relay.enabled) "on" else "off",
+                text = text,
             )
         }
     }
@@ -558,6 +608,27 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun Vector.closerThan(point: Point, minDistance: Double): Boolean {
         return getShortestDistance(point).lt(other = minDistance, points = 12)
+    }
+
+    private fun <K : Any, V : Any> MutableMap<K, V>.change(
+        keySupplier: () -> K?,
+        valueTransform: (V) -> V,
+    ) {
+        val key = keySupplier() ?: return
+        val value = get(key) ?: return
+        put(key, valueTransform(value))
+    }
+
+    private fun getNearestRelayId(): UUID? {
+        val minDistance = player.radius * 1.5
+        val results = mutableMapOf<UUID, Double>()
+        for (id in relays.keys) {
+            val distance = distanceOf(player.point, relaysPoints[id] ?: continue)
+            if (distance.lt(other = minDistance, points = 12)) {
+                results[id] = distance
+            }
+        }
+        return results.entries.minByOrNull { (_, distance) -> distance }?.key
     }
 
     private fun getFinalPoint(
@@ -698,7 +769,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 player = player,
                 minDistance = player.radius,
                 target = target,
-                vectors = walls,
+                vectors = walls + barriers.filter {
+                    true // todo
+                }.map { it.vector },
             )
             if (finalPoint != null) {
                 player.point.set(finalPoint)
@@ -715,6 +788,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                length = player.speed.length(timeDiff),
 //                angle = player.direction.expected,
 //            ) // todo
+        }
+        val nearestRelayId = getNearestRelayId()
+        if (nearestRelayId != null) {
+            onRenderRelayInteraction(
+                canvas = canvas,
+                offset = offset,
+                id = nearestRelayId,
+                measure = measure,
+            )
         }
         canvas.vectors.draw(
             color = Color.YELLOW,
@@ -765,7 +847,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         onRenderRelays(
             canvas = canvas,
             offset = offset,
-            relays = relays,
             measure = measure,
         ) // todo
 //        onRenderTriangles(
