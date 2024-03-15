@@ -32,7 +32,13 @@ internal class GLTextDrawer(
         measure: Measure<Double, Double>,
         text: CharSequence
     ) {
-        TODO("draw:point,measure")
+        fontDrawer.drawText(
+            info = info,
+            xTopLeft = measure.transform(pointTopLeft.x),
+            yTopLeft = measure.transform(pointTopLeft.y),
+            color = color,
+            text = text,
+        )
     }
 
     override fun draw(

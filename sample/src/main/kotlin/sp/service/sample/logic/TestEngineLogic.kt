@@ -66,7 +66,7 @@ import kotlin.time.Duration.Companion.milliseconds
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player(
         val point: MutablePoint = MutablePoint(x = 0.0, y = 0.0),
-        val speed: MutableSpeed = MutableSpeed(5.0, TimeUnit.SECONDS),
+        val speed: MutableSpeed = MutableSpeed(7.5, TimeUnit.SECONDS),
         val direction: MutableDeviation<Double> = MutableDeviation(0.0, 0.0),
         val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
     ) {
@@ -248,8 +248,39 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun debug(previous: Player, canvas: Canvas) {
-        val padding = measure.transform(1.0)
         val info = FontInfoUtil.getFontInfo(height = 16f)
+        val padding = measure.transform(1.0)
+        val fps = engine.property.time.frequency()
+        canvas.texts.draw(
+            info = info,
+            pointTopLeft = pointOf(x = 1, y = 1),
+            measure = measure,
+            color = Color.GREEN,
+            text = fps.toString(6, 2)
+        )
+        2.0.also { length ->
+            val center = engine.property.pictureSize.centerPoint().let {
+                pointOf(
+                    x = measure.units(it.x),
+                    y = measure.units(it.y),
+                )
+            }
+            val offset = center - player.point
+            canvas.vectors.draw(
+                color = Color.GREEN,
+                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length),
+                offset = offset,
+                measure = measure,
+                lineWidth = 1f,
+            )
+            canvas.vectors.draw(
+                color = Color.GREEN,
+                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0),
+                offset = offset,
+                measure = measure,
+                lineWidth = 1f,
+            )
+        }
         val x = padding
 //        val (bi, barrier, shortest) = barriers
 //            .mapIndexed { index, it -> Triple(index, it, it.getShortestDistance(player.point)) }
@@ -697,15 +728,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     override fun onRender(canvas: Canvas) {
         joystickStorage.update()
         val previous = player.copy()
-        val padding = measure.transform(1.0)
         val timeDiff = engine.property.time.diff()
-        val fps = engine.property.time.frequency()
-        canvas.drawText(
-            info = FontInfoUtil.getFontInfo(height = 16f),
-            pointTopLeft = pointOf(x = padding, y = padding),
-            color = Color.GREEN,
-            text = fps.toString(6, 2)
-        )
 //        val center = engine.property.pictureSize.centerPoint()
         val center = pointOf(
             x = measure.units(engine.property.pictureSize.width / 2),
@@ -713,22 +736,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
 //        val relative = center - (player.point + measure)
         val offset = center - player.point
-        2.0.also { length ->
-            canvas.vectors.draw(
-                color = Color.GREEN,
-                vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length),
-                offset = offset,
-                measure = measure,
-                lineWidth = 1f,
-            )
-            canvas.vectors.draw(
-                color = Color.GREEN,
-                vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0),
-                offset = offset,
-                measure = measure,
-                lineWidth = 1f,
-            )
-        }
         /*
         val length = 2.0
         canvas.drawLine(
@@ -883,9 +890,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            barriers = barriers,
 //            measure = measure,
 //        ) // todo
-        debug(
-            previous = previous,
-            canvas = canvas,
-        ) // todo
+//        debug(
+//            previous = previous,
+//            canvas = canvas,
+//        ) // todo
     }
 }
