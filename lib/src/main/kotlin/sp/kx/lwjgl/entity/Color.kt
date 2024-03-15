@@ -1,5 +1,7 @@
 package sp.kx.lwjgl.entity
 
+import java.math.BigInteger
+
 interface Color {
     companion object {
         const val MAX_VALUE = 1f
@@ -26,6 +28,26 @@ private data class ColorImpl(
     override val alpha: Float
 ): Color
 
+private fun Long.toFloatArray(): FloatArray {
+    return FloatArray(4) {
+        shr(24 - it * 8).and(0xff).toFloat()
+    }
+}
+
+fun colorOf(value: Long): Color {
+    val array = value.toFloatArray()
+    val alpha = array[0] / 255
+    val red = array[1] / 255
+    val green = array[2] / 255
+    val blue = array[3] / 255
+    return color(
+        alpha = alpha,
+        red = red,
+        green = green,
+        blue = blue,
+    )
+}
+
 fun color(
     red: Float,
     green: Float,
@@ -39,7 +61,7 @@ fun color(
         "blue" to blue
     ).forEach { (key, value) ->
         check(value in expectedRange) {
-            "The color $key is out of range $expectedRange!"
+            "The color $key($value) is out of range $expectedRange!"
         }
     }
     check(alpha in expectedRange) {

@@ -6,6 +6,7 @@ import sp.kx.lwjgl.engine.EngineLogic
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
@@ -56,6 +57,7 @@ import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
+import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
@@ -94,6 +96,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return list
     }
 
+    private val barriers = listOf(
+        Barrier(
+            color = Color.GREEN,
+            vector = pointOf(-5, 7) + pointOf(5, 7),
+            passable = Barrier.Passable.Not,
+        ),
+        Barrier(
+            color = Color.BLUE,
+            vector = pointOf(-5, -7) + pointOf(5, -7),
+            passable = Barrier.Passable.Full,
+        ),
+    )
+
+    /*
     private val barriers = listOf(
         pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
         pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2),
@@ -135,6 +151,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             pointOf(x = dX - 16 - 4, y = dY + 4),
         ).toVectors()
     }
+    */
 
     private lateinit var shouldEngineStopUnit: Unit
     private val ds4Mapping = JsonJoystickMapping(
@@ -289,42 +306,58 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    @Deprecated(message = "sp.kx.math.plus")
-    private operator fun Offset.plus(other: Offset): Offset {
-        return offsetOf(
-            dX = dX + other.dX,
-            dY = dY + other.dY,
-        )
-    }
-
     private fun onRenderBarriers(
         canvas: Canvas,
         offset: Offset,
-        barriers: List<Vector>,
+        barriers: List<Barrier>,
         measure: Measure<Double, Double>,
     ) {
+        val info = FontInfoUtil.getFontInfo(height = 16f)
         val dotSize = sizeOf(width = 0.25, height = 0.25)
         val dotOffset = offsetOf(dX = dotSize.width / 2, dY = dotSize.height / 2) * -1.0
         barriers.forEach { barrier ->
+            val vector = barrier.vector
             canvas.vectors.draw(
-                color = Color.BLUE,
-                vector = barrier,
+                color = barrier.color,
+                vector = vector,
                 offset = offset,
                 measure = measure,
                 lineWidth = 4f,
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
-                pointTopLeft = barrier.start + offset + dotOffset + measure,
+                pointTopLeft = vector.start + offset + dotOffset + measure,
                 size = dotSize + measure,
                 lineWidth = 2f,
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
-                pointTopLeft = barrier.finish + offset + dotOffset + measure,
+                pointTopLeft = vector.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
                 lineWidth = 2f,
             )
+            when (barrier.passable) {
+                Barrier.Passable.Full -> {
+                    canvas.texts.draw(
+                        color = Color.GREEN,
+                        info = info,
+                        pointTopLeft = vector.start,
+                        offset = offset,
+                        measure = measure,
+                        text = "f",
+                    )
+                }
+                Barrier.Passable.Not -> {
+                    canvas.texts.draw(
+                        color = Color.RED,
+                        info = info,
+                        pointTopLeft = vector.start,
+                        offset = offset,
+                        measure = measure,
+                        text = "n",
+                    )
+                }
+            }
         }
     }
 
@@ -425,11 +458,30 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private fun getCorrectedPoint(
         minLength: Double,
         target: Point,
-        barrier: Vector,
+        vector: Vector,
     ): Point {
-        val shortestPoint = barrier.getShortestPoint(target = target)
+        val shortestPoint = vector.getShortestPoint(target = target)
         val angle = angleOf(a = shortestPoint, b = target)
         return shortestPoint.moved(length = minLength, angle = angle)
+    }
+
+    private fun angleOf(p1: Point, p2: Point, p3: Point): Double {
+        val a = distanceOf(p1, p3)
+        val b = distanceOf(p2, p3)
+        val c = distanceOf(p1, p2)
+        val cosA = (a * a + c * c - b * b) / 2 * a * c
+        return kotlin.math.acos(cosA)
+    }
+
+    private fun getCorrectedPoint(
+        minLength: Double,
+        target: Point,
+        barrier: Barrier,
+    ): Point {
+        return when (barrier.passable) {
+            Barrier.Passable.Full -> target
+            Barrier.Passable.Not -> getCorrectedPoint(minLength = minLength, target = target, vector = barrier.vector)
+        }
     }
 
     private fun <T : Any> Iterable<T>.print(
@@ -448,41 +500,37 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return getShortestDistance(point).lt(other = minDistance, points = 12)
     }
 
+    private fun Barrier.isAllowed(point: Point, minDistance: Double): Boolean {
+        return when (passable) {
+            Barrier.Passable.Full -> true
+            Barrier.Passable.Not -> !vector.closerThan(point = point, minDistance = minDistance)
+        }
+    }
+
     private fun getFinalPoint(
         player: Player,
         minLength: Double,
         target: Point,
-        barriers: List<Vector>,
+        barriers: List<Barrier>,
     ): Point? {
         val targetDistance = distanceOf(player.point, target)
-        val nearest = barriers.filter {
-            it.closerThan(point = player.point, minDistance = targetDistance + minLength)
+        val nearest = barriers.filter { barrier ->
+            barrier.vector.closerThan(point = player.point, minDistance = targetDistance + minLength)
         }
-        val filtered = nearest.filter {
-            it.closerThan(point = target, minDistance = minLength)
+        val filtered = nearest.filter { barrier ->
+            barrier.vector.closerThan(point = target, minDistance = minLength)
         }
         if (filtered.isEmpty()) return target
-//        filtered.print(title = "filtered")
-//        val intersected = filtered.filter { vector ->
-//            vector.getIntersection(
-//                c = player.point,
-//                d = target,
-//            ) != null
-//        }
-//        if (intersected.isEmpty()) {
-//            println("Intersected is empty!")
-//            return null // todo
-//        }
-        val correctedPoints = nearest.map { vector ->
+        val correctedPoints = nearest.map { barrier ->
             getCorrectedPoint(
                 minLength = minLength,
                 target = target,
-                barrier = vector,
+                barrier = barrier,
             )
         }
         val allowedPoints = correctedPoints.filter { point ->
-            nearest.none {
-                it.closerThan(point = point, minDistance = minLength)
+            nearest.all { barrier ->
+                barrier.isAllowed(point = point, minDistance = minLength)
             }
         }
         if (allowedPoints.isEmpty()) {
@@ -493,143 +541,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             distanceOf(player.point, it)
         }
         return finalPoint
-    }
-
-    @Deprecated(message = "getFinalPoint")
-    private fun getFinalPointOld(
-        player: Player,
-        minLength: Double,
-        target: Point,
-        barriers: List<Vector>,
-    ): Point? {
-        // todo Intersection size: 2!
-        // todo Intersection size: 0! Filtered size: 1! Barrier is parallel!
-        // todo barriers.any { it.getShortestDistance(finalPoint) < minLength }
-        val targetDistance = distanceOf(player.point, target)
-        val filtered = barriers.filter {
-//            it.getShortestDistance(target).lt(other = minLength, points = 12)
-            it.getShortestDistance(player.point).lt(other = targetDistance + minLength, points = 12)
-        }
-        if (filtered.isEmpty()) {
-//            println("Filtered points are empty!")
-            return target
-        }
-        val parallels = filtered.filter { vector ->
-            vector.isParallel(
-                c = player.point,
-                d = target,
-            )
-        }
-        val intersections = filtered.associateWithNotNull { vector ->
-//            val cd = player.point + target
-//            if (vector.isParallel(cd)) println("Vector $vector is parallel to $cd!")
-//            if (vector.isCollinear(cd.start)) println("Vector $vector is collinear to ${cd.start}!")
-//            if (vector.isCollinear(cd.finish)) println("Vector $vector is collinear to ${cd.finish}!")
-            vector.getIntersection(
-                c = player.point,
-                d = target,
-            )
-        }
-        if (intersections.isEmpty()) {
-            if (filtered.size == 1) {
-                val barrier = filtered.single()
-                val isParallel = barrier.isParallel(
-                    c = player.point,
-                    d = target,
-                )
-                println("Intersection points are empty! Filtered: $barrier is parallel($isParallel)")
-//                if (isParallel) return target // todo
-                return null // todo
-            } else {
-                val message = """
-                    |Intersection points are empty!
-                    |point: ${player.point + target}
-                    |filtered:
-                    ${filtered.joinToString(separator = "\n") { "| - $it" }}
-                """.trimMargin()
-                println(message)
-                return null // todo
-            }
-        }
-        if (intersections.size != 1) {
-            println("Intersection size: ${intersections.size}!")
-            return null // todo
-        }
-        if (parallels.isNotEmpty()) {
-            println("Parallels size: ${parallels.size}!")
-            return null // todo
-        }
-        val (barrier, intersection) = intersections.entries.single()
-        /*
-        if (intersection == null) {
-            // dis: 1.414213562373095
-            // min: 1.4142135623730951
-            val shortestBarrier = barriers.firstOrNull {
-                it.getShortestDistance(target).lt(other = minLength, points = 12)
-            }
-            if (shortestBarrier != null) {
-                println("No intersection with: $barrier!")
-                val distance = shortestBarrier.getShortestDistance(target)
-                println("Shortest barrier: $shortestBarrier\ndistance: $distance\nmin: $minLength")
-                return null // todo
-            }
-//            val allowed = !barriers.any { it.getShortest(target) < minLength}
-//            if (!allowed) {
-//                println("No intersection with $barrier!")
-//                println("Couldn't calculate the final point!")
-//                return null // todo
-//            }
-            return target
-        }
-        */
-        // todo check (player.point + target) contains intersection
-        //
-//        val perpendicular = barrier.getPerpendicular(target = target)
-//        val angle = angleOf(a = perpendicular, b = target)
-//        val finalPoint = perpendicular.moved(length = minLength, angle = angle)
-        //
-        val correctedPoint = getCorrectedPoint(
-            minLength = minLength,
-            target = target,
-            barrier = barrier,
-        )
-        //
-//        val barrier = barriers.firstOrNull { it.getShortest(finalPoint) < minLength}
-//        if () {
-//            println("Couldn't calculate the final point!")
-//            return null // todo
-//        }
-        println("final: $correctedPoint")
-        val finals = barriers.filter {
-            it.getShortestDistance(correctedPoint).lt(other = minLength, points = 12)
-        }
-        if (finals.isNotEmpty()) {
-            println("Finals:\n${finals.joinToString(separator = "\n")}\n")
-            return null // todo
-        }
-        return correctedPoint
-//        return null // todo
-    }
-
-    private fun allowed(
-        player: Player,
-        target: Point,
-        barriers: List<Vector>,
-    ): Boolean {
-        val filtered = barriers.filter {
-            it.getShortestDistance(target) < player.radius
-        }
-        if (filtered.isEmpty()) {
-            return true
-        }
-//        val intersections = filtered.mapNotNull {
-//            getIntersectionPointOrNull(
-//                v1 = it,
-//                v2 = player.point + target,
-//            )
-//        } // todo
-        return false // todo
-//        return true // todo
     }
 
     override fun onRender(canvas: Canvas) {
@@ -734,7 +645,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 player = player,
                 minLength = player.radius,
                 target = target,
-                barriers = barriers,
+                barriers = barriers.filter { it.passable != Barrier.Passable.Full },
             )
             if (finalPoint != null) {
                 player.point.set(finalPoint)
