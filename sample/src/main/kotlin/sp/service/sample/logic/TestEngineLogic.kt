@@ -145,6 +145,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         relayId to pointOf(-10, 0),
     )
 
+    private val relaysToBarriers = mapOf(
+        relayId to setOf(barrierId),
+    )
+
     /*
     private val barriers = listOf(
         pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
@@ -360,8 +364,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val dotOffset = dotSize.center() * -1.0
         barriers.forEach { barrier ->
             val vector = barrier.vector
+            val isPassable = isPassable(barrier)
+            val color = if (isPassable) Color.GREEN else Color.RED
             canvas.vectors.draw(
-                color = Color.RED,
+                color = color,
                 vector = vector,
                 offset = offset,
                 measure = measure,
@@ -397,7 +403,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = vector,
                 offset = offset,
                 measure = measure,
-                lineWidth = 4f,
+                lineWidth = 2f,
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
@@ -667,6 +673,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return finalPoint
     }
 
+    private fun isPassable(barrier: Barrier): Boolean {
+        return relays.none { (id, relay) ->
+            val contains = relaysToBarriers[id]?.contains(barrier.id) ?: false
+            contains && !relay.enabled
+        }
+    }
+
     override fun onRender(canvas: Canvas) {
         joystickStorage.update()
         val previous = player.copy()
@@ -769,8 +782,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 player = player,
                 minDistance = player.radius,
                 target = target,
-                vectors = walls + barriers.filter {
-                    true // todo
+                vectors = walls + barriers.filter { barrier ->
+                    !isPassable(barrier)
                 }.map { it.vector },
             )
             if (finalPoint != null) {
@@ -859,7 +872,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         debug(
             previous = previous,
             canvas = canvas,
-        )
-        // todo
+        ) // todo
     }
 }
