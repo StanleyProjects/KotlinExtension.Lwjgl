@@ -3,15 +3,16 @@ repositories {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
 }
 
+version = "0.1.0"
+
 plugins {
     id("application")
     id("org.jetbrains.kotlin.jvm")
 }
 
 application {
-    mainClass.set("sp.service.sample.AppKt")
+    mainClass = "sp.service.sample.AppKt"
 }
-
 
 tasks.getByName<JavaCompile>("compileJava") {
     targetCompatibility = Version.jvmTarget
@@ -40,7 +41,6 @@ dependencies {
     val group = LwjglUtil.group
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
     val classifier = LwjglUtil.requireNativesName()
-//    implementation(group = group, name = "lwjgl-glfw") // todo
     LwjglUtil.modules.forEach { name ->
         runtimeOnly(group = group, name = name, classifier = classifier)
     }
