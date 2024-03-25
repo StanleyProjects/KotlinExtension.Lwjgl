@@ -1,6 +1,5 @@
 package sp.service.sample.logic
 
-import org.json.JSONArray
 import org.json.JSONObject
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
@@ -60,6 +59,12 @@ import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
+import sp.service.sample.util.objects
+import sp.service.sample.util.strings
+import sp.service.sample.util.toBarrier
+import sp.service.sample.util.toCondition
+import sp.service.sample.util.toMap
+import sp.service.sample.util.toRelay
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
@@ -124,70 +129,23 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -13, y = 3),
     ).toVectors()
 
-    private fun <T : Any> JSONArray.map(transform: (index: Int, JSONArray) -> T): List<T> {
-        return (0 until length()).map { index ->
-            transform(index, this)
-        }
-    }
-
-    private fun <T : Any> JSONArray.mapObjects(transform: (JSONObject) -> T): List<T> {
-        return (0 until length()).map { index ->
-            transform(getJSONObject(index))
-        }
-    }
-
-    private fun JSONObject.toCondition(): Condition {
-        return Condition(
-            id = UUID.fromString(getString("id")),
-            passed = optBoolean("passed", false),
-        )
-    }
-
-    private fun JSONObject.toRelay(): Relay {
-        return Relay(
-            id = UUID.fromString(getString("id")),
-            enabled = optBoolean("enabled", false),
-            point = getJSONObject("point").toPoint(),
-        )
-    }
-
-    private fun JSONObject.toPoint(): Point {
-        return pointOf(
-            x = getDouble("x"),
-            y = getDouble("y"),
-        )
-    }
-
-    private fun JSONObject.toVector(): Vector {
-        return getJSONObject("start").toPoint() + getJSONObject("finish").toPoint()
-    }
-
-    private fun JSONObject.toBarrier(): Barrier {
-        return Barrier(
-            id = UUID.fromString(getString("id")),
-            vector = getJSONObject("vector").toVector(),
-        )
-    }
-
     private fun JSONObject.toEnvironment(): Environment {
-        val barriersToConditions = getJSONObject("barriersToConditions").let { obj ->
-            obj.keys().asSequence().map { id ->
-                UUID.fromString(id) to obj.getJSONArray(id).map { index, array ->
-                    UUID.fromString(array.getString(index))
-                }.toSet()
-            }.toMap()
-        }
-        val conditionsToRelays = getJSONObject("conditionsToRelays").let { obj ->
-            obj.keys().asSequence().map { id ->
-                UUID.fromString(id) to obj.getJSONArray(id).map { index, array ->
-                    UUID.fromString(array.getString(index))
-                }.toSet()
-            }.toMap()
-        }
+        val barriersToConditions = getJSONObject("barriersToConditions").toMap(
+            keys = UUID::fromString,
+            values = { name, obj ->
+                obj.strings(name, UUID::fromString).toSet()
+            },
+        )
+        val conditionsToRelays = getJSONObject("conditionsToRelays").toMap(
+            keys = UUID::fromString,
+            values = { name, obj ->
+                obj.strings(name, UUID::fromString).toSet()
+            },
+        )
         return Environment(
-            conditions = getJSONArray("conditions").mapObjects { it.toCondition() },
-            relays = getJSONArray("relays").mapObjects { it.toRelay() },
-            barriers = getJSONArray("barriers").mapObjects { it.toBarrier() },
+            conditions = objects("conditions") { it.toCondition() },
+            relays = objects("relays") { it.toRelay() },
+            barriers = objects("barriers") { it.toBarrier() },
             barriersToConditions = barriersToConditions,
             conditionsToRelays = conditionsToRelays,
         )
