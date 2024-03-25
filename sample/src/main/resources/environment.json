@@ -1,0 +1,30 @@
+{
+  "conditions": [
+    { "id": "269ef859-6c6d-40dc-92b7-8b38277f1f04" }
+  ],
+  "relays": [
+    {
+      "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264",
+      "point": { "x": -10, "y": 0 }
+    }
+  ],
+  "barriers": [
+    {
+      "id": "0102ec7e-4a1b-482e-9095-82f5526d451d",
+      "vector": {
+        "start": { "x": 7, "y": 3 },
+        "finish": { "x": 7, "y": -3 }
+      }
+    }
+  ],
+  "barriersToConditions": {
+    "0102ec7e-4a1b-482e-9095-82f5526d451d": [
+      "269ef859-6c6d-40dc-92b7-8b38277f1f04"
+    ]
+  },
+  "conditionsToRelays": {
+    "269ef859-6c6d-40dc-92b7-8b38277f1f04": [
+      "bb21c9a3-4ab0-414d-8342-6fbedae99264"
+    ]
+  }
+}

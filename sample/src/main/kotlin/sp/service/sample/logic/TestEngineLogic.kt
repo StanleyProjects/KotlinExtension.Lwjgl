@@ -1,5 +1,7 @@
 package sp.service.sample.logic
 
+import org.json.JSONArray
+import org.json.JSONObject
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogic
@@ -27,7 +29,6 @@ import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
-import sp.kx.math.isParallel
 import sp.kx.math.length
 import sp.kx.math.lt
 import sp.kx.math.measure.Measure
@@ -47,21 +48,21 @@ import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.toString
-import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.lwjgl.joysticks.Joystick
 import sp.lwjgl.joysticks.JoystickAxis
 import sp.lwjgl.joysticks.JoystickButton
 import sp.lwjgl.joysticks.JoysticksStorage
+import sp.service.sample.entity.Barrier
+import sp.service.sample.entity.Condition
+import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
-import kotlin.math.pow
-import kotlin.time.Duration.Companion.milliseconds
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player(
@@ -85,6 +86,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             )
         }
     }
+
+    private data class Environment(
+        val conditions: List<Condition>,
+        val relays: List<Relay>,
+        val barriers: List<Barrier>,
+        val barriersToConditions: Map<UUID, Set<UUID>>,
+        val conditionsToRelays: Map<UUID, Set<UUID>>,
+    )
 
     private val player = Player()
     private val measure = measureOf(16.0)
@@ -115,84 +124,80 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -13, y = 3),
     ).toVectors()
 
-    private class Barrier(
-        val id: UUID,
-        val vector: Vector,
-    )
-
-    private val barrierId = UUID.randomUUID()
-    private val barriers = listOf(
-        Barrier(
-            id = barrierId,
-            vector = pointOf(x = 7, y = 3) + pointOf(x = 7, y = -3),
-        ),
-    )
-
-    private class Relay(
-        val enabled: Boolean,
-    ) {
-        fun toggled(): Relay {
-            return Relay(enabled = !enabled)
+    private fun <T : Any> JSONArray.map(transform: (index: Int, JSONArray) -> T): List<T> {
+        return (0 until length()).map { index ->
+            transform(index, this)
         }
     }
 
-    private val relayId = UUID.randomUUID()
-    private val relays = mutableMapOf(
-        relayId to Relay(
-            enabled = false,
-        ),
-    )
-    private val relaysPoints = mapOf(
-        relayId to pointOf(-10, 0),
-    )
-
-    private val relaysToBarriers = mapOf(
-        relayId to setOf(barrierId),
-    )
-
-    /*
-    private val barriers = listOf(
-        pointOf(x = 7.0 + 0 * 2, y = 7.0 + 0 * 2) + pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2),
-        pointOf(x = 7.0 + 3 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2),
-        pointOf(x = 7.0 + 5 * 2, y = 7.0 - 5 * 2) + pointOf(x = 7.0 + 5 * 2, y = 7.0 + 6 * 2)
-    ) + (-12).let { x ->
-        listOf(
-            pointOf(x = x + 0, y = x + 0),
-            pointOf(x = x + 4, y = x + 4),
-            pointOf(x = x + 4 + 4, y = x + 4 + 2),
-            pointOf(x = x + 4 + 4 + 4, y = x + 4),
-            pointOf(x = x + 4 + 4 + 4 + 4, y = x + 4 - 4),
-        ).toVectors()
-    } + listOf(
-        pointOf(x = 0 - 32, y = 0 - 8),
-        pointOf(x = 0 - 32, y = 0 - 8 + 16),
-    ).toVectors() + listOf(
-        pointOf(x = 0 - 32 - 8, y = 0),
-        pointOf(x = 0 - 32 + 8, y = 0),
-    ).toVectors() + (-8 to 8).let { (dX, dY) ->
-        listOf(
-            pointOf(x = dX, y = dY),
-            pointOf(x = dX, y = dY + 16),
-        ).toVectors() + listOf(
-            pointOf(x = dX + 4, y = dY),
-            pointOf(x = dX + 4, y = dY + 4),
-        ).toVectors() + listOf(
-            pointOf(x = dX - 2, y = dY),
-            pointOf(x = dX - 2, y = dY + 4),
-        ).toVectors()
-    } + (0 to 0).let { (dX, dY) ->
-        listOf(
-            pointOf(x = dX - 16 + 0, y = dY + 2),
-            pointOf(x = dX - 16 - 4, y = dY + 2),
-        ).toVectors() + listOf(
-            pointOf(x = dX - 16 + 0, y = dY - 2),
-            pointOf(x = dX - 16 - 4, y = dY - 2),
-        ).toVectors() + listOf(
-            pointOf(x = dX - 16 + 0, y = dY + 4),
-            pointOf(x = dX - 16 - 4, y = dY + 4),
-        ).toVectors()
+    private fun <T : Any> JSONArray.mapObjects(transform: (JSONObject) -> T): List<T> {
+        return (0 until length()).map { index ->
+            transform(getJSONObject(index))
+        }
     }
-    */
+
+    private fun JSONObject.toCondition(): Condition {
+        return Condition(
+            id = UUID.fromString(getString("id")),
+            passed = optBoolean("passed", false),
+        )
+    }
+
+    private fun JSONObject.toRelay(): Relay {
+        return Relay(
+            id = UUID.fromString(getString("id")),
+            enabled = optBoolean("enabled", false),
+            point = getJSONObject("point").toPoint(),
+        )
+    }
+
+    private fun JSONObject.toPoint(): Point {
+        return pointOf(
+            x = getDouble("x"),
+            y = getDouble("y"),
+        )
+    }
+
+    private fun JSONObject.toVector(): Vector {
+        return getJSONObject("start").toPoint() + getJSONObject("finish").toPoint()
+    }
+
+    private fun JSONObject.toBarrier(): Barrier {
+        return Barrier(
+            id = UUID.fromString(getString("id")),
+            vector = getJSONObject("vector").toVector(),
+        )
+    }
+
+    private fun JSONObject.toEnvironment(): Environment {
+        val barriersToConditions = getJSONObject("barriersToConditions").let { obj ->
+            obj.keys().asSequence().map { id ->
+                UUID.fromString(id) to obj.getJSONArray(id).map { index, array ->
+                    UUID.fromString(array.getString(index))
+                }.toSet()
+            }.toMap()
+        }
+        val conditionsToRelays = getJSONObject("conditionsToRelays").let { obj ->
+            obj.keys().asSequence().map { id ->
+                UUID.fromString(id) to obj.getJSONArray(id).map { index, array ->
+                    UUID.fromString(array.getString(index))
+                }.toSet()
+            }.toMap()
+        }
+        return Environment(
+            conditions = getJSONArray("conditions").mapObjects { it.toCondition() },
+            relays = getJSONArray("relays").mapObjects { it.toRelay() },
+            barriers = getJSONArray("barriers").mapObjects { it.toBarrier() },
+            barriersToConditions = barriersToConditions,
+            conditionsToRelays = conditionsToRelays,
+        )
+    }
+
+    private val environment = ResourceUtil.requireResourceAsStream("environment.json")
+        .reader()
+        .readText()
+        .let(::JSONObject)
+        .toEnvironment()
 
     private lateinit var shouldEngineStopUnit: Unit
     private val ds4Mapping = JsonJoystickMapping(
@@ -207,10 +212,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             when (button) {
                 JoystickButton.A -> {
                     if (isPressed) {
-                        relays.change(
-                            keySupplier = ::getNearestRelayId,
-                            valueTransform = Relay::toggled,
-                        )
+                        getNearestRelay()?.toggle()
                     }
                 }
                 else -> {
@@ -230,10 +232,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 }
                 KeyboardButton.F -> {
                     if (isPressed) {
-                        relays.change(
-                            keySupplier = ::getNearestRelayId,
-                            valueTransform = Relay::toggled,
-                        )
+                        getNearestRelay()?.toggle()
                     }
                 }
                 else -> {
@@ -468,10 +467,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private fun onRenderRelayInteraction(
         canvas: Canvas,
         offset: Offset,
-        id: UUID,
+        relay: Relay,
         measure: Measure<Double, Double>,
     ) {
-        val point = relaysPoints[id] ?: return
+        val point = relay.point
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val rOffset = offsetOf(1.75, -1.75)
         val radius = 0.75
@@ -507,8 +506,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val size = sizeOf(2, 2)
         val itemOffset = size.center() * -1.0
-        for ((id, relay) in relays) {
-            val point = relaysPoints[id] ?: continue
+        for (relay in environment.relays) {
+            val point = relay.point
             canvas.drawRectangle(
                 color = colorOf(0xff888888),
                 pointTopLeft = point + offset + itemOffset + measure,
@@ -670,13 +669,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         put(key, valueTransform(value))
     }
 
-    private fun getNearestRelayId(): UUID? {
+    private fun getNearestRelay(): Relay? {
         val minDistance = player.radius * 1.5
-        val results = mutableMapOf<UUID, Double>()
-        for (id in relays.keys) {
-            val distance = distanceOf(player.point, relaysPoints[id] ?: continue)
+        val results = mutableMapOf<Relay, Double>()
+        for (relay in environment.relays) {
+            val distance = distanceOf(player.point, relay.point)
             if (distance.lt(other = minDistance, points = 12)) {
-                results[id] = distance
+                results[relay] = distance
             }
         }
         return results.entries.minByOrNull { (_, distance) -> distance }?.key
@@ -719,9 +718,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun isPassable(barrier: Barrier): Boolean {
-        return relays.none { (id, relay) ->
-            val contains = relaysToBarriers[id]?.contains(barrier.id) ?: false
-            contains && !relay.enabled
+        val conditions = environment.barriersToConditions[barrier.id]
+        if (conditions.isNullOrEmpty()) TODO()
+        return conditions.all { conditionId ->
+            val ids = environment.conditionsToRelays[conditionId]
+            if (ids.isNullOrEmpty()) TODO()
+            ids.all { relayId ->
+                val relay = environment.relays.firstOrNull { it.id == relayId } ?: TODO()
+                relay.enabled
+            }
         }
     }
 
@@ -803,7 +808,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 player = player,
                 minDistance = player.radius,
                 target = target,
-                vectors = walls + barriers.filter { barrier ->
+                vectors = walls + environment.barriers.filter { barrier ->
                     !isPassable(barrier)
                 }.map { it.vector },
             )
@@ -823,12 +828,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                angle = player.direction.expected,
 //            ) // todo
         }
-        val nearestRelayId = getNearestRelayId()
-        if (nearestRelayId != null) {
+        val nearestRelay = getNearestRelay()
+        if (nearestRelay != null) {
             onRenderRelayInteraction(
                 canvas = canvas,
                 offset = offset,
-                id = nearestRelayId,
+                relay = nearestRelay,
                 measure = measure,
             )
         }
@@ -875,7 +880,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         onRenderBarriers(
             canvas = canvas,
             offset = offset,
-            barriers = barriers,
+            barriers = environment.barriers,
             measure = measure,
         ) // todo
         onRenderRelays(
