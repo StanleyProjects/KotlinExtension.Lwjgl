@@ -428,12 +428,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val dotSize = sizeOf(width = 0.25, height = 0.25)
         val dotOffset = dotSize.center() * -1.0
-        barriers.forEach { barrier ->
+        barriers.filter {
+            !isPassable(it)
+        }.forEach { barrier ->
             val vector = barrier.vector
-            val isPassable = isPassable(barrier)
-            val color = if (isPassable) Color.GREEN else Color.RED
             canvas.vectors.draw(
-                color = color,
+                color = Color.RED,
                 vector = vector,
                 offset = offset,
                 measure = measure,
@@ -494,8 +494,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val point = relay.point
         val info = FontInfoUtil.getFontInfo(height = 14f)
-        val rOffset = offsetOf(1.75, -1.75)
-        val radius = 0.75
+        val rOffset = offsetOf(1.75, -1.0)
+        val radius = 0.5
         canvas.drawCircle(
             color = Color.GREEN,
             pointCenter = point + offset + rOffset + measure,
@@ -526,7 +526,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         measure: Measure<Double, Double>,
     ) {
         val info = FontInfoUtil.getFontInfo(height = 14f)
-        val size = sizeOf(2, 2)
+        val size = sizeOf(2, 1)
         val itemOffset = size.center() * -1.0
         for (relay in environment.relays) {
             val point = relay.point
@@ -692,7 +692,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun getNearestRelay(): Relay? {
-        val minDistance = player.radius * 1.5
+//        val minDistance = player.radius * 1.5
+        val minDistance = 0.5
         val results = mutableMapOf<Relay, Double>()
         for (relay in environment.relays) {
             val distance = distanceOf(player.point, relay.point)
