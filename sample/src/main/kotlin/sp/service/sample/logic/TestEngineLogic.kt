@@ -19,6 +19,7 @@ import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
 import sp.kx.math.centerPoint
+import sp.kx.math.copy
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
@@ -113,6 +114,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return list
     }
 
+    /*
     private val walls = listOf(
         pointOf(x = -13, y = 3),
         pointOf(x = -7, y = 3),
@@ -127,6 +129,23 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -7, y = -3),
         pointOf(x = -13, y = -3),
         pointOf(x = -13, y = 3),
+    ).toVectors()
+    */
+
+    private fun box(): List<Point> {
+        TODO()
+    }
+
+    private val walls = listOf(
+        pointOf(x = -9, y = 9),
+        pointOf(x = -9, y = -9),
+        pointOf(x = 9, y = -9),
+        pointOf(x = 9, y = 9),
+        pointOf(x = 7, y = 9),
+        pointOf(x = 7, y = 15),
+        pointOf(x = 1, y = 15),
+        pointOf(x = 1, y = 9),
+        pointOf(x = -1, y = 9),
     ).toVectors()
 
     private fun JSONObject.toEnvironment(): Environment {
@@ -688,6 +707,77 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onRenderGrid(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val start = pointOf(
+            x = measure.transform(1.0),
+            y = measure.transform(1.0),
+        )
+        val xVector = start + pointOf(
+            x = engine.property.pictureSize.width - measure.transform(1.0),
+            y = measure.transform(1.0),
+        )
+        canvas.vectors.draw(
+            color = Color.GREEN,
+            vector = xVector,
+            lineWidth = 1f,
+        )
+        val yVector = start + pointOf(
+            x = measure.transform(1.0),
+            y = engine.property.pictureSize.height - measure.transform(1.0),
+        )
+        canvas.vectors.draw(
+            color = Color.GREEN,
+            vector = yVector,
+            lineWidth = 1f,
+        )
+        val point = player.point
+        val info = FontInfoUtil.getFontInfo(height = 10f)
+        val xLen = measure.units(engine.property.pictureSize.width).toInt() - 6
+        val xNumbers = (point.x.toInt() - xLen / 2)..(point.x.toInt() + xLen / 2)
+        for (x in xNumbers) {
+            val y = if (x % 2 == 0) 1 else 0
+            canvas.texts.draw(
+                color = Color.GREEN,
+                info = info,
+                pointTopLeft = pointOf(x = x, y = y),
+                offset = offset.copy(dY = 0.0),
+                measure = measure,
+                text = String.format("%3d", x),
+            )
+            canvas.vectors.draw(
+                color = Color.GREEN,
+                vector = pointOf(x = x.toDouble(), y = 0.5) + pointOf(x = x.toDouble(), y = 1.5),
+                lineWidth = 1f,
+                offset = offset.copy(dY = 0.0),
+                measure = measure,
+            )
+        }
+        val yLen = measure.units(engine.property.pictureSize.height).toInt() - 6
+        val yNumbers = (point.y.toInt() - yLen / 2)..(point.y.toInt() + yLen / 2)
+        for (y in yNumbers) {
+            val x = if (y % 2 == 0) 1 else 0
+            canvas.texts.draw(
+                color = Color.GREEN,
+                info = info,
+                pointTopLeft = pointOf(x = x, y = y),
+                offset = offset.copy(dX = 0.0),
+                measure = measure,
+                text = String.format("%3d", y),
+            )
+            canvas.vectors.draw(
+                color = Color.GREEN,
+                vector = pointOf(x = 0.5, y = y.toDouble()) + pointOf(x = 1.5, y = y.toDouble()),
+                lineWidth = 1f,
+                offset = offset.copy(dX = 0.0),
+                measure = measure,
+            )
+        }
+    }
+
     override fun onRender(canvas: Canvas) {
         joystickStorage.update()
         val previous = player.copy()
@@ -857,5 +947,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            previous = previous,
 //            canvas = canvas,
 //        ) // todo
+        onRenderGrid(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        )
     }
 }
