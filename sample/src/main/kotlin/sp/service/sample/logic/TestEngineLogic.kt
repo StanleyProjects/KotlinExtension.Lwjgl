@@ -56,6 +56,7 @@ import sp.lwjgl.joysticks.JoystickButton
 import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
+import sp.service.sample.entity.Item
 import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
@@ -64,6 +65,7 @@ import sp.service.sample.util.objects
 import sp.service.sample.util.strings
 import sp.service.sample.util.toBarrier
 import sp.service.sample.util.toCondition
+import sp.service.sample.util.toItem
 import sp.service.sample.util.toMap
 import sp.service.sample.util.toRelay
 import java.util.UUID
@@ -97,6 +99,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val conditions: List<Condition>,
         val relays: List<Relay>,
         val barriers: List<Barrier>,
+        val items: List<Item>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     )
@@ -210,6 +213,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             conditions = objects("conditions") { it.toCondition() },
             relays = objects("relays") { it.toRelay() },
             barriers = objects("barriers") { it.toBarrier() },
+            items = objects("items") { it.toItem() },
             barriersToConditions = barriersToConditions,
             conditionsToRelays = conditionsToRelays,
         )
@@ -234,7 +238,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             when (button) {
                 JoystickButton.A -> {
                     if (isPressed) {
-                        getNearestRelay()?.toggle()
+                        onInteraction()
                     }
                 }
                 else -> {
@@ -254,13 +258,26 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 }
                 KeyboardButton.F -> {
                     if (isPressed) {
-                        getNearestRelay()?.toggle()
+                        onInteraction()
                     }
                 }
                 else -> {
                     // todo
                 }
             }
+        }
+    }
+
+    private fun onInteraction() {
+        val relay = getNearest(environment.relays) { it.point }
+        if (relay != null) {
+            relay.toggle()
+            return
+        }
+        val item = getNearest(environment.items) { it.point }
+        if (item != null) {
+            // todo
+            return
         }
     }
 
@@ -486,13 +503,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private fun onRenderRelayInteraction(
+    private fun onRenderInteraction(
         canvas: Canvas,
         offset: Offset,
-        relay: Relay,
+        point: Point,
         measure: Measure<Double, Double>,
     ) {
-        val point = relay.point
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val rOffset = offsetOf(1.75, -1.0)
         val radius = 0.5
@@ -550,6 +566,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 offset = offset,
                 measure = measure,
                 text = text,
+            )
+        }
+    }
+
+    private fun onRenderItems(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val size = sizeOf(1, 1)
+        val itemOffset = size.center() * -1.0
+        for (item in environment.items) {
+            val point = item.point
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = point + offset + itemOffset + measure,
+                size = size + measure,
+                lineWidth = 3f,
             )
         }
     }
@@ -691,14 +725,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         put(key, valueTransform(value))
     }
 
-    private fun getNearestRelay(): Relay? {
-//        val minDistance = player.radius * 1.5
+    private fun <T : Any> getNearest(list: List<T>, getPoint: (T) -> Point): T? {
         val minDistance = 0.5
-        val results = mutableMapOf<Relay, Double>()
-        for (relay in environment.relays) {
-            val distance = distanceOf(player.point, relay.point)
+        val results = mutableMapOf<T, Double>()
+        for (it in list) {
+            val distance = distanceOf(player.point, getPoint(it))
             if (distance.lt(other = minDistance, points = 12)) {
-                results[relay] = distance
+                results[it] = distance
             }
         }
         return results.entries.minByOrNull { (_, distance) -> distance }?.key
@@ -742,7 +775,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun isPassable(barrier: Barrier): Boolean {
         val conditions = environment.barriersToConditions[barrier.id]
-        if (conditions.isNullOrEmpty()) TODO()
+        if (conditions.isNullOrEmpty()) return false
         return conditions.all { conditionId ->
             val ids = environment.conditionsToRelays[conditionId]
             if (ids.isNullOrEmpty()) TODO()
@@ -824,6 +857,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
             )
         }
+    }
+
+    private fun onRenderNearest(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val nearest = getNearest(environment.relays) {
+            it.point
+        }?.point ?: getNearest(environment.items) {
+            it.point
+        }?.point ?: return
+        onRenderInteraction(
+            canvas = canvas,
+            offset = offset,
+            point = nearest,
+            measure = measure,
+        )
     }
 
     override fun onRender(canvas: Canvas) {
@@ -924,15 +975,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                angle = player.direction.expected,
 //            ) // todo
         }
-        val nearestRelay = getNearestRelay()
-        if (nearestRelay != null) {
-            onRenderRelayInteraction(
-                canvas = canvas,
-                offset = offset,
-                relay = nearestRelay,
-                measure = measure,
-            )
-        }
+        onRenderNearest(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        )
         canvas.vectors.draw(
             color = Color.YELLOW,
             vector = vectorOf(center, length = player.radius, angle = player.direction.expected),
@@ -980,6 +1027,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         ) // todo
         onRenderRelays(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        ) // todo
+        onRenderItems(
             canvas = canvas,
             offset = offset,
             measure = measure,

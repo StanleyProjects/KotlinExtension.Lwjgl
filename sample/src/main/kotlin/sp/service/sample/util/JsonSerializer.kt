@@ -7,6 +7,7 @@ import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
+import sp.service.sample.entity.Item
 import sp.service.sample.entity.Relay
 import java.util.UUID
 
@@ -40,5 +41,12 @@ internal fun JSONObject.toBarrier(): Barrier {
     return Barrier(
         id = UUID.fromString(getString("id")),
         vector = getJSONObject("vector").toVector(),
+    )
+}
+
+internal fun JSONObject.toItem(): Item {
+    return Item(
+        id = UUID.fromString(getString("id")),
+        point = getJSONObject("point").toPoint(),
     )
 }

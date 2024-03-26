@@ -6,6 +6,10 @@
     {
       "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264",
       "point": { "x": 3, "y": 7 }
+    },
+    {
+      "id": "b2cff302-435a-4854-9a3c-1990c81fe479",
+      "point": { "x": -5, "y": 7 }
     }
   ],
   "barriers": [
@@ -15,6 +19,19 @@
         "start": { "x": 7, "y": 9 },
         "finish": { "x": 1, "y": 9 }
       }
+    },
+    {
+      "id": "65dfcf6d-2456-4b7a-81a2-ccaf0541a7aa",
+      "vector": {
+        "start": { "x": -1, "y": 9 },
+        "finish": { "x": -7, "y": 9 }
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
+      "point": { "x": 4, "y": 12 }
     }
   ],
   "barriersToConditions": {
