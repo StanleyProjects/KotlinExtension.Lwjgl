@@ -5,15 +5,15 @@
   "relays": [
     {
       "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264",
-      "point": { "x": -10, "y": 0 }
+      "point": { "x": 3, "y": 7 }
     }
   ],
   "barriers": [
     {
       "id": "0102ec7e-4a1b-482e-9095-82f5526d451d",
       "vector": {
-        "start": { "x": 7, "y": 3 },
-        "finish": { "x": 7, "y": -3 }
+        "start": { "x": 7, "y": 9 },
+        "finish": { "x": 1, "y": 9 }
       }
     }
   ],

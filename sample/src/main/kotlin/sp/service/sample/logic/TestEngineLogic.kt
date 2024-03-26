@@ -132,20 +132,65 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ).toVectors()
     */
 
-    private fun box(): List<Point> {
-        TODO()
+    private fun box(start: Point, size: Double): List<Point> {
+        return listOf(
+            start,
+            start.copy(y = start.y + size),
+            pointOf(x = start.x + size, y = start.y + size),
+            start.copy(x = start.x + size),
+        )
     }
 
     private val walls = listOf(
         pointOf(x = -9, y = 9),
-        pointOf(x = -9, y = -9),
-        pointOf(x = 9, y = -9),
-        pointOf(x = 9, y = 9),
-        pointOf(x = 7, y = 9),
-        pointOf(x = 7, y = 15),
-        pointOf(x = 1, y = 15),
-        pointOf(x = 1, y = 9),
+        //
+        pointOf(x = -7, y = 9),
+        pointOf(x = -7, y = 9 + 6),
+        pointOf(x = -1, y = 9 + 6),
         pointOf(x = -1, y = 9),
+        //
+        pointOf(x = 1, y = 9),
+        pointOf(x = 1, y = 9 + 6),
+        pointOf(x = 7, y = 9 + 6),
+        pointOf(x = 7, y = 9),
+        //
+        pointOf(x = 9, y = 9),
+        //
+        pointOf(x = 9, y = 7),
+        pointOf(x = 9 + 6, y = 7),
+        pointOf(x = 9 + 6, y = 1),
+        pointOf(x = 9, y = 1),
+        //
+        pointOf(x = 9, y = -1),
+        pointOf(x = 9 + 6, y = -1),
+        pointOf(x = 9 + 6, y = -7),
+        pointOf(x = 9, y = -7),
+        //
+        pointOf(x = 9, y = -9),
+        //
+        pointOf(x = 7, y = -9),
+        pointOf(x = 7, y = -9 - 6),
+        pointOf(x = 1, y = -9 - 6),
+        pointOf(x = 1, y = -9),
+        //
+        pointOf(x = -1, y = -9),
+        pointOf(x = -1, y = -9 - 6),
+        pointOf(x = -7, y = -9 - 6),
+        pointOf(x = -7, y = -9),
+        //
+        pointOf(x = -9, y = -9),
+        //
+        pointOf(x = -9, y = -7),
+        pointOf(x = -9 - 6, y = -7),
+        pointOf(x = -9 - 6, y = -1),
+        pointOf(x = -9, y = -1),
+        //
+        pointOf(x = -9, y = 1),
+        pointOf(x = -9 - 6, y = 1),
+        pointOf(x = -9 - 6, y = 7),
+        pointOf(x = -9, y = 7),
+        //
+        pointOf(x = -9, y = 9),
     ).toVectors()
 
     private fun JSONObject.toEnvironment(): Environment {
