@@ -57,6 +57,7 @@ import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Item
+import sp.service.sample.entity.ItemPosition
 import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
@@ -66,19 +67,34 @@ import sp.service.sample.util.strings
 import sp.service.sample.util.toBarrier
 import sp.service.sample.util.toCondition
 import sp.service.sample.util.toItem
+import sp.service.sample.util.toItemPosition
 import sp.service.sample.util.toMap
+import sp.service.sample.util.toMapStrings
+import sp.service.sample.util.toPoint
 import sp.service.sample.util.toRelay
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
-    class Player(
-        val point: MutablePoint = MutablePoint(x = 0.0, y = 0.0),
-        val speed: MutableSpeed = MutableSpeed(7.5, TimeUnit.SECONDS),
-        val direction: MutableDeviation<Double> = MutableDeviation(0.0, 0.0),
-        val directionSpeed: Speed = speedOf(kotlin.math.PI * 2),
+    class Player private constructor(
+        val id: UUID,
+        val point: MutablePoint,
+        val speed: MutableSpeed,
+        val direction: MutableDeviation<Double>,
+        val directionSpeed: Speed,
     ) {
+        constructor(
+            id: UUID,
+            point: Point,
+        ) : this(
+            id = id,
+            point = MutablePoint(x = point.x, y = point.y),
+            speed = MutableSpeed(7.5, TimeUnit.SECONDS),
+            direction = MutableDeviation(0.0, 0.0),
+            directionSpeed = speedOf(kotlin.math.PI * 2),
+        )
+
         private val width = 2.0
 //        private val width = 4.0 // todo
 //        private val width = 6.0 // todo
@@ -87,6 +103,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
         fun copy(): Player {
             return Player(
+                id = id,
                 point = MutablePoint(x = point.x, y = point.y),
                 speed = MutableSpeed(magnitude = speed.per(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS),
                 direction = MutableDeviation(actual = direction.actual, expected = direction.expected),
@@ -96,15 +113,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private data class Environment(
+        val player: Player,
         val conditions: List<Condition>,
         val relays: List<Relay>,
         val barriers: List<Barrier>,
         val items: List<Item>,
+        val itemsPositions: MutableList<ItemPosition>,
+        val ownership: Map<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     )
 
-    private val player = Player()
     private val measure = measureOf(16.0)
 
     private fun List<Point>.toVectors(): List<Vector> {
@@ -134,15 +153,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -13, y = 3),
     ).toVectors()
     */
-
-    private fun box(start: Point, size: Double): List<Point> {
-        return listOf(
-            start,
-            start.copy(y = start.y + size),
-            pointOf(x = start.x + size, y = start.y + size),
-            start.copy(x = start.x + size),
-        )
-    }
 
     private val walls = listOf(
         pointOf(x = -9, y = 9),
@@ -209,17 +219,29 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 obj.strings(name, UUID::fromString).toSet()
             },
         )
+        val player = getJSONObject("player").let {
+            Player(
+                id = UUID.fromString(it.getString("id")),
+                point = it.getJSONObject("point").toPoint(),
+            )
+        }
         return Environment(
+            player = player,
             conditions = objects("conditions") { it.toCondition() },
             relays = objects("relays") { it.toRelay() },
             barriers = objects("barriers") { it.toBarrier() },
             items = objects("items") { it.toItem() },
+            itemsPositions = objects("itemsPositions") { it.toItemPosition() }.toMutableList(),
+            ownership = getJSONObject("ownership").toMapStrings(
+                keys = UUID::fromString,
+                values = UUID::fromString,
+            ),
             barriersToConditions = barriersToConditions,
             conditionsToRelays = conditionsToRelays,
         )
     }
 
-    private val environment = ResourceUtil.requireResourceAsStream("environment.json")
+    private val env = ResourceUtil.requireResourceAsStream("environment.json")
         .reader()
         .readText()
         .let(::JSONObject)
@@ -269,13 +291,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun onInteraction() {
-        val relay = getNearest(environment.relays) { it.point }
+        val relay = getNearest(env.relays) { it.point }
         if (relay != null) {
             relay.toggle()
             return
         }
-        val item = getNearest(environment.items) { it.point }
-        if (item != null) {
+        val itemPosition = getNearest(env.itemsPositions) { it.point }
+        if (itemPosition != null) {
             // todo
             return
         }
@@ -303,7 +325,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     y = measure.units(it.y),
                 )
             }
-            val offset = center - player.point
+            val offset = center - env.player.point
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length),
@@ -325,21 +347,21 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            .minBy { (_, _, shortest) ->
 //                shortest
 //            } // todo
-        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, player.point), engine.property.time.diff())
+        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, env.player.point), engine.property.time.diff())
         val values = listOf(
 //            "x: ${point.x.toString(5, 1)}",
 //            "y: ${point.y.toString(5, 1)}",
 //            String.format("x: %+05.1f", point.x),
 //            String.format("y: %+05.1f", point.y),
-            String.format("x: %8s", String.format("%+.4f", player.point.x)),
-            String.format("y: %8s", String.format("%+.4f", player.point.y)),
-            String.format("max speed: %s/s", player.speed.per(TimeUnit.SECONDS).toString(points = 2)),
+            String.format("x: %8s", String.format("%+.4f", env.player.point.x)),
+            String.format("y: %8s", String.format("%+.4f", env.player.point.y)),
+            String.format("max speed: %s/s", env.player.speed.per(TimeUnit.SECONDS).toString(points = 2)),
             String.format("cur speed: %s/s", currentSpeed.per(TimeUnit.SECONDS).toString(points = 2)),
-            String.format("a: %03.2f - %05.1f", player.direction.actual, Math.toDegrees(player.direction.actual)),
-            String.format("e: %03.2f - %05.1f", player.direction.expected, Math.toDegrees(player.direction.expected)),
+            String.format("a: %03.2f - %05.1f", env.player.direction.actual, Math.toDegrees(env.player.direction.actual)),
+            String.format("e: %03.2f - %05.1f", env.player.direction.expected, Math.toDegrees(env.player.direction.expected)),
             String.format("time: %sms", engine.property.time.diff().inWholeNanoseconds.toDouble().div(1_000_000).toString(total = 6, points = 3)),
 //            String.format("direction diff: %05.1f", Math.toDegrees(player.direction.diff())),
-//            String.format("whc: %02.1f", player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
+//            String.format("whc: %02.1f", env.player.direction.diff().absoluteValue.whc().ifNaN(1.0)),
 //            String.format("barrier: %s", barrier.toString()),
 //            String.format("barrier: $bi] ${shortest.toString(points = 4)}"),
 //            String.format("player:radius: ${player.radius.toString(points = 4)}"),
@@ -544,7 +566,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val size = sizeOf(2, 1)
         val itemOffset = size.center() * -1.0
-        for (relay in environment.relays) {
+        for (relay in env.relays) {
             val point = relay.point
             canvas.drawRectangle(
                 color = colorOf(0xff888888),
@@ -577,8 +599,36 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val size = sizeOf(1, 1)
         val itemOffset = size.center() * -1.0
-        for (item in environment.items) {
-            val point = item.point
+        for (itemPosition in env.itemsPositions) {
+            val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: TODO()
+            val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
+            val point = itemPosition.point
+            canvas.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = point + offset + itemOffset + measure,
+                size = size + measure,
+                lineWidth = 3f,
+            )
+        }
+    }
+
+    @Deprecated("onRenderItems")
+    private fun onRenderItemsOld(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val size = sizeOf(1, 1)
+        val itemOffset = size.center() * -1.0
+        val iterator = env.itemsPositions.listIterator()
+        while (iterator.hasNext()) {
+            val itemPosition = iterator.next()
+            val exists = env.ownership.values.any { it == itemPosition.id }
+            if (!exists) {
+                iterator.remove()
+                continue
+            }
+            val point = itemPosition.point
             canvas.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = point + offset + itemOffset + measure,
@@ -604,13 +654,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 16f)
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
-//            val ab = vectorOf(
-//                startX = player.point.x + offset.dX,
-//                startY = player.point.y + offset.dY,
-//                finishX = barrier.start.x + offset.dX,
-//                finishY = barrier.start.y + offset.dY,
-//            )
-            val ab = player.point + barrier.start
+            val ab = env.player.point + barrier.start
             canvas.vectors.draw(
                 color = color,
                 vector = ab,
@@ -624,9 +668,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 pointTopLeft = ab.center(),
                 offset = offset,
                 measure = measure,
-                text = distanceOf(a = player.point, b = barrier.start).toString(total = 4, points = 2),
+                text = distanceOf(a = env.player.point, b = barrier.start).toString(total = 4, points = 2),
             )
-            val ac = player.point + barrier.finish
+            val ac = env.player.point + barrier.finish
             canvas.vectors.draw(
                 color = color,
                 vector = ac,
@@ -640,11 +684,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 pointTopLeft = ac.center(),
                 offset = offset,
                 measure = measure,
-                text = distanceOf(a = player.point, b = barrier.finish).toString(total = 4, points = 2),
+                text = distanceOf(a = env.player.point, b = barrier.finish).toString(total = 4, points = 2),
             )
             val bc = ab.finish + ac.finish
-            val perpendicular = barrier.getPerpendicular(target = player.point)
-            val aH = player.point + perpendicular
+            val perpendicular = barrier.getPerpendicular(target = env.player.point)
+            val aH = env.player.point + perpendicular
             canvas.vectors.draw(
                 color = color,
                 vector = aH,
@@ -661,7 +705,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
                 text = aH.length().toString(total = 4, points = 2),
             )
-            val shortest = barrier.getShortestDistance(target = player.point)
+            val shortest = barrier.getShortestDistance(target = env.player.point)
             canvas.texts.draw(
                 color = color,
                 info = info,
@@ -725,11 +769,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         put(key, valueTransform(value))
     }
 
-    private fun <T : Any> getNearest(list: List<T>, getPoint: (T) -> Point): T? {
+    private fun <T : Any> getNearest(
+        list: List<T>,
+        getPoint: (T) -> Point,
+    ): T? {
         val minDistance = 0.5
         val results = mutableMapOf<T, Double>()
         for (it in list) {
-            val distance = distanceOf(player.point, getPoint(it))
+            val distance = distanceOf(env.player.point, getPoint(it))
             if (distance.lt(other = minDistance, points = 12)) {
                 results[it] = distance
             }
@@ -745,7 +792,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ): Point? {
         val targetDistance = distanceOf(player.point, target)
         val nearest = vectors.filter { vector ->
-            vector.closerThan(point = player.point, minDistance = targetDistance + minDistance)
+            vector.closerThan(point = env.player.point, minDistance = targetDistance + minDistance)
         }
         val filtered = nearest.filter { vector ->
             vector.closerThan(point = target, minDistance = minDistance)
@@ -774,13 +821,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun isPassable(barrier: Barrier): Boolean {
-        val conditions = environment.barriersToConditions[barrier.id]
+        val conditions = env.barriersToConditions[barrier.id]
         if (conditions.isNullOrEmpty()) return false
         return conditions.all { conditionId ->
-            val ids = environment.conditionsToRelays[conditionId]
+            val ids = env.conditionsToRelays[conditionId]
             if (ids.isNullOrEmpty()) TODO()
             ids.all { relayId ->
-                val relay = environment.relays.firstOrNull { it.id == relayId } ?: TODO()
+                val relay = env.relays.firstOrNull { it.id == relayId } ?: TODO()
                 relay.enabled
             }
         }
@@ -813,7 +860,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             vector = yVector,
             lineWidth = 1f,
         )
-        val point = player.point
+        val point = env.player.point
         val info = FontInfoUtil.getFontInfo(height = 12f)
         val xLen = measure.units(engine.property.pictureSize.width).toInt() - 6
         val xNumbers = (point.x.toInt() - xLen / 2)..(point.x.toInt() + xLen / 2)
@@ -864,9 +911,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val nearest = getNearest(environment.relays) {
+        val nearest = getNearest(env.relays) {
             it.point
-        }?.point ?: getNearest(environment.items) {
+        }?.point ?: getNearest(env.itemsPositions) {
             it.point
         }?.point ?: return
         onRenderInteraction(
@@ -879,7 +926,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     override fun onRender(canvas: Canvas) {
         joystickStorage.update()
-        val previous = player.copy()
+        val previous = env.player.copy()
         val timeDiff = engine.property.time.diff()
 //        val center = engine.property.pictureSize.centerPoint()
         val center = pointOf(
@@ -887,7 +934,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             y = measure.units(engine.property.pictureSize.height / 2),
         )
 //        val relative = center - (player.point + measure)
-        val offset = center - player.point
+        val offset = center - env.player.point
         /*
         val length = 2.0
         canvas.drawLine(
@@ -912,55 +959,55 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
 //        onRenderIntersections(
 //            canvas = canvas,
-//            actual = player.point,
-//            target = player.point.moved(
-//                length = player.speed.length(timeDiff),
-//                angle = player.direction.expected,
+//            actual = env.player.point,
+//            target = env.player.point.moved(
+//                length = env.player.speed.length(timeDiff),
+//                angle = env.player.direction.expected,
 //            ),
 //            offset = offset,
 //            barriers = barriers,
 //            measure = measure,
 //        ) // todo
         if (!playerOffset.isEmpty()) {
-            player.direction.expected = angleOf(playerOffset).radians()
-            val dirDiff = player.direction.diff()
+            env.player.direction.expected = angleOf(playerOffset).radians()
+            val dirDiff = env.player.direction.diff()
             if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
-                val alpha = player.directionSpeed.length(timeDiff)
+                val alpha = env.player.directionSpeed.length(timeDiff)
                 if (alpha > dirDiff.absoluteValue) {
-                    player.direction.commit()
+                    env.player.direction.commit()
                 } else {
                     val k = dirDiff.absoluteValue.whc().ifNaN(1.0)
                     val m = dirDiff.dby()
-                    val actual = player.direction.actual + alpha * m * k
-                    player.direction.actual = actual.radians()
+                    val actual = env.player.direction.actual + alpha * m * k
+                    env.player.direction.actual = actual.radians()
                 }
             }
-            val length = player.speed.length(timeDiff)
+            val length = env.player.speed.length(timeDiff)
 //            val multiplier = distanceOf(playerOffset) / distanceOf(offsetOf(1, 1))
             val multiplier = kotlin.math.min(1.0, distanceOf(playerOffset))
 //            val multiplier = kotlin.math.sqrt(playerOffset.dX * playerOffset.dX + playerOffset.dY * playerOffset.dY)
-            val target = player.point.moved(
+            val target = env.player.point.moved(
                 length = length * multiplier,
-                angle = player.direction.expected,
+                angle = env.player.direction.expected,
             )
 //            onRenderIntersections(
 //                canvas = canvas,
-//                actual = player.point,
+//                actual = env.player.point,
 //                target = target,
 //                offset = offset,
 //                barriers = barriers,
 //                measure = measure,
 //            ) // todo
             val finalPoint = getFinalPoint(
-                player = player,
-                minDistance = player.radius,
+                player = env.player,
+                minDistance = env.player.radius,
                 target = target,
-                vectors = walls + environment.barriers.filter { barrier ->
+                vectors = walls + env.barriers.filter { barrier ->
                     !isPassable(barrier)
                 }.map { it.vector },
             )
             if (finalPoint != null) {
-                player.point.set(finalPoint)
+                env.player.point.set(finalPoint)
             }
 //            val allowed = allowed(
 //                player = player,
@@ -968,11 +1015,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                barriers = barriers,
 //            )
 //            if (allowed) {
-//                player.point.set(target)
+//                env.player.point.set(target)
 //            } // todo
-//            player.point.move(
-//                length = player.speed.length(timeDiff),
-//                angle = player.direction.expected,
+//            env.player.point.move(
+//                length = env.player.speed.length(timeDiff),
+//                angle = env.player.direction.expected,
 //            ) // todo
         }
         onRenderNearest(
@@ -982,19 +1029,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         canvas.vectors.draw(
             color = Color.YELLOW,
-            vector = vectorOf(center, length = player.radius, angle = player.direction.expected),
+            vector = vectorOf(center, length = env.player.radius, angle = env.player.direction.expected),
             measure = measure,
             lineWidth = 1f,
         )
         canvas.drawLine(
             color = Color.WHITE,
-            vector = vectorOf(center, length = player.radius, angle = player.direction.actual) + measure,
+            vector = vectorOf(center, length = env.player.radius, angle = env.player.direction.actual) + measure,
             lineWidth = 1f
         )
-        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, player.point), engine.property.time.diff())
+        val currentSpeed = speedOf(magnitude = distanceOf(previous.point, env.player.point), engine.property.time.diff())
         canvas.vectors.draw(
             color = Color.GREEN,
-            vector = vectorOf(center, length = player.radius * currentSpeed.per(TimeUnit.SECONDS) / player.speed.per(TimeUnit.SECONDS), angle = player.direction.expected),
+            vector = vectorOf(center, length = env.player.radius * currentSpeed.per(TimeUnit.SECONDS) / env.player.speed.per(TimeUnit.SECONDS), angle = env.player.direction.expected),
             measure = measure,
             lineWidth = 4f,
         )
@@ -1007,9 +1054,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //        ) // todo
         canvas.drawRectangle(
             color = Color.BLUE,
-            pointTopLeft = center - player.size.center() + measure,
-            size = player.size + measure,
-            direction = player.direction.actual,
+            pointTopLeft = center - env.player.size.center() + measure,
+            size = env.player.size + measure,
+            direction = env.player.direction.actual,
             pointOfRotation = center + measure,
             lineWidth = 1f,
         )
@@ -1023,7 +1070,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         onRenderBarriers(
             canvas = canvas,
             offset = offset,
-            barriers = environment.barriers,
+            barriers = env.barriers,
             measure = measure,
         ) // todo
         onRenderRelays(

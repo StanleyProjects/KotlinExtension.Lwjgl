@@ -39,3 +39,13 @@ internal fun <K : Any, V : Any> JSONObject.toMap(
         keys(name) to values(name, this)
     }.toMap()
 }
+
+internal fun <K : Any, V : Any> JSONObject.toMapStrings(
+    keys: (String) -> K,
+    values: (String) -> V,
+): Map<K, V> {
+    return toMap(
+        keys = keys,
+        values = { name, obj -> values(obj.getString(name)) }
+    )
+}

@@ -1,4 +1,8 @@
 {
+  "player": {
+    "id": "229287ed-a629-48d7-93bc-a5fe219e1e82",
+    "point": { "x": 0, "y": 0 }
+  },
   "conditions": [
     { "id": "269ef859-6c6d-40dc-92b7-8b38277f1f04" }
   ],
@@ -30,7 +34,15 @@
   ],
   "items": [
     {
-      "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
+      "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86"
+    }
+  ],
+  "ownership": {
+    "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9"
+  },
+  "itemsPositions": [
+    {
+      "id": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
       "point": { "x": 4, "y": 12 }
     }
   ],
