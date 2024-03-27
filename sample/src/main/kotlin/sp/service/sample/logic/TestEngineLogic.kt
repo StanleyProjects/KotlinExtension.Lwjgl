@@ -56,6 +56,7 @@ import sp.lwjgl.joysticks.JoystickButton
 import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
+import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.ItemPosition
 import sp.service.sample.entity.Relay
@@ -66,6 +67,7 @@ import sp.service.sample.util.objects
 import sp.service.sample.util.strings
 import sp.service.sample.util.toBarrier
 import sp.service.sample.util.toCondition
+import sp.service.sample.util.toCrate
 import sp.service.sample.util.toItem
 import sp.service.sample.util.toItemPosition
 import sp.service.sample.util.toMap
@@ -118,13 +120,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val relays: List<Relay>,
         val barriers: List<Barrier>,
         val items: List<Item>,
-        val itemsPositions: MutableList<ItemPosition>,
+        val crates: List<Crate>,
+        val itemsPositions: List<ItemPosition>,
         val ownership: Map<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     )
 
-    private val measure = measureOf(16.0)
+//    private val measure = measureOf(16.0)
+    private val measure = measureOf(24.0)
+//    private val measure = measureOf(32.0)
 
     private fun List<Point>.toVectors(): List<Vector> {
         if (isEmpty()) return emptyList()
@@ -231,6 +236,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             relays = objects("relays") { it.toRelay() },
             barriers = objects("barriers") { it.toBarrier() },
             items = objects("items") { it.toItem() },
+            crates = objects("crates") { it.toCrate() },
             itemsPositions = objects("itemsPositions") { it.toItemPosition() }.toMutableList(),
             ownership = getJSONObject("ownership").toMapStrings(
                 keys = UUID::fromString,
@@ -318,6 +324,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             color = Color.GREEN,
             text = fps.toString(6, 2)
         )
+        val lineWidth = 0.1
         2.0.also { length ->
             val center = engine.property.pictureSize.centerPoint().let {
                 pointOf(
@@ -331,14 +338,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length),
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = lineWidth,
             )
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0),
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = lineWidth,
             )
         }
         val x = padding
@@ -411,44 +418,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    private fun onRenderIntersections(
-        canvas: Canvas,
-        actual: Point,
-        target: Point,
-        offset: Offset,
-        barriers: List<Vector>,
-        measure: Measure<Double, Double>,
-    ) {
-        val info = FontInfoUtil.getFontInfo(height = 16f)
-        barriers.forEachIndexed { index, barrier ->
-//            val isCollinear = isCollinear(v1 = barrier, v2 = actual + target)
-//            if (isCollinear) {
-//                println("$index] collinear")
-//            }
-            val intersection = barrier.getIntersection(
-                c = actual,
-                d = target,
-            )
-            if (intersection != null) {
-                canvas.vectors.draw(
-                    color = Color.YELLOW,
-                    vector = intersection + intersection.moved(length = 0.1),
-                    offset = offset,
-                    measure = measure,
-                    lineWidth = 3f,
-                )
-                canvas.texts.draw(
-                    color = Color.YELLOW,
-                    info = info,
-                    pointTopLeft = intersection.moved(length = 0.2),
-                    offset = offset,
-                    measure = measure,
-                    text = "$index]",
-                )
-            }
-        }
-    }
-
     @Deprecated(message = "sp.kx.math.plus")
     private operator fun Size.plus(
         measure: Measure<Double, Double>,
@@ -467,6 +436,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val dotSize = sizeOf(width = 0.25, height = 0.25)
         val dotOffset = dotSize.center() * -1.0
+        val lineWidth = 0.1
         barriers.filter {
             !isPassable(it)
         }.forEach { barrier ->
@@ -476,19 +446,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = vector,
                 offset = offset,
                 measure = measure,
-                lineWidth = 4f,
+                lineWidth = lineWidth,
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.start + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = 2f,
+                lineWidth = measure.transform(lineWidth).toFloat(),
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = 2f,
+                lineWidth = measure.transform(lineWidth).toFloat(),
             )
         }
     }
@@ -502,25 +472,26 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val dotSize = sizeOf(width = 0.1, height = 0.1)
         val dotOffset = dotSize.center() * -1.0
+        val lineWidth = 0.1
         vectors.forEach { vector ->
             canvas.vectors.draw(
                 color = color,
                 vector = vector,
                 offset = offset,
                 measure = measure,
-                lineWidth = 2f,
+                lineWidth = lineWidth,
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.start + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = 2f,
+                lineWidth = measure.transform(lineWidth).toFloat(),
             )
             canvas.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = 2f,
+                lineWidth = measure.transform(lineWidth).toFloat(),
             )
         }
     }
@@ -534,12 +505,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val rOffset = offsetOf(1.75, -1.0)
         val radius = 0.5
+        val lineWidth = 0.1
         canvas.drawCircle(
             color = Color.GREEN,
             pointCenter = point + offset + rOffset + measure,
             radius = measure.transform(radius),
             edgeCount = 16,
-            lineWidth = 1f,
+            lineWidth = measure.transform(lineWidth).toFloat(),
         )
         val text = if (joystickStorage.getJoysticks().isEmpty()) "F" else "A"
         val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -566,13 +538,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 14f)
         val size = sizeOf(2, 1)
         val itemOffset = size.center() * -1.0
+        val lineWidth = 0.1
         for (relay in env.relays) {
             val point = relay.point
             canvas.drawRectangle(
                 color = colorOf(0xff888888),
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
-                lineWidth = 2f,
+                lineWidth = measure.transform(lineWidth).toFloat(),
             )
             val text = if (relay.enabled) "on" else "off"
             val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -592,42 +565,51 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onRenderCrates(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val size = sizeOf(1.5, 1.5)
+        val itemOffset = size.center() * - 1.0
+        val color = colorOf(0xffffff00)
+        val info = FontInfoUtil.getFontInfo(height = measure.transform(1.0).toFloat())
+        val lineWidth = 0.1
+        for (crate in env.crates) {
+            val point = crate.point
+            canvas.drawRectangle(
+                color = color,
+                pointTopLeft = point + offset + itemOffset + measure,
+                size = size + measure,
+                lineWidth = measure.transform(lineWidth).toFloat(),
+            )
+            val text = "C"
+            val textWidth = engine.fontAgent.getTextWidth(info, text)
+            val textOffset = offsetOf(
+                dX = measure.units(-textWidth / 2),
+                dY = measure.units(-info.height.toDouble() / 2),
+            )
+            canvas.texts.draw(
+                color = color,
+                info = info,
+                pointTopLeft = point + textOffset,
+                offset = offset,
+                measure = measure,
+                text = text,
+            )
+        }
+    }
+
     private fun onRenderItems(
         canvas: Canvas,
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
         val size = sizeOf(1, 1)
-        val itemOffset = size.center() * -1.0
+        val itemOffset = size.center() * - 1.0
         for (itemPosition in env.itemsPositions) {
             val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: TODO()
             val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
-            val point = itemPosition.point
-            canvas.drawRectangle(
-                color = Color.YELLOW,
-                pointTopLeft = point + offset + itemOffset + measure,
-                size = size + measure,
-                lineWidth = 3f,
-            )
-        }
-    }
-
-    @Deprecated("onRenderItems")
-    private fun onRenderItemsOld(
-        canvas: Canvas,
-        offset: Offset,
-        measure: Measure<Double, Double>,
-    ) {
-        val size = sizeOf(1, 1)
-        val itemOffset = size.center() * -1.0
-        val iterator = env.itemsPositions.listIterator()
-        while (iterator.hasNext()) {
-            val itemPosition = iterator.next()
-            val exists = env.ownership.values.any { it == itemPosition.id }
-            if (!exists) {
-                iterator.remove()
-                continue
-            }
             val point = itemPosition.point
             canvas.drawRectangle(
                 color = Color.YELLOW,
@@ -652,6 +634,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Color.GREEN,
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
+        val lineWidth = 0.1
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
             val ab = env.player.point + barrier.start
@@ -660,7 +643,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = ab,
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = lineWidth,
             )
             canvas.texts.draw(
                 color = color,
@@ -676,7 +659,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = ac,
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = lineWidth,
             )
             canvas.texts.draw(
                 color = color,
@@ -694,7 +677,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 vector = aH,
                 offset = offset,
                 measure = measure,
-                lineWidth = 1f,
+                lineWidth = lineWidth,
             )
             val tPoint = bc.center()
             canvas.texts.draw(
@@ -846,10 +829,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             x = engine.property.pictureSize.width - measure.transform(1.0),
             y = measure.transform(1.0),
         )
+        val lineWidth = 0.1
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = xVector,
-            lineWidth = 1f,
+            lineWidth = measure.transform(lineWidth).toFloat(),
         )
         val yVector = start + pointOf(
             x = measure.transform(1.0),
@@ -858,7 +842,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = yVector,
-            lineWidth = 1f,
+            lineWidth = measure.transform(lineWidth).toFloat(),
         )
         val point = env.player.point
         val info = FontInfoUtil.getFontInfo(height = 12f)
@@ -878,7 +862,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = pointOf(x = x.toDouble(), y = 1.0) + pointOf(x = x.toDouble(), y = lineY),
-                lineWidth = 1f,
+                lineWidth = lineWidth,
                 offset = offset.copy(dY = 0.0),
                 measure = measure,
             )
@@ -899,7 +883,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = pointOf(x = 1.0, y = y.toDouble()) + pointOf(x = lineX, y = y.toDouble()),
-                lineWidth = 1f,
+                lineWidth = lineWidth,
                 offset = offset.copy(dX = 0.0),
                 measure = measure,
             )
@@ -935,21 +919,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
 //        val relative = center - (player.point + measure)
         val offset = center - env.player.point
-        /*
-        val length = 2.0
-        canvas.drawLine(
-            color = Color.GREEN,
-            vector = vectorOf(startX = 0.0, startY = length, finishX = 0.0, finishY = -length).foo(measure::transform).bar(relative),
-//            vector = pointOf(x = 0.0, y = length).toVector(pointOf(x = 0.0, y = -length), relative),
-            lineWidth = 1f
-        )
-        canvas.drawLine(
-            color = Color.GREEN,
-            vector = vectorOf(startX = -length, startY = 0.0, finishX = length, finishY = 0.0).foo(measure::transform).bar(relative),
-//            vector = pointOf(x = -length, y = 0.0).toVector(pointOf(x = length, y = 0.0), relative),
-            lineWidth = 1f
-        )
-        */
 //        val playerOffset = engine.input.keyboard.getPlayerOffset()
         val joystick = joystickStorage.getJoysticks()[0]
         val playerOffset = if (joystick == null) {
@@ -1027,38 +996,33 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             measure = measure,
         )
+        val lineWidth = 0.1
         canvas.vectors.draw(
             color = Color.YELLOW,
             vector = vectorOf(center, length = env.player.radius, angle = env.player.direction.expected),
             measure = measure,
-            lineWidth = 1f,
+            lineWidth = lineWidth,
         )
-        canvas.drawLine(
+        canvas.vectors.draw(
             color = Color.WHITE,
-            vector = vectorOf(center, length = env.player.radius, angle = env.player.direction.actual) + measure,
-            lineWidth = 1f
+            vector = vectorOf(center, length = env.player.radius, angle = env.player.direction.actual),
+            measure = measure,
+            lineWidth = lineWidth,
         )
         val currentSpeed = speedOf(magnitude = distanceOf(previous.point, env.player.point), engine.property.time.diff())
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = vectorOf(center, length = env.player.radius * currentSpeed.per(TimeUnit.SECONDS) / env.player.speed.per(TimeUnit.SECONDS), angle = env.player.direction.expected),
             measure = measure,
-            lineWidth = 4f,
+            lineWidth = lineWidth,
         )
-//        canvas.drawCircle(
-//            color = Color.WHITE,
-//            pointCenter = center + measure,
-//            radius = measure.transform(player.radius),
-//            edgeCount = 16,
-//            lineWidth = 1f,
-//        ) // todo
         canvas.drawRectangle(
             color = Color.BLUE,
             pointTopLeft = center - env.player.size.center() + measure,
             size = env.player.size + measure,
             direction = env.player.direction.actual,
             pointOfRotation = center + measure,
-            lineWidth = 1f,
+            lineWidth = measure.transform(lineWidth).toFloat(),
         )
         onRenderVectors(
             canvas = canvas,
@@ -1079,6 +1043,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         ) // todo
         onRenderItems(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        ) // todo
+        onRenderCrates(
             canvas = canvas,
             offset = offset,
             measure = measure,

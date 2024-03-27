@@ -7,6 +7,7 @@ import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
+import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.ItemPosition
 import sp.service.sample.entity.Relay
@@ -53,6 +54,14 @@ internal fun JSONObject.toItem(): Item {
 
 internal fun JSONObject.toItemPosition(): ItemPosition {
     return ItemPosition(
+        id = UUID.fromString(getString("id")),
+        itemId = UUID.fromString(getString("itemId")),
+        point = getJSONObject("point").toPoint(),
+    )
+}
+
+internal fun JSONObject.toCrate(): Crate {
+    return Crate(
         id = UUID.fromString(getString("id")),
         point = getJSONObject("point").toPoint(),
     )

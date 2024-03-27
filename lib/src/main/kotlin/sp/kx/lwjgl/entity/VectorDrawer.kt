@@ -22,7 +22,7 @@ interface VectorDrawer {
         color: Color,
         vector: Vector,
         measure: Measure<Double, Double>,
-        lineWidth: Float,
+        lineWidth: Double,
     )
 
     fun draw(
@@ -30,6 +30,6 @@ interface VectorDrawer {
         vector: Vector,
         offset: Offset,
         measure: Measure<Double, Double>,
-        lineWidth: Float,
+        lineWidth: Double,
     )
 }

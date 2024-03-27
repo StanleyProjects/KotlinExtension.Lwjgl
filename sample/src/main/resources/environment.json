@@ -37,12 +37,19 @@
       "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86"
     }
   ],
+  "crates": [
+    {
+      "id": "eed81bb1-0083-48dd-abc0-7db347c827c0",
+      "point": { "x": -4, "y": -4 }
+    }
+  ],
   "ownership": {
     "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9"
   },
   "itemsPositions": [
     {
       "id": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
+      "itemId": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
       "point": { "x": 4, "y": 12 }
     }
   ],

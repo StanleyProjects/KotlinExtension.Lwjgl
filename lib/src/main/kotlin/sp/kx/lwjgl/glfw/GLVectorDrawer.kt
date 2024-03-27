@@ -27,8 +27,8 @@ internal object GLVectorDrawer : VectorDrawer {
         }
     }
 
-    override fun draw(color: Color, vector: Vector, measure: Measure<Double, Double>, lineWidth: Float) {
-        GL11.glLineWidth(lineWidth)
+    override fun draw(color: Color, vector: Vector, measure: Measure<Double, Double>, lineWidth: Double) {
+        GL11.glLineWidth(measure.transform(lineWidth).toFloat())
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_LINE_STRIP) {
             GLUtil.vertexOf(point = vector.start, measure = measure)
@@ -41,9 +41,9 @@ internal object GLVectorDrawer : VectorDrawer {
         vector: Vector,
         offset: Offset,
         measure: Measure<Double, Double>,
-        lineWidth: Float
+        lineWidth: Double,
     ) {
-        GL11.glLineWidth(lineWidth)
+        GL11.glLineWidth(measure.transform(lineWidth).toFloat())
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_LINE_STRIP) {
             GLUtil.vertexOf(point = vector.start, offset = offset, measure = measure)
