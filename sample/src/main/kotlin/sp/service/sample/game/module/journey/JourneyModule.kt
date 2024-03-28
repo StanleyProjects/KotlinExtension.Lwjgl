@@ -236,7 +236,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
-            canvas.drawText(
+            canvas.texts.draw(
                 color = Color.GREEN,
                 info = info,
                 pointTopLeft = pointOf(x = x, y = engine.property.pictureSize.height - dY - padding),
@@ -246,10 +246,10 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     }
 
     private fun onRenderPlayer(canvas: Canvas, point: Point) {
-        canvas.drawLine(
+        canvas.vectors.draw(
             color = Color.WHITE,
             vector = vectorOf(point, length = radius, angle = direction.actual),
-            lineWidth = 1f
+            lineWidth = 0.1,
         )
         val size = sizeOf(width = width, height = width)
         canvas.drawRectangle(
@@ -273,13 +273,13 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     private fun onRenderBarriers(canvas: Canvas, center: Point, point: Point, barriers: List<Vector>) {
         val offset = center - point
         barriers.forEach { barrier ->
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = barrier.start.toVector(
                     finish = barrier.finish,
                     offset = offset,
                 ),
-                lineWidth = 1f
+                lineWidth = 0.1,
             )
         }
     }
@@ -287,19 +287,19 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
     private fun onRenderCenter(canvas: Canvas, center: Point) {
         val relative = center.plus(dX = -point.x, dY = -point.y)
         val length = pixelsPerUnit * 2
-        canvas.drawLine(
+        canvas.vectors.draw(
             color = Color.GREEN,
             vector = relative.plus(dX = 0.0, dY = length) + relative.plus(dX = 0.0, dY = -length),
-            lineWidth = 1f
+            lineWidth = 0.1,
         )
-        canvas.drawLine(
+        canvas.vectors.draw(
             color = Color.GREEN,
             vector = relative.plus(dX = -length, dY = 0.0) + relative.plus(dX = length, dY = 0.0),
-            lineWidth = 1f
+            lineWidth = 0.1,
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val text = "0/0"
-        canvas.drawText(
+        canvas.texts.draw(
             color = Color.GREEN,
             info = info,
             pointTopLeft = relative.plus(
@@ -322,24 +322,24 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         barriers.forEachIndexed { index, barrier ->
             val color = colors[index % colors.size]
             val ab = point.toVector(finish = barrier.start, offset = offset)
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = color,
                 vector = ab,
-                lineWidth = 1f
+                lineWidth = 0.1,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = ab.getCenter(),
                 text = String.format("%05.2f", distanceOf(a = point, b = barrier.start))
             )
             val ac = point.toVector(finish = barrier.finish, offset = offset)
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = color,
                 vector = ac,
-                lineWidth = 1f
+                lineWidth = 0.1,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = ac.getCenter(),
@@ -351,18 +351,18 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
                 finish = barrier.getPerpendicular(target = point),
                 offset = offset
             )
-            canvas.drawLine(
+            canvas.vectors.draw(
                 color = color,
                 vector = aH,
-                lineWidth = 1f
+                lineWidth = 0.1,
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = tPoint,
                 text = String.format("%05.2f", aH.length())
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = color,
                 info = info,
                 pointTopLeft = tPoint.plus(dX = 0.0, dY = info.height.toDouble()),

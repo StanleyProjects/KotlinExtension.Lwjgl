@@ -67,7 +67,7 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
         val padding = pixelsPerUnit * 1
 //        val fps = TimeUnit.SECONDS.toNanos(1).toDouble() / (engine.property.timeNow - engine.property.timeLast)
         val fps = 1.seconds / engine.property.time.diff()
-        canvas.drawText(
+        canvas.texts.draw(
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),
             color = Color.GREEN,

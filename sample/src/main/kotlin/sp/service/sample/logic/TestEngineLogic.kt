@@ -373,11 +373,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
-            canvas.drawText(
+            canvas.texts.draw(
                 color = Color.GREEN,
                 info = info,
                 pointTopLeft = pointOf(x = x, y = engine.property.pictureSize.height - dY - padding),
-                text = text
+                text = text,
             )
         }
     }

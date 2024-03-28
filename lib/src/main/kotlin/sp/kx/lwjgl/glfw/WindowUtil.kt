@@ -73,7 +73,7 @@ object WindowUtil {
         }
 
         override fun drawLineLoop(color: Color, points: Iterable<Point>, lineWidth: Float) {
-            GL11.glLineWidth(lineWidth)
+            GL11.glLineWidth(1f)
             GLUtil.colorOf(color)
             GLUtil.transaction(GL11.GL_LINE_LOOP) {
                 points.forEach {

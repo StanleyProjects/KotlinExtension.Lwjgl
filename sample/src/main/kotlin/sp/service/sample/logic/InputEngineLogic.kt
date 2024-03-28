@@ -103,7 +103,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
             points = setOf(pointOf(x = x, y = y + d + 25.0), pointOf(x = x, y = y + d + 25.0 + d * lv)),
             lineWidth = 2f
         )
-        drawText(
+        texts.draw(
             color = Color.GREEN,
             pointTopLeft = pointOf(x = x - 16.0, y = y),
             info = info,
@@ -118,7 +118,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
             ),
             lineWidth = 2f
         )
-        drawText(
+        texts.draw(
             color = Color.GREEN,
             pointTopLeft = pointOf(x = x - 16.0 + 16.0 * 6 + 25.0 * 10, y = y),
             info = info,
@@ -155,7 +155,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         )
         val textHeight = 16f
         val info = getFontInfo(height = textHeight)
-        drawText(
+        texts.draw(
             color = color,
             pointTopLeft = pointTopLeft.plus(
                 dX = width / 2 - engine.fontAgent.getTextWidth(info, text) / 2,
@@ -178,7 +178,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         val textHeight = 16f
         val info = getFontInfo(height = textHeight)
         val width = engine.fontAgent.getTextWidth(info, text)
-        drawText(
+        texts.draw(
             color = color,
             pointTopLeft = pointCenter.plus(dX = - width / 2, dY = - textHeight / 2.0),
             info = info,
@@ -244,13 +244,13 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         )
         val textHeight = 16f
         val info = getFontInfo(height = textHeight)
-        drawText(
+        texts.draw(
             color = Color.GREEN,
             pointTopLeft = pointCenter.plus(dX = - radius, dY = radius + 16.0),
             info = info,
             text = String.format("x: %+.1f", valueX)
         )
-        drawText(
+        texts.draw(
             color = Color.GREEN,
             pointTopLeft = pointCenter.plus(dX = - radius, dY = radius + 16.0 + textHeight),
             info = info,
@@ -352,7 +352,7 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                 val isPressed = keyboard.isPressed(button)
                 val width = 25.0
                 val pointTopLeft = pointOf(x + width * dX, y + width * dY)
-                drawText(
+                texts.draw(
                     info = getFontInfo(height = 16f),
                     color = if (isPressed) Color.YELLOW else Color.GREEN,
                     pointTopLeft = pointTopLeft,
@@ -372,13 +372,13 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun drawJoystick(canvas: Canvas, x: Double, y: Double, metaData: JoystickMetaData, buttons: ByteArray, axes: FloatArray) {
         val info14 = getFontInfo(height = 14f)
-        canvas.drawText(
+        canvas.texts.draw(
             color = Color.WHITE,
             pointTopLeft = pointOf(x = x, y = y),
             info = info14,
             text = "#${metaData.number}: \"${metaData.name}\"",
         )
-        canvas.drawText(
+        canvas.texts.draw(
             color = Color.GREEN,
             pointTopLeft = pointOf(x = x, y = y + 14),
             info = info14,
@@ -387,13 +387,13 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         buttons.forEachIndexed { index, it ->
             val padding = 4
             val value = it.toInt()
-            canvas.drawText(
+            canvas.texts.draw(
                 color = Color.WHITE,
                 pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 0),
                 info = info14,
                 text = String.format("%2d", index),
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = if (value == 1) Color.YELLOW else Color.GREEN,
                 pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 1),
                 info = info14,
@@ -402,32 +402,32 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
         }
         axes.forEachIndexed { index, it ->
             val padding = 24
-            canvas.drawText(
+            canvas.texts.draw(
                 color = Color.WHITE,
                 pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 2),
                 info = info14,
                 text = String.format("%2d", index),
             )
-            canvas.drawText(
+            canvas.texts.draw(
                 color = Color.GREEN,
                 pointTopLeft = pointOf(x = x + index * 14 + index * padding, y = y + 28 + 14 * 3),
                 info = info14,
                 text = String.format("%+.2f", it),
             )
         }
-//        canvas.drawText(
+//        canvas.texts.draw(
 //            color = Color.GREEN,
 //            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 0),
 //            info = getFontInfo(height = 14f),
 //            text = "     |${buttons.mapIndexed { index, _ -> String.format("%2d", index) }}",
 //        )
-//        canvas.drawText(
+//        canvas.texts.draw(
 //            color = Color.GREEN,
 //            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 1),
 //            info = getFontInfo(height = 14f),
 //            text = "btns: ${buttons.map { String.format("%2d", it) }}",
 //        )
-//        canvas.drawText(
+//        canvas.texts.draw(
 //            color = Color.GREEN,
 //            pointTopLeft = pointOf(x = x, y = y + 20 + 14 * 2),
 //            info = getFontInfo(height = 14f),

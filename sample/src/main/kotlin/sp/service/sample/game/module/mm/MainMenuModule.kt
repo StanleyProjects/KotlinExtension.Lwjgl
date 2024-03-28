@@ -29,14 +29,14 @@ class MainMenuModule(private val engine: Engine, private val broadcast: (Broadca
         val h = MainMenuItem.values().size * h1 + MainMenuItem.values().lastIndex * p
         val y = engine.property.pictureSize.height / 2 - h / 2
         MainMenuItem.values().forEachIndexed { index, item ->
-            canvas.drawText(
+            canvas.texts.draw(
                 info = FontInfoUtil.getFontInfo(height = textHeight),
                 pointTopLeft = pointOf(x = h1, y = y + index * (h1 + p)),
                 color = Color.GREEN,
                 text = item.getTitle()
             )
         }
-        canvas.drawText(
+        canvas.texts.draw(
             info = FontInfoUtil.getFontInfo(height = textHeight),
             pointTopLeft = pointOf(x = h1 / 2, y = y + position * (h1 + p)),
             color = Color.YELLOW,
