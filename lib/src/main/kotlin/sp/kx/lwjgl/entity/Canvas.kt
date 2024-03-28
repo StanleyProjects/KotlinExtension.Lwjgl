@@ -15,7 +15,7 @@ interface Canvas {
         vector: Vector,
         lineWidth: Float,
     ) {
-        vectors.draw(color, vector, lineWidth)
+        vectors.draw(color, vector, lineWidth.toDouble())
     }
 
     @Deprecated(message = "replace with texts.draw")

@@ -8,14 +8,14 @@ interface VectorDrawer {
     fun draw(
         color: Color,
         vector: Vector,
-        lineWidth: Float,
+        lineWidth: Double,
     )
 
     fun draw(
         color: Color,
         vector: Vector,
         offset: Offset,
-        lineWidth: Float,
+        lineWidth: Double,
     )
 
     fun draw(

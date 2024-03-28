@@ -27,16 +27,58 @@ object GLUtil {
         vertexOf(point.x, point.y)
     }
 
+    fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        angle: Double,
+    ) {
+        vertexOf(point.x + length * kotlin.math.cos(angle), point.y + length * kotlin.math.sin(angle))
+    }
+
     fun vertexOf(point: Point, measure: Measure<Double, Double>) {
         vertexOf(measure.transform(point.x), measure.transform(point.y))
+    }
+
+    fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        angle: Double,
+        measure: Measure<Double, Double>,
+    ) {
+        val x = point.x + length * kotlin.math.cos(angle)
+        val y = point.y + length * kotlin.math.sin(angle)
+        vertexOf(measure.transform(x), measure.transform(y))
     }
 
     fun vertexOf(point: Point, offset: Offset) {
         vertexOf(point.x + offset.dX, point.y + offset.dY)
     }
 
+    fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        angle: Double,
+        offset: Offset,
+    ) {
+        val x = point.x + length * kotlin.math.cos(angle) + offset.dX
+        val y = point.y + length * kotlin.math.sin(angle) + offset.dY
+        vertexOf(x, y)
+    }
+
     fun vertexOf(point: Point, offset: Offset, measure: Measure<Double, Double>) {
         vertexOf(measure.transform(point.x + offset.dX), measure.transform(point.y + offset.dY))
+    }
+
+    fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        angle: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val x = point.x + length * kotlin.math.cos(angle) + offset.dX
+        val y = point.y + length * kotlin.math.sin(angle) + offset.dY
+        vertexOf(measure.transform(x), measure.transform(y))
     }
 
     fun transaction(mode: Int, block: () -> Unit) {

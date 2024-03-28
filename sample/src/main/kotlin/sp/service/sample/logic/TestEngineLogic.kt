@@ -831,7 +831,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = xVector,
-            lineWidth = measure.transform(lineWidth).toFloat(),
+            lineWidth = measure.transform(lineWidth),
         )
         val yVector = start + pointOf(
             x = measure.transform(1.0),
@@ -840,7 +840,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = yVector,
-            lineWidth = measure.transform(lineWidth).toFloat(),
+            lineWidth = measure.transform(lineWidth),
         )
         val point = env.player.point
         val info = FontInfoUtil.getFontInfo(height = 12f)
@@ -994,11 +994,30 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             measure = measure,
         )
-        canvas.drawLineLoop(
-            color = colorOf(0xffff0000),
-            points = listOf(pointOf(4, 4), pointOf(2, -2), pointOf(2, -4)).map { it + offset + measure },
-            lineWidth = measure.transform(1.0).toFloat(),
-//            lineWidth = 1f,
+        //
+        canvas.vectors.draw(
+            color = Color.RED,
+            vector = pointOf(2, 4) + pointOf(2, 2) + measure,
+            offset = offsetOf(measure.transform(offset.dX), measure.transform(offset.dY)),
+            lineWidth = measure.transform(0.2),
+        )
+        canvas.vectors.draw(
+            color = Color.GREEN,
+            vector = pointOf(4, 4) + pointOf(6, 2) + offset + measure,
+            lineWidth = measure.transform(0.2),
+        )
+        canvas.vectors.draw(
+            color = Color.BLUE,
+            vector = pointOf(6, 4) + pointOf(8, 6) + offset,
+            measure = measure,
+            lineWidth = 0.2,
+        )
+        canvas.vectors.draw(
+            color = Color.YELLOW,
+            vector = pointOf(2, -4) + pointOf(4, -4),
+            offset = offset,
+            measure = measure,
+            lineWidth = 0.2,
         )
 //        canvas.drawCircle(
 //            color = colorOf(0xffff0000),
