@@ -466,30 +466,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         vectors: List<Vector>,
         measure: Measure<Double, Double>,
     ) {
-        val dotSize = sizeOf(width = 0.1, height = 0.1)
-        val dotOffset = dotSize.center() * -1.0
-        val lineWidth = 0.1
-        vectors.forEach { vector ->
-            canvas.vectors.draw(
-                color = color,
-                vector = vector,
-                offset = offset,
-                measure = measure,
-                lineWidth = lineWidth,
-            )
-//            canvas.drawRectangle(
-//                color = Color.YELLOW,
-//                pointTopLeft = vector.start + offset + dotOffset + measure,
-//                size = dotSize + measure,
-//                lineWidth = measure.transform(lineWidth).toFloat(),
-//            )
-//            canvas.drawRectangle(
-//                color = Color.YELLOW,
-//                pointTopLeft = vector.finish + offset + dotOffset + measure,
-//                size = dotSize + measure,
-//                lineWidth = measure.transform(lineWidth).toFloat(),
-//            )
-        }
+        canvas.vectors.draw(
+            color = color,
+            vectors = vectors,
+            offset = offset,
+            measure = measure,
+            lineWidth = 0.1,
+        )
     }
 
     private fun onRenderInteraction(

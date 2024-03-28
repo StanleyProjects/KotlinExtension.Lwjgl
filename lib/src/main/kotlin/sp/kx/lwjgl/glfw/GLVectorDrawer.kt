@@ -57,12 +57,44 @@ internal object GLVectorDrawer : VectorDrawer {
     ) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_POLYGON) {
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             val angle = vector.angle()
             GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
             GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
             GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+        }
+    }
+
+    private fun vertexOf(
+        vector: Vector,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val angle = vector.angle()
+        GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+    }
+
+    override fun draw(
+        color: Color,
+        vectors: List<Vector>,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+        lineWidth: Double,
+    ) {
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val first = vectors.first()
+            vertexOf(vector = first, lineWidth = lineWidth, offset = offset, measure = measure)
+            for (i in 1 until vectors.size) {
+                vertexOf(vector = vectors[i], lineWidth = lineWidth, offset = offset, measure = measure)
+            }
+            GLUtil.vertexOfMoved(first.start, length = lineWidth / 2, angle = first.angle() - kotlin.math.PI / 2, offset = offset, measure = measure)
         }
     }
 }

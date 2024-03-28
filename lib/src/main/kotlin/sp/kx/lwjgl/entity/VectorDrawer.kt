@@ -32,4 +32,12 @@ interface VectorDrawer {
         measure: Measure<Double, Double>,
         lineWidth: Double,
     )
+
+    fun draw(
+        color: Color,
+        vectors: List<Vector>,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+        lineWidth: Double,
+    )
 }
