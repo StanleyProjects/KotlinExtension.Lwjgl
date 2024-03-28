@@ -8,7 +8,6 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.Point
 import sp.kx.math.measure.frequency
 import sp.kx.math.plus

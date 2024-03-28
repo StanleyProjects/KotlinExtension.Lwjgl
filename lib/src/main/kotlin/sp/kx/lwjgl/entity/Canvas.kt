@@ -24,17 +24,22 @@ interface Canvas {
     }
 
     fun drawPoint(color: Color, point: Point)
+
     fun drawLineLoop(
         color: Color,
         points: Iterable<Point>,
         lineWidth: Float
     )
+
+    @Deprecated(message = "polygons")
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
         size: Size,
         lineWidth: Float
     )
+
+    @Deprecated(message = "polygons")
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
@@ -42,5 +47,22 @@ interface Canvas {
         lineWidth: Float,
         direction: Double,
         pointOfRotation: Point
+    )
+
+    @Deprecated(message = "polygons")
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Float
+    )
+
+    @Deprecated(message = "polygons")
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
     )
 }

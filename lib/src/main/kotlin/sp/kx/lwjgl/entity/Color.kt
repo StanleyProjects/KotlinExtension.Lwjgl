@@ -1,7 +1,5 @@
 package sp.kx.lwjgl.entity
 
-import java.math.BigInteger
-
 interface Color {
     companion object {
         const val MAX_VALUE = 1f
@@ -13,6 +11,7 @@ interface Color {
         val GREEN = color(MIN_VALUE, MAX_VALUE, MIN_VALUE)
         val BLUE = color(MIN_VALUE, MIN_VALUE, MAX_VALUE)
         val YELLOW = color(MAX_VALUE, MAX_VALUE, MIN_VALUE)
+        val GRAY = colorOf(0xff888888)
     }
 
     val red: Float

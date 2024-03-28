@@ -4,7 +4,6 @@ import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Point

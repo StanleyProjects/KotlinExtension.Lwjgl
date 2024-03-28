@@ -9,7 +9,6 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.util.drawCircle
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
@@ -23,7 +22,6 @@ import sp.kx.math.copy
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
-import sp.kx.math.getIntersection
 import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
@@ -436,7 +434,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val dotSize = sizeOf(width = 0.25, height = 0.25)
         val dotOffset = dotSize.center() * -1.0
-        val lineWidth = 0.1
+        val lineWidth = 0.2
         barriers.filter {
             !isPassable(it)
         }.forEach { barrier ->
@@ -481,18 +479,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
                 lineWidth = lineWidth,
             )
-            canvas.drawRectangle(
-                color = Color.YELLOW,
-                pointTopLeft = vector.start + offset + dotOffset + measure,
-                size = dotSize + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
-            )
-            canvas.drawRectangle(
-                color = Color.YELLOW,
-                pointTopLeft = vector.finish + offset + dotOffset + measure,
-                size = dotSize + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
-            )
+//            canvas.drawRectangle(
+//                color = Color.YELLOW,
+//                pointTopLeft = vector.start + offset + dotOffset + measure,
+//                size = dotSize + measure,
+//                lineWidth = measure.transform(lineWidth).toFloat(),
+//            )
+//            canvas.drawRectangle(
+//                color = Color.YELLOW,
+//                pointTopLeft = vector.finish + offset + dotOffset + measure,
+//                size = dotSize + measure,
+//                lineWidth = measure.transform(lineWidth).toFloat(),
+//            )
         }
     }
 
@@ -542,7 +540,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         for (relay in env.relays) {
             val point = relay.point
             canvas.drawRectangle(
-                color = colorOf(0xff888888),
+                color = Color.GRAY,
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
                 lineWidth = measure.transform(lineWidth).toFloat(),
@@ -996,6 +994,31 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             measure = measure,
         )
+        canvas.drawLineLoop(
+            color = colorOf(0xffff0000),
+            points = listOf(pointOf(4, 4), pointOf(2, -2), pointOf(2, -4)).map { it + offset + measure },
+            lineWidth = measure.transform(1.0).toFloat(),
+//            lineWidth = 1f,
+        )
+//        canvas.drawCircle(
+//            color = colorOf(0xffff0000),
+//            pointCenter = pointOf(4, 4) + offset + measure,
+//            radius = measure.transform(1.0),
+//            edgeCount = 16,
+//            lineWidth = measure.transform(lineWidth).toFloat(),
+//        )
+        canvas.drawCircle(
+            color = colorOf(0xff00ff00),
+            pointCenter = pointOf(-4, 4) + offset + measure,
+            radius = measure.transform(2.0),
+            edgeCount = 16,
+        )
+        canvas.drawCircle(
+            color = colorOf(0xff0000ff),
+            pointCenter = pointOf(-4, -4) + offset + measure,
+            radius = measure.transform(3.0),
+            edgeCount = 16,
+        )
         val lineWidth = 0.1
         canvas.vectors.draw(
             color = Color.YELLOW,
@@ -1026,7 +1049,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         onRenderVectors(
             canvas = canvas,
-            color = Color.BLUE,
+            color = Color.GRAY,
             offset = offset,
             vectors = walls,
             measure = measure,

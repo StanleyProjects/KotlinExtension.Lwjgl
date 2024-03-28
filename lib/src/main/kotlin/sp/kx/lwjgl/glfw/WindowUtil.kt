@@ -61,7 +61,7 @@ object WindowUtil {
         return windowId
     }
 
-    private class WindowCanvas(private val fontDrawer: FontDrawer) : Canvas {
+    private class WindowCanvas(fontDrawer: FontDrawer) : Canvas {
         override val vectors: VectorDrawer = GLVectorDrawer
         override val texts: TextDrawer = GLTextDrawer(fontDrawer = fontDrawer)
 
@@ -120,6 +120,49 @@ object WindowUtil {
                     size = size,
                     lineWidth = lineWidth
                 )
+            }
+        }
+
+        override fun drawCircle(
+            color: Color,
+            pointCenter: Point,
+            radius: Double,
+            edgeCount: Int,
+            lineWidth: Float,
+        ) {
+            val points = (0..edgeCount).map {
+                val radians = it * 2 * kotlin.math.PI / edgeCount
+                pointCenter.plus(
+                    dX = kotlin.math.cos(radians) * radius,
+                    dY = kotlin.math.sin(radians) * radius,
+                )
+            }
+            drawLineLoop(
+                color = color,
+                points = points,
+                lineWidth = lineWidth
+            )
+        }
+
+        override fun drawCircle(
+            color: Color,
+            pointCenter: Point,
+            radius: Double,
+            edgeCount: Int,
+        ) {
+            val points = (0..edgeCount).map {
+                val radians = it * 2 * kotlin.math.PI / edgeCount
+                pointCenter.plus(
+                    dX = kotlin.math.cos(radians) * radius,
+                    dY = kotlin.math.sin(radians) * radius,
+                )
+            }
+            GL11.glLineWidth(1f)
+            GLUtil.colorOf(color)
+            GLUtil.transaction(GL11.GL_POLYGON) {
+                points.forEach {
+                    GLUtil.vertexOf(it)
+                }
             }
         }
     }
