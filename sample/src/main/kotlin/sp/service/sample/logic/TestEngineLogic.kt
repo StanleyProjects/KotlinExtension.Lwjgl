@@ -1032,6 +1032,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             pointCenter = pointOf(-4, -4) + offset + measure,
             radius = measure.transform(3.0),
             edgeCount = 16,
+            lineWidth = measure.transform(0.2),
+        )
+        canvas.polygons.drawCircle(
+            color = colorOf(0xff0000ff),
+            pointCenter = pointOf(-4, -4) + offset + measure,
+            radius = measure.transform(6.0),
+            edgeCount = 16,
+            lineWidth = measure.transform(0.4),
         )
         val lineWidth = 0.1
         canvas.vectors.draw(

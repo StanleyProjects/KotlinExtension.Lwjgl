@@ -6,6 +6,7 @@ import sp.kx.lwjgl.entity.PolygonDrawer
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Point
 import sp.kx.math.Size
+import sp.kx.math.angleOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 
@@ -51,6 +52,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         }
     }
 
+    private fun vertexOf(start: Point, finish: Point, lineWidth: Double) {
+        val angle = angleOf(start, finish)
+        GLUtil.vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
+        GLUtil.vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
+        GLUtil.vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
+        GLUtil.vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
+    }
+
     override fun drawCircle(
         color: Color,
         pointCenter: Point,
@@ -67,11 +76,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         }
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_LINE_LOOP) {
-            points.forEach {
-                // todo line width
-                GLUtil.vertexOf(it)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
             }
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
         }
     }
 
