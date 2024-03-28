@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.PolygonDrawer
 import sp.kx.lwjgl.entity.TextDrawer
 import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.entity.font.FontDrawer
@@ -63,6 +64,7 @@ object WindowUtil {
 
     private class WindowCanvas(fontDrawer: FontDrawer) : Canvas {
         override val vectors: VectorDrawer = GLVectorDrawer
+        override val polygons: PolygonDrawer = GLPolygonDrawer
         override val texts: TextDrawer = GLTextDrawer(fontDrawer = fontDrawer)
 
         override fun drawPoint(color: Color, point: Point) {
@@ -76,90 +78,6 @@ object WindowUtil {
             GL11.glLineWidth(1f)
             GLUtil.colorOf(color)
             GLUtil.transaction(GL11.GL_LINE_LOOP) {
-                points.forEach {
-                    GLUtil.vertexOf(it)
-                }
-            }
-        }
-
-        override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Float) {
-            val pointBottomRight = pointTopLeft.plus(
-                dX = size.width,
-                dY = size.height
-            )
-            val points = setOf(
-                pointTopLeft,
-                pointOf(pointBottomRight.x, pointTopLeft.y),
-                pointBottomRight,
-                pointOf(pointTopLeft.x, pointBottomRight.y)
-            )
-            drawLineLoop(
-                color = color,
-                points = points,
-                lineWidth = lineWidth
-            )
-        }
-
-        override fun drawRectangle(
-            color: Color,
-            pointTopLeft: Point,
-            size: Size,
-            lineWidth: Float,
-            direction: Double,
-            pointOfRotation: Point
-        ) {
-            GLUtil.onMatrix {
-                GL11.glTranslated(pointOfRotation.x, pointOfRotation.y, 0.0)
-                GL11.glRotated(Math.toDegrees(direction), 0.0, 0.0, 1.0)
-                drawRectangle(
-                    color = color,
-                    pointTopLeft = pointTopLeft.plus(
-                        dX = -pointOfRotation.x,
-                        dY = -pointOfRotation.y
-                    ),
-                    size = size,
-                    lineWidth = lineWidth
-                )
-            }
-        }
-
-        override fun drawCircle(
-            color: Color,
-            pointCenter: Point,
-            radius: Double,
-            edgeCount: Int,
-            lineWidth: Float,
-        ) {
-            val points = (0..edgeCount).map {
-                val radians = it * 2 * kotlin.math.PI / edgeCount
-                pointCenter.plus(
-                    dX = kotlin.math.cos(radians) * radius,
-                    dY = kotlin.math.sin(radians) * radius,
-                )
-            }
-            drawLineLoop(
-                color = color,
-                points = points,
-                lineWidth = lineWidth
-            )
-        }
-
-        override fun drawCircle(
-            color: Color,
-            pointCenter: Point,
-            radius: Double,
-            edgeCount: Int,
-        ) {
-            val points = (0..edgeCount).map {
-                val radians = it * 2 * kotlin.math.PI / edgeCount
-                pointCenter.plus(
-                    dX = kotlin.math.cos(radians) * radius,
-                    dY = kotlin.math.sin(radians) * radius,
-                )
-            }
-            GL11.glLineWidth(1f)
-            GLUtil.colorOf(color)
-            GLUtil.transaction(GL11.GL_POLYGON) {
                 points.forEach {
                     GLUtil.vertexOf(it)
                 }

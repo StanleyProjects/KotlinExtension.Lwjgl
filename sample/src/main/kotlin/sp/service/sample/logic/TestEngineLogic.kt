@@ -446,17 +446,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
                 lineWidth = lineWidth,
             )
-            canvas.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.start + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
             )
-            canvas.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = vector.finish + offset + dotOffset + measure,
                 size = dotSize + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
             )
         }
     }
@@ -504,12 +502,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val rOffset = offsetOf(1.75, -1.0)
         val radius = 0.5
         val lineWidth = 0.1
-        canvas.drawCircle(
+        canvas.polygons.drawCircle(
             color = Color.GREEN,
             pointCenter = point + offset + rOffset + measure,
             radius = measure.transform(radius),
             edgeCount = 16,
-            lineWidth = measure.transform(lineWidth).toFloat(),
+            lineWidth = measure.transform(lineWidth),
         )
         val text = if (joystickStorage.getJoysticks().isEmpty()) "F" else "A"
         val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -539,11 +537,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val lineWidth = 0.1
         for (relay in env.relays) {
             val point = relay.point
-            canvas.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = Color.GRAY,
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
             )
             val text = if (relay.enabled) "on" else "off"
             val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -575,11 +572,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val lineWidth = 0.1
         for (crate in env.crates) {
             val point = crate.point
-            canvas.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = color,
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
-                lineWidth = measure.transform(lineWidth).toFloat(),
             )
             val text = "C"
             val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -609,11 +605,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: TODO()
             val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
             val point = itemPosition.point
-            canvas.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
-                lineWidth = 3f,
             )
         }
     }
@@ -1026,13 +1021,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            edgeCount = 16,
 //            lineWidth = measure.transform(lineWidth).toFloat(),
 //        )
-        canvas.drawCircle(
+        canvas.polygons.drawCircle(
             color = colorOf(0xff00ff00),
             pointCenter = pointOf(-4, 4) + offset + measure,
             radius = measure.transform(2.0),
             edgeCount = 16,
         )
-        canvas.drawCircle(
+        canvas.polygons.drawCircle(
             color = colorOf(0xff0000ff),
             pointCenter = pointOf(-4, -4) + offset + measure,
             radius = measure.transform(3.0),
@@ -1058,13 +1053,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
             lineWidth = lineWidth,
         )
-        canvas.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = Color.BLUE,
             pointTopLeft = center - env.player.size.center() + measure,
             size = env.player.size + measure,
             direction = env.player.direction.actual,
             pointOfRotation = center + measure,
-            lineWidth = measure.transform(lineWidth).toFloat(),
         )
         onRenderVectors(
             canvas = canvas,

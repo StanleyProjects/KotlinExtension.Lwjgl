@@ -147,11 +147,10 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun Canvas.drawJoystickButtonRectangle(pointTopLeft: Point, width: Double, height: Double, text: String, isPressed: Boolean) {
         val color = if (isPressed) Color.YELLOW else Color.GREEN
-        drawRectangle(
+        polygons.drawRectangle(
             color = color,
             pointTopLeft = pointTopLeft,
             size = sizeOf(width = width, height = height),
-            lineWidth = 2f
         )
         val textHeight = 16f
         val info = getFontInfo(height = textHeight)
@@ -168,12 +167,12 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun Canvas.drawJoystickButtonCircle(pointCenter: Point, radius: Double, text: String, isPressed: Boolean) {
         val color = if (isPressed) Color.YELLOW else Color.GREEN
-        drawCircle(
+        polygons.drawCircle(
             color = color,
             pointCenter = pointCenter,
             radius = radius,
             edgeCount = 16,
-            lineWidth = 2f
+            lineWidth = 0.1,
         )
         val textHeight = 16f
         val info = getFontInfo(height = textHeight)
@@ -359,11 +358,10 @@ class InputEngineLogic(private val engine: Engine) : EngineLogic {
                     text = button.name
                 )
                 if (isPressed) {
-                    drawRectangle(
+                    polygons.drawRectangle(
                         color = Color.YELLOW,
                         pointTopLeft = pointTopLeft,
                         size = sizeOf(width = width, height = width),
-                        lineWidth = 2f
                     )
                 }
             }

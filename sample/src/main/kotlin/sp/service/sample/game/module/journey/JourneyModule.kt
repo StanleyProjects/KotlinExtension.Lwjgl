@@ -252,20 +252,19 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
             lineWidth = 0.1,
         )
         val size = sizeOf(width = width, height = width)
-        canvas.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = Color.YELLOW,
             pointTopLeft = point.plus(dX = - size.width / 2, dY = - size.height / 2),
             size = size,
             direction = direction.actual,
             pointOfRotation = point,
-            lineWidth = 1f
         )
-        canvas.drawCircle(
+        canvas.polygons.drawCircle(
             color = Color.WHITE,
             pointCenter = point,
             radius = radius,
             edgeCount = 16,
-            lineWidth = 1f
+            lineWidth = 0.1,
         )
         debug(canvas)
     }
