@@ -5,6 +5,7 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.measure.Measure
+import sp.kx.math.plus
 
 object GLUtil {
     fun clearColor(color: Color) {
@@ -25,6 +26,26 @@ object GLUtil {
 
     fun vertexOf(point: Point) {
         vertexOf(point.x, point.y)
+    }
+
+    fun translated(x: Double, y: Double) {
+        GL11.glTranslated(x, y, 0.0)
+    }
+
+    fun translated(point: Point) {
+        translated(x = point.x, y = point.y)
+    }
+
+    fun translated(point: Point, offset: Offset) {
+        translated(x = point.x + offset.dX, y = point.y + offset.dY)
+    }
+
+    fun translated(point: Point, measure: Measure<Double, Double>) {
+        translated(x = measure.transform(point.x), y = measure.transform(point.y))
+    }
+
+    fun translated(point: Point, offset: Offset, measure: Measure<Double, Double>) {
+        translated(x = measure.transform(point.x + offset.dX), y = measure.transform(point.y + offset.dY))
     }
 
     fun vertexOfMoved(
