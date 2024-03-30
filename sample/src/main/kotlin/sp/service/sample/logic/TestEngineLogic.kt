@@ -46,6 +46,7 @@ import sp.kx.math.radians
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.toString
+import sp.kx.math.toVector
 import sp.kx.math.vectorOf
 import sp.kx.math.whc
 import sp.lwjgl.joysticks.Joystick
@@ -157,6 +158,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ).toVectors()
     */
 
+    /*
     private val walls = listOf(
         pointOf(x = -12, y = 12),
         //
@@ -207,6 +209,37 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = -12, y = 14),
         //
         pointOf(x = -12, y = 12),
+    ).toVectors()
+    */
+
+    private val walls = listOf(
+        pointOf(x = -1, y = 8),
+        pointOf(x = 3, y = 8),
+        pointOf(x = 3, y = 9),
+        pointOf(x = 1, y = 9),
+        pointOf(x = 1, y = 14),
+        pointOf(x = 9, y = 14),
+        pointOf(x = 9, y = 9),
+        pointOf(x = 8, y = 9),
+        pointOf(x = 8, y = 8),
+        pointOf(x = 9, y = 8),
+        //
+        pointOf(x = 9, y = 0),
+        //
+        pointOf(x = 9, y = -9),
+        pointOf(x = -9, y = -9),
+        pointOf(x = -9, y = 5),
+        pointOf(x = -10, y = 5),
+        //
+        pointOf(x = -10, y = 8),
+        pointOf(x = -6, y = 8),
+        pointOf(x = -6, y = 9),
+        pointOf(x = -8, y = 9),
+        pointOf(x = -8, y = 14),
+        pointOf(x = 0, y = 14),
+        pointOf(x = 0, y = 9),
+        pointOf(x = -1, y = 9),
+        pointOf(x = -1, y = 8),
     ).toVectors()
 
     private fun JSONObject.toEnvironment(): Environment {
@@ -884,12 +917,30 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             y = measure.transform(1.0),
         )
         canvas.vectors.draw(
+            color = Color.WHITE,
+            vector = pointOf(
+                x = measure.units(engine.property.pictureSize.width / 2),
+                y = 0.0,
+            ).toVector(Offset.Empty.copy(dY = 2.0)),
+            lineWidth = 0.1,
+            measure = measure,
+        )
+        canvas.vectors.draw(
             color = Color.GREEN,
             vector = xVector,
         )
         val yVector = start + pointOf(
             x = measure.transform(1.0),
             y = engine.property.pictureSize.height - measure.transform(1.0),
+        )
+        canvas.vectors.draw(
+            color = Color.WHITE,
+            vector = pointOf(
+                x = 0.0,
+                y = measure.units(engine.property.pictureSize.height / 2),
+            ).toVector(Offset.Empty.copy(dX = 2.0)),
+            lineWidth = 0.1,
+            measure = measure,
         )
         canvas.vectors.draw(
             color = Color.GREEN,
