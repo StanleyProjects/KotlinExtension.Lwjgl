@@ -111,6 +111,22 @@ internal object GLVectorDrawer : VectorDrawer {
         vectors: List<Vector>,
         offset: Offset,
         measure: Measure<Double, Double>,
+    ) {
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            vectors.forEach {
+                GLUtil.vertexOf(it.start, offset = offset, measure = measure)
+                GLUtil.vertexOf(it.finish, offset = offset, measure = measure)
+            }
+        }
+    }
+
+    override fun draw(
+        color: Color,
+        vectors: List<Vector>,
+        offset: Offset,
+        measure: Measure<Double, Double>,
         lineWidth: Double,
     ) {
         GL11.glLineWidth(1f)

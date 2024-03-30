@@ -56,6 +56,13 @@ interface VectorDrawer {
         vectors: List<Vector>,
         offset: Offset,
         measure: Measure<Double, Double>,
+    )
+
+    fun draw(
+        color: Color,
+        vectors: List<Vector>,
+        offset: Offset,
+        measure: Measure<Double, Double>,
         lineWidth: Double,
     )
 }

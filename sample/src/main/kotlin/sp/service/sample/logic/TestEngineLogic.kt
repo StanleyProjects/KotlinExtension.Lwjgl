@@ -158,55 +158,55 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     */
 
     private val walls = listOf(
-        pointOf(x = -9, y = 9),
+        pointOf(x = -12, y = 12),
         //
-        pointOf(x = -7, y = 9),
-        pointOf(x = -7, y = 9 + 6),
-        pointOf(x = -1, y = 9 + 6),
-        pointOf(x = -1, y = 9),
+        pointOf(x = -10, y = 12),
+        pointOf(x = -10, y = 12 + 6),
+        pointOf(x = -2, y = 12 + 6),
+        pointOf(x = -2, y = 12),
         //
-        pointOf(x = 1, y = 9),
-        pointOf(x = 1, y = 9 + 6),
-        pointOf(x = 7, y = 9 + 6),
-        pointOf(x = 7, y = 9),
+        pointOf(x = 2, y = 12),
+        pointOf(x = 2, y = 12 + 6),
+        pointOf(x = 14, y = 12 + 6),
+        pointOf(x = 14, y = 12),
         //
-        pointOf(x = 9, y = 9),
+        pointOf(x = 12, y = 12),
         //
-        pointOf(x = 9, y = 7),
-        pointOf(x = 9 + 6, y = 7),
-        pointOf(x = 9 + 6, y = 1),
-        pointOf(x = 9, y = 1),
+        pointOf(x = 12, y = 14),
+        pointOf(x = 12 + 6, y = 14),
+        pointOf(x = 12 + 6, y = 2),
+        pointOf(x = 12, y = 2),
         //
-        pointOf(x = 9, y = -1),
-        pointOf(x = 9 + 6, y = -1),
-        pointOf(x = 9 + 6, y = -7),
-        pointOf(x = 9, y = -7),
+        pointOf(x = 12, y = -2),
+        pointOf(x = 12 + 6, y = -2),
+        pointOf(x = 12 + 6, y = -10),
+        pointOf(x = 12, y = -10),
         //
-        pointOf(x = 9, y = -9),
+        pointOf(x = 12, y = -12),
         //
-        pointOf(x = 7, y = -9),
-        pointOf(x = 7, y = -9 - 6),
-        pointOf(x = 1, y = -9 - 6),
-        pointOf(x = 1, y = -9),
+        pointOf(x = 14, y = -12),
+        pointOf(x = 14, y = -12 - 6),
+        pointOf(x = 2, y = -12 - 6),
+        pointOf(x = 2, y = -12),
         //
-        pointOf(x = -1, y = -9),
-        pointOf(x = -1, y = -9 - 6),
-        pointOf(x = -7, y = -9 - 6),
-        pointOf(x = -7, y = -9),
+        pointOf(x = -2, y = -12),
+        pointOf(x = -2, y = -12 - 6),
+        pointOf(x = -10, y = -12 - 6),
+        pointOf(x = -10, y = -12),
         //
-        pointOf(x = -9, y = -9),
+        pointOf(x = -12, y = -12),
         //
-        pointOf(x = -9, y = -7),
-        pointOf(x = -9 - 6, y = -7),
-        pointOf(x = -9 - 6, y = -1),
-        pointOf(x = -9, y = -1),
+        pointOf(x = -12, y = -10),
+        pointOf(x = -12 - 6, y = -10),
+        pointOf(x = -12 - 6, y = -2),
+        pointOf(x = -12, y = -2),
         //
-        pointOf(x = -9, y = 1),
-        pointOf(x = -9 - 6, y = 1),
-        pointOf(x = -9 - 6, y = 7),
-        pointOf(x = -9, y = 7),
+        pointOf(x = -12, y = 2),
+        pointOf(x = -12 - 6, y = 2),
+        pointOf(x = -12 - 6, y = 14),
+        pointOf(x = -12, y = 14),
         //
-        pointOf(x = -9, y = 9),
+        pointOf(x = -12, y = 12),
     ).toVectors()
 
     private fun JSONObject.toEnvironment(): Environment {
@@ -488,7 +488,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             vectors = vectors,
             offset = offset,
             measure = measure,
-            lineWidth = 0.1,
         )
     }
 
