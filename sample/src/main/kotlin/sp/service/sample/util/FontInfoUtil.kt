@@ -16,7 +16,7 @@ object FontInfoUtil {
         return map.getOrPut(id) {
             object : FontInfo {
                 override val id: String = id
-                override val height: Float = height
+                override val height: Float = height.toInt().toFloat() // todo
 
                 override fun getInputStream(): InputStream {
                     return ResourceUtil.requireResourceAsStream(name)

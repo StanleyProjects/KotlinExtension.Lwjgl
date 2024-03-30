@@ -25,6 +25,7 @@ import sp.kx.math.eq
 import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
+import sp.kx.math.gt
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
 import sp.kx.math.length
@@ -126,8 +127,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     )
 
-    private val measure = measureOf(16.0)
-//    private val measure = measureOf(24.0)
+//    private val measure = measureOf(16.0)
+    private val measure = measureOf(24.0)
 //    private val measure = measureOf(32.0)
 
     private fun List<Point>.toVectors(): List<Vector> {
@@ -337,7 +338,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val relay = getNearest(
 //            target = env.player.point,
             list = env.relays,
-            minDistance = env.player.size.diagonal() / 2 + 0.1,
+            minDistance = env.player.size.diagonal() / 2,
             getPoint = { relay ->
                 rectangleOf(relay = relay, size = relaySize).map {
                     it.getShortestPoint(target = env.player.point)
@@ -626,17 +627,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val size = sizeOf(1.5, 1.5)
         val itemOffset = size.center() * - 1.0
-        val color = colorOf(0xffffff00)
-        val info = FontInfoUtil.getFontInfo(height = measure.transform(1.0).toFloat())
-        val lineWidth = 0.1
-        for (crate in env.crates) {
+        val color = Color.YELLOW
+        val info = FontInfoUtil.getFontInfo(height = measure.transform(0.9).toFloat())
+        for (index in env.crates.indices) {
+            val crate = env.crates[index]
             val point = crate.point
             canvas.polygons.drawRectangle(
                 color = color,
-                pointTopLeft = point + offset + itemOffset + measure,
-                size = size + measure,
+                pointTopLeft = point + itemOffset,
+                size = size,
+                offset = offset,
+                measure = measure,
+                lineWidth = 0.1,
             )
-            val text = "C"
+            val text = "c#${index % 10}"
             val textWidth = engine.fontAgent.getTextWidth(info, text)
             val textOffset = offsetOf(
                 dX = measure.units(-textWidth / 2),
@@ -660,14 +664,29 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val size = sizeOf(1, 1)
         val itemOffset = size.center() * - 1.0
+        val info = FontInfoUtil.getFontInfo(height = 0.7, measure = measure)
         for (itemPosition in env.itemsPositions) {
             val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: TODO()
-            val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
+            val (index: Int, _) = env.items.withIndex().firstOrNull { (_, item) -> item.id == itemId } ?: TODO()
             val point = itemPosition.point
             canvas.polygons.drawRectangle(
                 color = Color.YELLOW,
                 pointTopLeft = point + offset + itemOffset + measure,
                 size = size + measure,
+            )
+            val text = "i#${index % 10}"
+            val textWidth = engine.fontAgent.getTextWidth(info, text)
+            val textOffset = offsetOf(
+                dX = measure.units(-textWidth / 2),
+                dY = measure.units(-info.height.toDouble() / 2),
+            )
+            canvas.texts.draw(
+                color = Color.BLACK,
+                info = info,
+                pointTopLeft = point + textOffset,
+                offset = offset,
+                measure = measure,
+                text = text,
             )
         }
     }
@@ -807,14 +826,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private fun <T : Any> getNearest(
         list: List<T>,
         minDistance: Double = 0.5,
+        points: Int = 12,
+        multiplier: Double = 1.1,
         getPoint: (T) -> Point,
     ): T? {
         val results = mutableMapOf<T, Double>()
         for (it in list) {
             val distance = distanceOf(env.player.point, getPoint(it))
-            if (distance.lt(other = minDistance, points = 12)) {
-                results[it] = distance
-            }
+            if (distance.gt(other = minDistance * multiplier, points = points)) continue
+            results[it] = distance
         }
         return results.entries.minByOrNull { (_, distance) -> distance }?.key
     }
@@ -998,7 +1018,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val nearest = getNearest(
             list = env.relays,
-            minDistance = env.player.size.diagonal() / 2 + 0.1,
+            minDistance = env.player.size.diagonal() / 2,
             getPoint = { relay ->
                 rectangleOf(relay = relay, size = relaySize).map {
                     it.getShortestPoint(target = env.player.point)
