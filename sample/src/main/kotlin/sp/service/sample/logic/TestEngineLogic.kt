@@ -126,8 +126,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     )
 
 //    private val measure = measureOf(16.0)
-    private val measure = measureOf(24.0)
-//    private val measure = measureOf(32.0)
+//    private val measure = measureOf(24.0)
+    private val measure = measureOf(32.0)
 
     private fun List<Point>.toVectors(): List<Vector> {
         if (isEmpty()) return emptyList()
@@ -807,11 +807,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             x = engine.property.pictureSize.width - measure.transform(1.0),
             y = measure.transform(1.0),
         )
-        val lineWidth = 0.1
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = xVector,
-            lineWidth = measure.transform(lineWidth),
         )
         val yVector = start + pointOf(
             x = measure.transform(1.0),
@@ -820,7 +818,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         canvas.vectors.draw(
             color = Color.GREEN,
             vector = yVector,
-            lineWidth = measure.transform(lineWidth),
         )
         val point = env.player.point
         val info = FontInfoUtil.getFontInfo(height = 12f)
@@ -828,11 +825,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val xNumbers = (point.x.toInt() - xLen / 2)..(point.x.toInt() + xLen / 2)
         for (x in xNumbers) {
             val textY = if (x % 2 == 0) 1.0 else 0.25
+            val xOffset = offset.copy(dY = 0.0)
             canvas.texts.draw(
                 color = Color.GREEN,
                 info = info,
                 pointTopLeft = pointOf(x = x.toDouble(), y = textY),
-                offset = offset.copy(dY = 0.0),
+                offset = xOffset,
                 measure = measure,
                 text = String.format(" %d", x),
             )
@@ -840,8 +838,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = pointOf(x = x.toDouble(), y = 1.0) + pointOf(x = x.toDouble(), y = lineY),
-                lineWidth = lineWidth,
-                offset = offset.copy(dY = 0.0),
+                offset = xOffset,
                 measure = measure,
             )
         }
@@ -861,7 +858,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas.vectors.draw(
                 color = Color.GREEN,
                 vector = pointOf(x = 1.0, y = y.toDouble()) + pointOf(x = lineX, y = y.toDouble()),
-                lineWidth = lineWidth,
                 offset = offset.copy(dX = 0.0),
                 measure = measure,
             )
@@ -883,44 +879,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             point = nearest,
             measure = measure,
-        )
-    }
-
-    private fun onRenderOld(canvas: Canvas) {
-        val center = pointOf(
-            x = measure.units(engine.property.pictureSize.width / 2),
-            y = measure.units(engine.property.pictureSize.height / 2),
-        )
-        val offset = center - env.player.point
-        val pointTopLeft = pointOf(6, -6)
-        val size = sizeOf(2, 1)
-        val pointOfRotation = pointTopLeft + size.center()
-        canvas.polygons.drawRectangle(
-            color = Color.BLUE,
-            pointTopLeft = pointTopLeft + offset,
-            size = size,
-            measure = measure,
-            pointOfRotation = pointOfRotation + offset,
-            direction = kotlin.math.PI / 4,
-        )
-        canvas.polygons.drawRectangle(
-            color = Color.GREEN,
-            pointTopLeft = pointTopLeft + measure,
-            size = size + measure,
-//            offset = offset,
-            offset = offsetOf(dX = measure.transform(offset.dX), dY = measure.transform(offset.dY)),
-            pointOfRotation = pointOfRotation + measure,
-            direction = kotlin.math.PI / 4,
-        )
-        canvas.polygons.drawRectangle(
-            color = Color.RED,
-            pointTopLeft = pointTopLeft,
-            size = size,
-            offset = offset,
-            measure = measure,
-            lineWidth = 0.4,
-            pointOfRotation = pointOfRotation,
-            direction = kotlin.math.PI / 4,
         )
     }
 
@@ -1013,64 +971,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         )
         //
-        canvas.polygons.drawRectangle(
-            color = Color.YELLOW,
-            pointTopLeft = pointOf(6, -6),
-            size = sizeOf(2, 1),
-            offset = offset,
-            measure = measure,
-        )
-        canvas.vectors.draw(
-            color = Color.RED,
-            vector = pointOf(2, 4) + pointOf(2, 2) + measure,
-            offset = offsetOf(measure.transform(offset.dX), measure.transform(offset.dY)),
-            lineWidth = measure.transform(0.2),
-        )
-        canvas.vectors.draw(
-            color = Color.GREEN,
-            vector = pointOf(4, 4) + pointOf(6, 2) + offset + measure,
-            lineWidth = measure.transform(0.2),
-        )
-        canvas.vectors.draw(
-            color = Color.BLUE,
-            vector = pointOf(6, 4) + pointOf(8, 6) + offset,
-            measure = measure,
-            lineWidth = 0.2,
-        )
-        canvas.vectors.draw(
-            color = Color.YELLOW,
-            vector = pointOf(2, -4) + pointOf(4, -4),
-            offset = offset,
-            measure = measure,
-            lineWidth = 0.2,
-        )
-//        canvas.drawCircle(
-//            color = colorOf(0xffff0000),
-//            pointCenter = pointOf(4, 4) + offset + measure,
-//            radius = measure.transform(1.0),
-//            edgeCount = 16,
-//            lineWidth = measure.transform(lineWidth).toFloat(),
-//        )
-        canvas.polygons.drawCircle(
-            color = colorOf(0xff00ff00),
-            pointCenter = pointOf(-4, 4) + offset + measure,
-            radius = measure.transform(2.0),
-            edgeCount = 16,
-        )
-        canvas.polygons.drawCircle(
-            color = colorOf(0xff0000ff),
-            pointCenter = pointOf(-4, -4) + offset + measure,
-            radius = measure.transform(3.0),
-            edgeCount = 16,
-            lineWidth = measure.transform(0.2),
-        )
-        canvas.polygons.drawCircle(
-            color = colorOf(0xff0000ff),
-            pointCenter = pointOf(-4, -4) + offset + measure,
-            radius = measure.transform(6.0),
-            edgeCount = 16,
-            lineWidth = measure.transform(0.4),
-        )
         val lineWidth = 0.1
         canvas.vectors.draw(
             color = Color.YELLOW,
@@ -1151,67 +1051,5 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             measure = measure,
         )
-        //
-        Color.RED.also { color ->
-            val pointTopLeft = pointOf(6, -6)
-//            val pointTopLeft = pointOf(0, 0)
-            val size = sizeOf(2, 1)
-            val pointOfRotation = pointTopLeft + size.center()
-            canvas.polygons.drawRectangle(
-                color = Color.BLUE,
-                pointTopLeft = pointTopLeft + offset,
-                size = size,
-                measure = measure,
-                pointOfRotation = pointOfRotation + offset,
-                direction = kotlin.math.PI / 4,
-            )
-            canvas.polygons.drawRectangle(
-                color = Color.GREEN,
-                pointTopLeft = pointTopLeft + measure,
-                size = size + measure,
-                offset = offsetOf(dX = measure.transform(offset.dX), dY = measure.transform(offset.dY)),
-                pointOfRotation = pointOfRotation + measure,
-                direction = kotlin.math.PI / 4,
-            )
-            canvas.polygons.drawRectangle(
-                color = Color.GRAY,
-                pointTopLeft = pointOf(4, -6) + measure,
-                size = size + measure,
-                offset = offsetOf(dX = measure.transform(offset.dX), dY = measure.transform(offset.dY)),
-            )
-            canvas.polygons.drawRectangle(
-                color = color,
-                pointTopLeft = pointTopLeft,
-                size = size,
-                offset = offset,
-//                offset = Offset.Empty,
-                measure = measure,
-                lineWidth = 0.4,
-                pointOfRotation = pointOfRotation,
-                direction = kotlin.math.PI / 4,
-            )
-//            val info = FontInfoUtil.getFontInfo(height = measure.transform(1.0).toFloat())
-//            canvas.texts.draw(
-//                color = Color.WHITE,
-//                info = info,
-//                pointTopLeft = pointOf(x = 4.0, y = 4.0 + 0.0),
-//                measure = measure,
-//                text = "pointTopLeft: $pointTopLeft",
-//            )
-//            canvas.texts.draw(
-//                color = Color.WHITE,
-//                info = info,
-//                pointTopLeft = pointOf(x = 4.0, y = 4.0 + 1.0),
-//                measure = measure,
-//                text = "size: $size",
-//            )
-//            canvas.texts.draw(
-//                color = Color.WHITE,
-//                info = info,
-//                pointTopLeft = pointOf(x = 4.0, y = 4.0 + 2.0),
-//                measure = measure,
-//                text = "pointOfRotation: $pointOfRotation",
-//            )
-        }
     }
 }

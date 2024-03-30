@@ -12,6 +12,33 @@ import sp.kx.math.measure.Measure
 import sp.kx.math.moved
 
 internal object GLVectorDrawer : VectorDrawer {
+    override fun draw(color: Color, vector: Vector) {
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(vector.start)
+            GLUtil.vertexOf(vector.finish)
+        }
+    }
+
+    override fun draw(color: Color, vector: Vector, offset: Offset) {
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(vector.start, offset = offset)
+            GLUtil.vertexOf(vector.finish, offset = offset)
+        }
+    }
+
+    override fun draw(color: Color, vector: Vector, offset: Offset, measure: Measure<Double, Double>) {
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(vector.start, offset = offset, measure = measure)
+            GLUtil.vertexOf(vector.finish, offset = offset, measure = measure)
+        }
+    }
+
     override fun draw(color: Color, vector: Vector, lineWidth: Double) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)

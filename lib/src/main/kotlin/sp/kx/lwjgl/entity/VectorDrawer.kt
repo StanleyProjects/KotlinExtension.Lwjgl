@@ -8,6 +8,24 @@ interface VectorDrawer {
     fun draw(
         color: Color,
         vector: Vector,
+    )
+
+    fun draw(
+        color: Color,
+        vector: Vector,
+        offset: Offset,
+    )
+
+    fun draw(
+        color: Color,
+        vector: Vector,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    fun draw(
+        color: Color,
+        vector: Vector,
         lineWidth: Double,
     )
 
