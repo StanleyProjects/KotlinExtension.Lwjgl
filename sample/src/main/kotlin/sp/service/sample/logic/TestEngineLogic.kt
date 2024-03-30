@@ -126,8 +126,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     )
 
 //    private val measure = measureOf(16.0)
-//    private val measure = measureOf(24.0)
-    private val measure = measureOf(32.0)
+    private val measure = measureOf(24.0)
+//    private val measure = measureOf(32.0)
 
     private fun List<Point>.toVectors(): List<Vector> {
         if (isEmpty()) return emptyList()
@@ -514,7 +514,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val info = FontInfoUtil.getFontInfo(height = 14f)
+        val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
+//        val info = FontInfoUtil.getFontInfo(height = 16f)
         val size = sizeOf(2, 1)
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
