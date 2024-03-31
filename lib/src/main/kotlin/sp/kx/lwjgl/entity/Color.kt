@@ -18,6 +18,19 @@ interface Color {
     val green: Float
     val blue: Float
     val alpha: Float
+
+    fun copy(alpha: Float): Color {
+        val expectedRange = Color.MIN_VALUE..Color.MAX_VALUE
+        check(alpha in expectedRange) {
+            "The alpha value is out of range $expectedRange!"
+        }
+        return ColorImpl(
+            red = red,
+            green = green,
+            blue = blue,
+            alpha = alpha,
+        )
+    }
 }
 
 private data class ColorImpl(

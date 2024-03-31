@@ -133,6 +133,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private val relaySize = sizeOf(2, 1)
     private val itemSize = sizeOf(1, 1)
+    private val crateSize = sizeOf(1.5, 1.5)
 
     private fun List<Point>.toVectors(): List<Vector> {
         if (isEmpty()) return emptyList()
@@ -347,6 +348,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             // todo
             return
         }
+        val crate = getNearest(env.crates) { it.getPolygon(size = itemSize) }
+        if (crate != null) {
+            // todo
+            return
+        }
     }
 
     override fun shouldEngineStop(): Boolean {
@@ -474,29 +480,32 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         barriers: List<Barrier>,
         measure: Measure<Double, Double>,
     ) {
-        val dotSize = sizeOf(width = 0.25, height = 0.25)
+        val dotSize = sizeOf(width = 0.3, height = 0.3)
         val dotOffset = dotSize.center() * -1.0
-        val lineWidth = 0.2
-        barriers.filter {
-            !isPassable(it)
-        }.forEach { barrier ->
+        barriers.forEach { barrier ->
             val vector = barrier.vector
-            canvas.vectors.draw(
-                color = Color.RED,
-                vector = vector,
+            if (!isPassable(barrier)) {
+                canvas.vectors.draw(
+                    color = Color.RED,
+                    vector = vector,
+                    offset = offset,
+                    measure = measure,
+                    lineWidth = 0.2,
+                )
+            }
+            canvas.polygons.drawRectangle(
+                color = Color.YELLOW,
+                pointTopLeft = vector.start + dotOffset,
+                size = dotSize,
                 offset = offset,
                 measure = measure,
-                lineWidth = lineWidth,
             )
             canvas.polygons.drawRectangle(
                 color = Color.YELLOW,
-                pointTopLeft = vector.start + offset + dotOffset + measure,
-                size = dotSize + measure,
-            )
-            canvas.polygons.drawRectangle(
-                color = Color.YELLOW,
-                pointTopLeft = vector.finish + offset + dotOffset + measure,
-                size = dotSize + measure,
+                pointTopLeft = vector.finish + dotOffset,
+                size = dotSize,
+                offset = offset,
+                measure = measure,
             )
         }
     }
@@ -522,58 +531,62 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         point: Point,
         measure: Measure<Double, Double>,
     ) {
-        val info = FontInfoUtil.getFontInfo(height = 14f)
-        val rOffset = offsetOf(1.75, -1.0)
-        val radius = 0.5
-        val lineWidth = 0.1
-        canvas.polygons.drawCircle(
-            color = Color.GREEN,
-            pointCenter = point + offset + rOffset + measure,
-            radius = measure.transform(radius),
-            edgeCount = 16,
-            lineWidth = measure.transform(lineWidth),
-        )
+        val info = FontInfoUtil.getFontInfo(height = 0.75, measure = measure)
+        val itemOffset = offsetOf(1.5, -1.5)
+        val width = 1.0
+        if (joystickStorage.getJoysticks().isEmpty()) {
+            if (engine.input.keyboard.isPressed(KeyboardButton.F)) {
+                canvas.polygons.drawRectangle(
+                    color = Color.GREEN.copy(alpha = 0.5f),
+                    pointTopLeft = point + itemOffset,
+                    size = sizeOf(width, width),
+                    offset = offset,
+                    measure = measure,
+                )
+            }
+            canvas.polygons.drawRectangle(
+                color = Color.GREEN,
+                pointTopLeft = point + itemOffset,
+                size = sizeOf(width, width),
+                lineWidth = 0.1,
+                offset = offset,
+                measure = measure,
+            )
+        } else {
+            TODO()
+        }
         val text = if (joystickStorage.getJoysticks().isEmpty()) "F" else "A"
         val textWidth = engine.fontAgent.getTextWidth(info, text)
         val textOffset = offsetOf(
-            dX = measure.units(-textWidth / 2),
-            dY = measure.units(-info.height.toDouble() / 2),
+            dX = measure.units(-textWidth / 2) + width / 2,
+            dY = width / 2 - measure.units(info.height.toDouble() / 2),
         )
-        // todo offset - measure
         canvas.texts.draw(
             color = Color.GREEN,
             info = info,
-            pointTopLeft = point + rOffset + textOffset,
+            pointTopLeft = point + itemOffset + textOffset,
             offset = offset,
             measure = measure,
             text = text,
         )
     }
 
-    private fun rectangleOf(relay: Relay, size: Size): List<Vector> {
-        val pointTopLeft = pointOf(
-            x = relay.point.x - size.width / 2,
-            y = relay.point.y - size.height / 2,
-        )
-        return rectangleOf(pointTopLeft = pointTopLeft, size = size)
-    }
-
-    private fun rectangleOf(pointTopLeft: Point, size: Size): List<Vector> {
+    private fun Relay.getPolygon(size: Size): List<Point> {
+        val pointTopLeft = point + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
-        val pointTopRight = pointOf(pointBottomRight.x, pointTopLeft.y)
-        val pointBottomLeft = pointOf(pointTopLeft.x, pointBottomRight.y)
         return listOf(
-            pointTopLeft + pointTopRight,
-            pointTopRight + pointBottomRight,
-            pointBottomRight + pointBottomLeft,
-            pointBottomLeft + pointTopLeft,
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+            pointTopLeft,
         )
     }
 
-    private fun Relay.getPolygon(size: Size): List<Point> {
+    private fun Crate.getPolygon(size: Size): List<Point> {
         val pointTopLeft = point + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
@@ -613,7 +626,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 dX = measure.units(-textWidth / 2),
                 dY = measure.units(-info.height.toDouble() / 2),
             )
-            // todo offset - measure
             canvas.texts.draw(
                 color = Color.BLACK,
                 info = info,
@@ -627,13 +639,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun onRenderCrates(
         canvas: Canvas,
+        size: Size,
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val size = sizeOf(1.5, 1.5)
         val itemOffset = size.center() * - 1.0
         val color = Color.YELLOW
-        val info = FontInfoUtil.getFontInfo(height = measure.transform(0.9).toFloat())
+        val info = FontInfoUtil.getFontInfo(height = 0.9, measure = measure)
         for (index in env.crates.indices) {
             val crate = env.crates[index]
             val point = crate.point
@@ -1064,6 +1076,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             it.getPolygon(size = relaySize)
         }?.point ?: getNearest(env.itemsPositions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
             it.getPolygon(size = itemSize)
+        }?.point ?: getNearest(env.crates) {
+            it.getPolygon(size = crateSize)
         }?.point ?: return
         onRenderInteraction(
             canvas = canvas,
@@ -1136,13 +1150,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 !isPassable(barrier)
             }.map { it.vector }
             val relays = env.relays.flatMap {
-                rectangleOf(relay = it, size = relaySize)
+                it.getPolygon(relaySize).toVectors()
+            }
+            val crates = env.crates.flatMap {
+                it.getPolygon(crateSize).toVectors()
             }
             val finalPoint = getFinalPoint(
                 player = env.player,
                 minDistance = env.player.radius,
                 target = target,
-                vectors = walls + barriers + relays,
+                vectors = walls + barriers + relays + crates,
             )
             if (finalPoint != null) {
                 env.player.point.set(finalPoint)
@@ -1160,11 +1177,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //                angle = env.player.direction.expected,
 //            ) // todo
         }
-        onRenderNearest(
-            canvas = canvas,
-            offset = offset,
-            measure = measure,
-        )
         //
         val lineWidth = 0.1
         canvas.vectors.draw(
@@ -1229,6 +1241,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         ) // todo
         onRenderCrates(
             canvas = canvas,
+            size = crateSize,
             offset = offset,
             measure = measure,
         ) // todo
@@ -1243,6 +1256,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 //            previous = previous,
 //            canvas = canvas,
 //        ) // todo
+        //
+        onRenderNearest(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        )
+        //
         onRenderGrid(
             canvas = canvas,
             offset = offset,
