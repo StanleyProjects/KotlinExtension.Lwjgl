@@ -114,6 +114,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private enum class PlayerState {
+        WALKING,
+        INVENTORY,
+    }
+
     private data class Environment(
         val player: Player,
         val conditions: List<Condition>,
@@ -125,7 +130,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val ownership: Map<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
-    )
+    ) {
+        var state: PlayerState = PlayerState.WALKING
+    }
 
 //    private val measure = measureOf(16.0)
     private val measure = measureOf(24.0)
@@ -325,6 +332,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                         onInteraction()
                     }
                 }
+                KeyboardButton.I -> {
+                    if (isPressed) {
+                        when (env.state) {
+                            PlayerState.WALKING -> {
+                                env.state = PlayerState.INVENTORY
+                            }
+                            PlayerState.INVENTORY -> {
+                                env.state = PlayerState.WALKING
+                            }
+                        }
+                    }
+                }
                 else -> {
                     // todo
                 }
@@ -471,6 +490,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return sizeOf(
             width = measure.transform(width),
             height = measure.transform(height),
+        )
+    }
+
+    @Deprecated(message = "sp.kx.math.plus")
+    private operator fun Size.minus(
+        measure: Measure<Double, Double>,
+    ): Size {
+        return sizeOf(
+            width = measure.units(width),
+            height = measure.units(height),
         )
     }
 
@@ -895,41 +924,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return nearest?.first
     }
 
-//    private fun <T : Any> getNearest(
-//        target: Point,
-//        list: List<T>,
-//        minDistance: Double,
-//        getPoint: (T) -> Point,
-//    ): T? {
-//        val results = mutableMapOf<T, Double>()
-//        for (it in list) {
-//            val distance = distanceOf(target, getPoint(it))
-//            if (distance.lt(other = minDistance, points = 12)) {
-//                results[it] = distance
-//            }
-//        }
-//        return results.entries.minByOrNull { (_, distance) -> distance }?.key
-//    }
-
-//    private fun <T : Any> getNearest(
-//        target: Point,
-//        list: List<T>,
-//        minDistance: Double,
-//        getVectors: (T) -> List<Vector>,
-//    ): T? {
-//        val results = mutableMapOf<T, Double>()
-//        for (it in list) {
-//            val vectors = getVectors(it)
-//            for (vector in vectors) {
-//                val distance = vector.getShortestDistance(target)
-//                if (distance.lt(other = minDistance, points = 12)) {
-//                    results[it] = distance
-//                }
-//            }
-//        }
-//        return results.entries.minByOrNull { (_, distance) -> distance }?.key
-//    }
-
     private fun getFinalPoint(
         player: Player,
         minDistance: Double,
@@ -1087,96 +1081,89 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    override fun onRender(canvas: Canvas) {
-        joystickStorage.update()
-        val previous = env.player.copy()
-        val timeDiff = engine.property.time.diff()
-//        val center = engine.property.pictureSize.centerPoint()
-        val center = pointOf(
-            x = measure.units(engine.property.pictureSize.width / 2),
-            y = measure.units(engine.property.pictureSize.height / 2),
-        )
-//        val relative = center - (player.point + measure)
-        val offset = center - env.player.point
-//        val playerOffset = engine.input.keyboard.getPlayerOffset()
+    private fun onRenderPlayerState(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        when (env.state) {
+            PlayerState.WALKING -> return
+            PlayerState.INVENTORY -> {
+                val size = engine.property.pictureSize - measure
+                val padding = 2.0
+                canvas.polygons.drawRectangle(
+                    color = Color.GREEN,
+                    pointTopLeft = pointOf(
+                        x = padding,
+                        y = padding,
+                    ),
+                    size = sizeOf(
+                        width = size.width / 2 - padding * 2,
+                        height = size.height - padding * 2,
+                    ),
+                    measure = measure,
+                )
+            }
+        }
+    }
+
+    private fun onWalking() {
         val joystick = joystickStorage.getJoysticks()[0]
         val playerOffset = if (joystick == null) {
             engine.input.keyboard.getPlayerOffset()
         } else {
             joystick.getPlayerOffset()
         }
-//        onRenderIntersections(
-//            canvas = canvas,
-//            actual = env.player.point,
-//            target = env.player.point.moved(
-//                length = env.player.speed.length(timeDiff),
-//                angle = env.player.direction.expected,
-//            ),
-//            offset = offset,
-//            barriers = barriers,
-//            measure = measure,
-//        ) // todo
-        if (!playerOffset.isEmpty()) {
-            env.player.direction.expected = angleOf(playerOffset).radians()
-            val dirDiff = env.player.direction.diff()
-            if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
-                val alpha = env.player.directionSpeed.length(timeDiff)
-                if (alpha > dirDiff.absoluteValue) {
-                    env.player.direction.commit()
-                } else {
-                    val k = dirDiff.absoluteValue.whc().ifNaN(1.0)
-                    val m = dirDiff.dby()
-                    val actual = env.player.direction.actual + alpha * m * k
-                    env.player.direction.actual = actual.radians()
-                }
+        if (playerOffset.isEmpty()) return
+        val timeDiff = engine.property.time.diff()
+        env.player.direction.expected = angleOf(playerOffset).radians()
+        val dirDiff = env.player.direction.diff()
+        if (!dirDiff.absoluteValue.eq(0.0, points = 4)) {
+            val alpha = env.player.directionSpeed.length(timeDiff)
+            if (alpha > dirDiff.absoluteValue) {
+                env.player.direction.commit()
+            } else {
+                val k = dirDiff.absoluteValue.whc().ifNaN(1.0)
+                val m = dirDiff.dby()
+                val actual = env.player.direction.actual + alpha * m * k
+                env.player.direction.actual = actual.radians()
             }
-            val length = env.player.speed.length(timeDiff)
-//            val multiplier = distanceOf(playerOffset) / distanceOf(offsetOf(1, 1))
-            val multiplier = kotlin.math.min(1.0, distanceOf(playerOffset))
-//            val multiplier = kotlin.math.sqrt(playerOffset.dX * playerOffset.dX + playerOffset.dY * playerOffset.dY)
-            val target = env.player.point.moved(
-                length = length * multiplier,
-                angle = env.player.direction.expected,
-            )
-//            onRenderIntersections(
-//                canvas = canvas,
-//                actual = env.player.point,
-//                target = target,
-//                offset = offset,
-//                barriers = barriers,
-//                measure = measure,
-//            ) // todo
-            val barriers = env.barriers.filter { barrier ->
-                !isPassable(barrier)
-            }.map { it.vector }
-            val relays = env.relays.flatMap {
-                it.getPolygon(relaySize).toVectors()
-            }
-            val crates = env.crates.flatMap {
-                it.getPolygon(crateSize).toVectors()
-            }
-            val finalPoint = getFinalPoint(
-                player = env.player,
-                minDistance = env.player.radius,
-                target = target,
-                vectors = walls + barriers + relays + crates,
-            )
-            if (finalPoint != null) {
-                env.player.point.set(finalPoint)
-            }
-//            val allowed = allowed(
-//                player = player,
-//                target = target,
-//                barriers = barriers,
-//            )
-//            if (allowed) {
-//                env.player.point.set(target)
-//            } // todo
-//            env.player.point.move(
-//                length = env.player.speed.length(timeDiff),
-//                angle = env.player.direction.expected,
-//            ) // todo
         }
+        val length = env.player.speed.length(timeDiff)
+        val multiplier = kotlin.math.min(1.0, distanceOf(playerOffset))
+        val target = env.player.point.moved(
+            length = length * multiplier,
+            angle = env.player.direction.expected,
+        )
+        val barriers = env.barriers.filter { barrier ->
+            !isPassable(barrier)
+        }.map { it.vector }
+        val relays = env.relays.flatMap {
+            it.getPolygon(relaySize).toVectors()
+        }
+        val crates = env.crates.flatMap {
+            it.getPolygon(crateSize).toVectors()
+        }
+        val finalPoint = getFinalPoint(
+            player = env.player,
+            minDistance = env.player.radius,
+            target = target,
+            vectors = walls + barriers + relays + crates,
+        ) ?: return
+        env.player.point.set(finalPoint)
+    }
+
+    override fun onRender(canvas: Canvas) {
+        joystickStorage.update()
+        val previous = env.player.copy()
+        if (env.state == PlayerState.WALKING) {
+            onWalking()
+        }
+        val center = pointOf(
+            x = measure.units(engine.property.pictureSize.width / 2),
+            y = measure.units(engine.property.pictureSize.height / 2),
+        )
+        val offset = center - env.player.point
         //
         val lineWidth = 0.1
         canvas.vectors.draw(
@@ -1198,13 +1185,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
             lineWidth = lineWidth,
         )
-//        canvas.polygons.drawRectangle(
-//            color = Color.BLUE,
-//            pointTopLeft = center - env.player.size.center() + measure,
-//            size = env.player.size + measure,
-//            direction = env.player.direction.actual,
-//            pointOfRotation = center + measure,
-//        )
         canvas.polygons.drawRectangle(
             color = Color.BLUE,
             pointTopLeft = center - env.player.size.center(),
@@ -1245,17 +1225,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             offset = offset,
             measure = measure,
         ) // todo
-//        onRenderTriangles(
-//            canvas = canvas,
-//            player = player,
-//            offset = offset,
-//            barriers = barriers,
-//            measure = measure,
-//        ) // todo
-//        debug(
-//            previous = previous,
-//            canvas = canvas,
-//        ) // todo
+        //
+        onRenderPlayerState(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        )
         //
         onRenderNearest(
             canvas = canvas,
