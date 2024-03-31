@@ -130,7 +130,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val barriers: List<Barrier>,
         val items: List<Item>,
         val crates: List<Crate>,
-        val itemsPositions: List<ItemPosition>,
+        val itemsPositions: MutableList<ItemPosition>,
         val ownership: MutableMap<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
@@ -323,6 +323,21 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         },
     )
 
+    private fun Item.setOrCreatePosition(point: Point): ItemPosition {
+        val position = env.itemsPositions.firstOrNull { it.itemId == id }
+        if (position != null) {
+            position.point = point
+            return position
+        }
+        val newPosition = ItemPosition(
+            id = UUID.randomUUID(),
+            itemId = id,
+            point = point,
+        )
+        env.itemsPositions += newPosition
+        return newPosition
+    }
+
     private fun onPressInventory(button: KeyboardButton, state: PlayerState.Inventory) {
         when (button) {
             KeyboardButton.I, KeyboardButton.ESCAPE -> {
@@ -335,14 +350,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val items = env.items.filter { item ->
             env.ownership[item.id] == env.player.id
         }
-        if (items.size < 2) return
+        if (items.isEmpty()) return
         when (button) {
             KeyboardButton.W, KeyboardButton.UP -> {
                 env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
-                println("state: ${env.state}") // todo
             }
             KeyboardButton.S, KeyboardButton.DOWN -> {
                 env.state = PlayerState.Inventory(index = (state.index + 1) % items.size)
+            }
+            KeyboardButton.X -> {
+                val item = items[state.index]
+                val itemPosition = item.setOrCreatePosition(point = env.player.point.copy())
+                if (state.index == items.lastIndex) {
+                    env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
+                }
+                env.ownership[item.id] = itemPosition.id
+                println("ownership: " + env.ownership) // todo
             }
             else -> {
                 // noop
@@ -1113,23 +1136,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val size = engine.property.pictureSize - measure
         val padding = offsetOf(2.0, 2.0)
+        val borderSize = sizeOf(
+            width = size.width / 2 - padding.dX * 2,
+            height = size.height - padding.dY * 4,
+        )
         canvas.polygons.drawRectangle(
             borderColor = Color.GREEN,
             fillColor = Color.BLACK.copy(alpha = 0.75f),
             pointTopLeft = Point.Center + padding,
-            size = sizeOf(
-                width = size.width / 2 - padding.dX * 2,
-                height = size.height - padding.dY * 2,
-            ),
+            size = borderSize,
             lineWidth = 0.1,
             measure = measure,
         )
+        val textHeight = 0.75
+        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
         val items = env.items.filter { item ->
             env.ownership[item.id] == env.player.id
         }
         val textPadding = offsetOf(1.0, 1.0)
-        val textHeight = 0.75
-        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
         if (items.isEmpty()) {
             canvas.texts.draw(
                 info = info,
@@ -1140,6 +1164,60 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             )
             return
         }
+        // todo joystick
+        val buttonsPadding = 0.5
+        val buttonSize = sizeOf(1.0, 1.0)
+        val buttons = mapOf(
+            "x" to "drop item",
+            "i" to "close inventory",
+        )
+        val buttonsTopLeft = pointOf(
+            x = padding.dX,
+            y = padding.dY + borderSize.height,
+        )
+        canvas.polygons.drawRectangle(
+            borderColor = Color.GREEN,
+            fillColor = Color.BLACK,
+            pointTopLeft = buttonsTopLeft,
+            size = sizeOf(width = borderSize.width, height = buttons.size * (buttonSize.height + buttonsPadding) + buttonsPadding),
+            lineWidth = 0.1,
+            measure = measure,
+        )
+        buttons.entries.forEachIndexed { index, (key, text) ->
+            val pointTopLeft = buttonsTopLeft + Offset.Empty.copy(
+                dX = buttonsPadding,
+                dY = buttonsPadding + (buttonSize.height + buttonsPadding) * index,
+            )
+            canvas.polygons.drawRectangle(
+                color = Color.GREEN,
+                pointTopLeft = pointTopLeft,
+                size = buttonSize,
+                lineWidth = 0.1,
+                measure = measure,
+            )
+            val dY = buttonSize.height / 2 - textHeight / 2
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = pointTopLeft + offsetOf(
+                    dX = buttonSize.width / 2 - measure.units(engine.fontAgent.getTextWidth(info, key)) / 2,
+                    dY = dY,
+                ),
+                measure = measure,
+                color = Color.GREEN,
+                text = key,
+            )
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = pointTopLeft + offsetOf(
+                    dX = buttonSize.width + buttonsPadding,
+                    dY = dY,
+                ),
+                measure = measure,
+                color = Color.GREEN,
+                text = text,
+            )
+        }
+        //
         for (index in items.indices) {
             val item = items[index]
             val color = if (state.index == index) Color.YELLOW else Color.GREEN
@@ -1148,7 +1226,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 pointTopLeft = Point.Center + padding + textPadding + Offset.Empty.copy(dY = index * textHeight),
                 measure = measure,
                 color = color,
-                text = "#$index item " + item.id.toString().substring(0, 4), // todo
+                text = "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4), // todo
             )
         }
     }
