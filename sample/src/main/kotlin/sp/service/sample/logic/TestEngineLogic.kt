@@ -114,9 +114,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private enum class PlayerState {
-        WALKING,
-        INVENTORY,
+    private sealed interface PlayerState {
+        data object Walking : PlayerState
+        class Inventory(var index: Int = 0) : PlayerState {
+            override fun toString(): String {
+                return "Inventory(index: $index)"
+            }
+        }
     }
 
     private data class Environment(
@@ -127,11 +131,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val items: List<Item>,
         val crates: List<Crate>,
         val itemsPositions: List<ItemPosition>,
-        val ownership: Map<UUID, UUID>,
+        val ownership: MutableMap<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     ) {
-        var state: PlayerState = PlayerState.WALKING
+        var state: PlayerState = PlayerState.Walking
     }
 
 //    private val measure = measureOf(16.0)
@@ -284,7 +288,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             ownership = getJSONObject("ownership").toMapStrings(
                 keys = UUID::fromString,
                 values = UUID::fromString,
-            ),
+            ).toMutableMap(),
             barriersToConditions = barriersToConditions,
             conditionsToRelays = conditionsToRelays,
         )
@@ -319,34 +323,65 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         },
     )
 
+    private fun onPressInventory(button: KeyboardButton, state: PlayerState.Inventory) {
+        when (button) {
+            KeyboardButton.I, KeyboardButton.ESCAPE -> {
+                env.state = PlayerState.Walking
+            }
+            else -> {
+                // noop
+            }
+        }
+        val items = env.items.filter { item ->
+            env.ownership[item.id] == env.player.id
+        }
+        if (items.size < 2) return
+        when (button) {
+            KeyboardButton.W, KeyboardButton.UP -> {
+                env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
+                println("state: ${env.state}") // todo
+            }
+            KeyboardButton.S, KeyboardButton.DOWN -> {
+                env.state = PlayerState.Inventory(index = (state.index + 1) % items.size)
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
+    private fun onPressWalking(button: KeyboardButton) {
+        when (button) {
+            KeyboardButton.ESCAPE -> {
+                shouldEngineStopUnit = Unit
+            }
+            KeyboardButton.F -> {
+                onInteraction()
+            }
+            KeyboardButton.I -> {
+                env.state = PlayerState.Inventory()
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
+    private fun onPressPlayerState(button: KeyboardButton, state: PlayerState) {
+        when (state) {
+            is PlayerState.Inventory -> onPressInventory(button, state)
+            PlayerState.Walking -> onPressWalking(button)
+        }
+    }
+
+    private fun onPress(button: KeyboardButton) {
+        onPressPlayerState(button, env.state)
+    }
+
     override val inputCallback: EngineInputCallback = object : EngineInputCallback {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
-            when (button) {
-                KeyboardButton.ESCAPE -> {
-                    if (isPressed) {
-                        shouldEngineStopUnit = Unit
-                    }
-                }
-                KeyboardButton.F -> {
-                    if (isPressed) {
-                        onInteraction()
-                    }
-                }
-                KeyboardButton.I -> {
-                    if (isPressed) {
-                        when (env.state) {
-                            PlayerState.WALKING -> {
-                                env.state = PlayerState.INVENTORY
-                            }
-                            PlayerState.INVENTORY -> {
-                                env.state = PlayerState.WALKING
-                            }
-                        }
-                    }
-                }
-                else -> {
-                    // todo
-                }
+            if (isPressed) {
+                onPress(button)
             }
         }
     }
@@ -364,7 +399,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         val itemPosition = getNearest(env.itemsPositions.filter { pos -> env.ownership.values.any { it == pos.id } }) { it.getPolygon(size = itemSize) }
         if (itemPosition != null) {
-            // todo
+            env.ownership[itemPosition.itemId] = env.player.id
             return
         }
         val crate = getNearest(env.crates) { it.getPolygon(size = itemSize) }
@@ -489,7 +524,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    @Deprecated(message = "sp.kx.math.plus")
+    @Deprecated(message = "sp.kx.math.minus")
     private operator fun Size.minus(
         measure: Measure<Double, Double>,
     ): Size {
@@ -715,7 +750,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = size.center() * - 1.0
         val info = FontInfoUtil.getFontInfo(height = 0.7, measure = measure)
         for (itemPosition in env.itemsPositions) {
-            val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: TODO()
+            val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: continue
             val (index: Int, _) = env.items.withIndex().firstOrNull { (_, item) -> item.id == itemId } ?: TODO()
             val point = itemPosition.point
             canvas.polygons.drawRectangle(
@@ -1072,25 +1107,50 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun onRenderInventory(
         canvas: Canvas,
+        state: PlayerState.Inventory,
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
         val size = engine.property.pictureSize - measure
-        val padding = 2.0
+        val padding = offsetOf(2.0, 2.0)
         canvas.polygons.drawRectangle(
             borderColor = Color.GREEN,
             fillColor = Color.BLACK.copy(alpha = 0.75f),
-            pointTopLeft = pointOf(
-                x = padding,
-                y = padding,
-            ),
+            pointTopLeft = Point.Center + padding,
             size = sizeOf(
-                width = size.width / 2 - padding * 2,
-                height = size.height - padding * 2,
+                width = size.width / 2 - padding.dX * 2,
+                height = size.height - padding.dY * 2,
             ),
             lineWidth = 0.1,
             measure = measure,
         )
+        val items = env.items.filter { item ->
+            env.ownership[item.id] == env.player.id
+        }
+        val textPadding = offsetOf(1.0, 1.0)
+        val textHeight = 0.75
+        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
+        if (items.isEmpty()) {
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = Point.Center + padding + textPadding,
+                measure = measure,
+                color = Color.GREEN,
+                text = "no items"
+            )
+            return
+        }
+        for (index in items.indices) {
+            val item = items[index]
+            val color = if (state.index == index) Color.YELLOW else Color.GREEN
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = Point.Center + padding + textPadding + Offset.Empty.copy(dY = index * textHeight),
+                measure = measure,
+                color = color,
+                text = "#$index item " + item.id.toString().substring(0, 4), // todo
+            )
+        }
     }
 
     private fun onRenderPlayerState(
@@ -1098,10 +1158,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        when (env.state) {
-            PlayerState.WALKING -> return
-            PlayerState.INVENTORY -> onRenderInventory(
+        when (val state = env.state) {
+            PlayerState.Walking -> return
+            is PlayerState.Inventory -> onRenderInventory(
                 canvas = canvas,
+                state = state,
                 offset = offset,
                 measure = measure,
             )
@@ -1157,7 +1218,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     override fun onRender(canvas: Canvas) {
         joystickStorage.update()
         val previous = env.player.copy()
-        if (env.state == PlayerState.WALKING) {
+        if (env.state == PlayerState.Walking) {
             onWalking()
         }
         val center = pointOf(
@@ -1233,11 +1294,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         )
         //
-        onRenderNearest(
-            canvas = canvas,
-            offset = offset,
-            measure = measure,
-        )
+        if (env.state == PlayerState.Walking) {
+            onRenderNearest(
+                canvas = canvas,
+                offset = offset,
+                measure = measure,
+            )
+        }
         //
 //        onRenderGrid(
 //            canvas = canvas,
