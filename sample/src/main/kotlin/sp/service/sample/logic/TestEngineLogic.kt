@@ -451,23 +451,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun Keyboard.getPlayerOffset(): Offset {
         val result = MutableOffset(dX = 0.0, dY = 0.0)
-        if (isPressed(KeyboardButton.W)) {
-            if (!isPressed(KeyboardButton.S)) {
-                result.dY = -1.0
-            }
-        } else {
-            if (isPressed(KeyboardButton.S)) {
-                result.dY = 1.0
-            }
+        val up = isPressed(KeyboardButton.W) || isPressed(KeyboardButton.UP)
+        val down = isPressed(KeyboardButton.S) || isPressed(KeyboardButton.DOWN)
+        if (up) {
+            if (!down) result.dY = -1.0
+        } else if (down) {
+            result.dY = 1.0
         }
-        if (isPressed(KeyboardButton.A)) {
-            if (!isPressed(KeyboardButton.D)) {
-                result.dX = -1.0
-            }
-        } else {
-            if (isPressed(KeyboardButton.D)) {
-                result.dX = 1.0
-            }
+        val left = isPressed(KeyboardButton.A) || isPressed(KeyboardButton.LEFT)
+        val right = isPressed(KeyboardButton.D) || isPressed(KeyboardButton.RIGHT)
+        if (left) {
+            if (!right) result.dX = -1.0
+        } else if (right) {
+            result.dX = 1.0
         }
         return result
     }
@@ -564,17 +560,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = offsetOf(1.5, -1.5)
         val width = 1.0
         if (joystickStorage.getJoysticks().isEmpty()) {
-            if (engine.input.keyboard.isPressed(KeyboardButton.F)) {
-                canvas.polygons.drawRectangle(
-                    color = Color.GREEN.copy(alpha = 0.5f),
-                    pointTopLeft = point + itemOffset,
-                    size = sizeOf(width, width),
-                    offset = offset,
-                    measure = measure,
-                )
-            }
+            val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
             canvas.polygons.drawRectangle(
-                color = Color.GREEN,
+                borderColor = Color.GREEN,
+                fillColor = Color.GREEN.copy(alpha = if (isPressed) 0.5f else 0f),
                 pointTopLeft = point + itemOffset,
                 size = sizeOf(width, width),
                 lineWidth = 0.1,
@@ -1081,6 +1070,29 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    private fun onRenderInventory(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val size = engine.property.pictureSize - measure
+        val padding = 2.0
+        canvas.polygons.drawRectangle(
+            borderColor = Color.GREEN,
+            fillColor = Color.BLACK.copy(alpha = 0.75f),
+            pointTopLeft = pointOf(
+                x = padding,
+                y = padding,
+            ),
+            size = sizeOf(
+                width = size.width / 2 - padding * 2,
+                height = size.height - padding * 2,
+            ),
+            lineWidth = 0.1,
+            measure = measure,
+        )
+    }
+
     private fun onRenderPlayerState(
         canvas: Canvas,
         offset: Offset,
@@ -1088,22 +1100,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         when (env.state) {
             PlayerState.WALKING -> return
-            PlayerState.INVENTORY -> {
-                val size = engine.property.pictureSize - measure
-                val padding = 2.0
-                canvas.polygons.drawRectangle(
-                    color = Color.GREEN,
-                    pointTopLeft = pointOf(
-                        x = padding,
-                        y = padding,
-                    ),
-                    size = sizeOf(
-                        width = size.width / 2 - padding * 2,
-                        height = size.height - padding * 2,
-                    ),
-                    measure = measure,
-                )
-            }
+            PlayerState.INVENTORY -> onRenderInventory(
+                canvas = canvas,
+                offset = offset,
+                measure = measure,
+            )
         }
     }
 
@@ -1238,10 +1239,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         )
         //
-        onRenderGrid(
-            canvas = canvas,
-            offset = offset,
-            measure = measure,
-        )
+//        onRenderGrid(
+//            canvas = canvas,
+//            offset = offset,
+//            measure = measure,
+//        )
     }
 }

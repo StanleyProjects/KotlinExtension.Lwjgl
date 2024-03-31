@@ -16,6 +16,40 @@ interface PolygonDrawer {
         color: Color,
         pointTopLeft: Point,
         size: Size,
+        lineWidth: Double,
+    )
+
+    fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+    )
+
+    fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    )
+
+    fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
         offset: Offset,
     )
 

@@ -34,6 +34,145 @@ internal object GLPolygonDrawer : PolygonDrawer {
         }
     }
 
+    override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Double) {
+        val pointBottomRight = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height
+        )
+        val points = listOf(
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+        )
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
+            }
+            vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth)
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
+        }
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+    ) {
+        val pointBottomRight = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height
+        )
+        val points = listOf(
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+        )
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            points.forEach {
+                GLUtil.vertexOf(it)
+            }
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
+            }
+            vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth)
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
+        }
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val pointBottomRight = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height
+        )
+        val points = listOf(
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+        )
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            points.forEach {
+                GLUtil.vertexOf(it, offset = offset, measure = measure)
+            }
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, offset = offset, measure = measure)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
+            }
+            vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, offset = offset, measure = measure)
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, offset = offset, measure = measure)
+        }
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    ) {
+        val pointBottomRight = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height
+        )
+        val points = listOf(
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+        )
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            points.forEach {
+                GLUtil.vertexOf(it, measure = measure)
+            }
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, measure = measure)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, measure = measure)
+            }
+            vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, measure = measure)
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, measure = measure)
+        }
+    }
+
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, offset: Offset) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,

@@ -16,6 +16,11 @@ fun Int.toKeyboardButtonOrNull(): KeyboardButton? {
         GLFW.GLFW_KEY_ENTER -> KeyboardButton.ENTER
         GLFW.GLFW_KEY_ESCAPE -> KeyboardButton.ESCAPE
         //
+        GLFW.GLFW_KEY_UP -> KeyboardButton.UP
+        GLFW.GLFW_KEY_DOWN -> KeyboardButton.DOWN
+        GLFW.GLFW_KEY_LEFT -> KeyboardButton.LEFT
+        GLFW.GLFW_KEY_RIGHT -> KeyboardButton.RIGHT
+        //
         GLFW.GLFW_KEY_Q -> KeyboardButton.Q
         GLFW.GLFW_KEY_W -> KeyboardButton.W
         GLFW.GLFW_KEY_E -> KeyboardButton.E
