@@ -317,21 +317,121 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private val ds4Mapping = JsonJoystickMapping(
         ResourceUtil.requireResourceAsStream("dualshock4.json").reader().readText(),
     )
+
+    private fun onPressInventory(button: JoystickButton, state: PlayerState.Inventory) {
+        when (button) {
+            JoystickButton.BACK, JoystickButton.B -> {
+                env.state = PlayerState.Walking
+            }
+            else -> {
+                // noop
+            }
+        }
+        val items = env.items.filter { item ->
+            env.ownership[item.id] == env.player.id
+        }
+        if (items.isEmpty()) return
+        when (button) {
+            JoystickButton.DPAD_UP -> {
+                env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
+            }
+            JoystickButton.DPAD_DOWN -> {
+                env.state = PlayerState.Inventory(index = (state.index + 1) % items.size)
+            }
+            JoystickButton.Y -> {
+                val item = items[state.index]
+                val itemPosition = item.setOrCreatePosition(point = env.player.point.copy())
+                if (state.index == items.lastIndex) {
+                    env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
+                }
+                env.ownership[item.id] = itemPosition.id
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
+    private fun onPressWalking(button: JoystickButton) {
+        when (button) {
+            JoystickButton.START -> {
+                shouldEngineStopUnit = Unit
+            }
+            JoystickButton.A -> {
+                onInteraction()
+            }
+            JoystickButton.BACK -> {
+                env.state = PlayerState.Inventory()
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
+    private fun onPressItemsSwap(button: JoystickButton, state: PlayerState.ItemsSwap) {
+        when (button) {
+            JoystickButton.B -> {
+                env.state = PlayerState.Walking
+            }
+            else -> {
+                // noop
+            }
+        }
+        val items = env.items.filter { item ->
+            env.ownership[item.id] == if (state.issuer) env.player.id else state.crateId
+        }
+        if (items.isNotEmpty()) {
+            when (button) {
+                JoystickButton.DPAD_UP -> {
+                    env.state = state.copy(index = (items.size + state.index - 1) % items.size)
+                }
+                JoystickButton.DPAD_DOWN -> {
+                    env.state = state.copy(index = (state.index + 1) % items.size)
+                }
+                JoystickButton.A -> {
+                    val item = items[state.index]
+                    if (state.index == items.lastIndex) {
+                        env.state = state.copy(index = (items.size + state.index - 1) % items.size)
+                    }
+                    env.ownership[item.id] = if (state.issuer) state.crateId else env.player.id
+                }
+                else -> {
+                    // noop
+                }
+            }
+        }
+        when (button) {
+            JoystickButton.DPAD_LEFT,
+            JoystickButton.DPAD_RIGHT, -> {
+                env.state = state.copy(index = 0, issuer = !state.issuer)
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
+    private fun onPressPlayerState(button: JoystickButton, state: PlayerState) {
+        when (state) {
+            is PlayerState.Inventory -> onPressInventory(button, state)
+            PlayerState.Walking -> onPressWalking(button)
+            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
+        }
+    }
+
+    private fun onPress(button: JoystickButton) {
+        onPressPlayerState(button, env.state)
+    }
+
     private val joystickStorage = JoysticksStorage(
         mappings = mapOf(
             "030000004c050000cc09000000010000" to ds4Mapping,
         ),
         onPressButton = { metaData, button, isPressed ->
-            println("Joystick #${metaData.number} $button pressed: $isPressed")
-            when (button) {
-                JoystickButton.A -> {
-                    if (isPressed) {
-                        onInteraction()
-                    }
-                }
-                else -> {
-                    // todo
-                }
+            println("Joystick #${metaData.number} $button pressed: $isPressed") // todo
+            if (isPressed) {
+                onPress(button)
             }
         },
     )
@@ -670,10 +770,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         point: Point,
         measure: Measure<Double, Double>,
     ) {
-        val info = FontInfoUtil.getFontInfo(height = 0.75, measure = measure)
+        val textHeight = 0.75
+        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
         val itemOffset = offsetOf(1.5, -1.5)
         val width = 1.0
-        if (joystickStorage.getJoysticks().isEmpty()) {
+        val joystick = joystickStorage.getJoysticks().values.firstOrNull()
+        if (joystick == null) {
             val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
             canvas.polygons.drawRectangle(
                 borderColor = Color.GREEN,
@@ -685,7 +787,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
             )
         } else {
-            TODO()
+            val isPressed = joystick.isPressed(JoystickButton.A)
+            canvas.polygons.drawCircle(
+                borderColor = Color.GREEN,
+                fillColor = Color.GREEN.copy(alpha = if (isPressed) 0.5f else 0f),
+                pointCenter = point + itemOffset + offsetOf(dX = width / 2, dY = width / 2),
+                radius = width / 2,
+                edgeCount = 16,
+                lineWidth = 0.1,
+                offset = offset,
+                measure = measure,
+            )
         }
         val text = if (joystickStorage.getJoysticks().isEmpty()) "F" else "A"
         val textWidth = engine.fontAgent.getTextWidth(info, text)
@@ -1193,102 +1305,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val size = engine.property.pictureSize - measure
         val padding = offsetOf(2.0, 2.0)
         val borderSize = sizeOf(
-            width = size.width / 2 - padding.dX * 2,
+            width = 8.0,
             height = size.height - padding.dY * 4,
         )
-        canvas.polygons.drawRectangle(
-            borderColor = Color.GREEN,
-            fillColor = Color.BLACK.copy(alpha = 0.75f),
-            pointTopLeft = Point.Center + padding,
-            size = borderSize,
-            lineWidth = 0.1,
+        onRenderItems(
+            canvas = canvas,
+            borderSize = borderSize,
+            padding = padding,
+            items = env.items.filter { item ->
+                env.ownership[item.id] == env.player.id
+            },
+            toText = { item ->
+                "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
+            },
+            selected = state.index,
             measure = measure,
         )
-        val textHeight = 0.75
-        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
-        val items = env.items.filter { item ->
-            env.ownership[item.id] == env.player.id
-        }
-        val textPadding = offsetOf(1.0, 1.0)
-        if (items.isEmpty()) {
-            canvas.texts.draw(
-                info = info,
-                pointTopLeft = Point.Center + padding + textPadding,
-                measure = measure,
-                color = Color.GREEN,
-                text = "no items"
-            )
-            return
-        }
-        // todo joystick
-        /*
-        val buttonsPadding = 0.5
-        val buttonSize = sizeOf(1.0, 1.0)
-        val buttons = mapOf(
-            "x" to "drop item",
-            "i" to "close inventory",
-        )
-        val buttonsTopLeft = pointOf(
-            x = padding.dX,
-            y = padding.dY + borderSize.height,
-        )
-        canvas.polygons.drawRectangle(
-            borderColor = Color.GREEN,
-            fillColor = Color.BLACK,
-            pointTopLeft = buttonsTopLeft,
-            size = sizeOf(width = borderSize.width, height = buttons.size * (buttonSize.height + buttonsPadding) + buttonsPadding),
-            lineWidth = 0.1,
-            measure = measure,
-        )
-        buttons.entries.forEachIndexed { index, (key, text) ->
-            val pointTopLeft = buttonsTopLeft + Offset.Empty.copy(
-                dX = buttonsPadding,
-                dY = buttonsPadding + (buttonSize.height + buttonsPadding) * index,
-            )
-            canvas.polygons.drawRectangle(
-                color = Color.GREEN,
-                pointTopLeft = pointTopLeft,
-                size = buttonSize,
-                lineWidth = 0.1,
-                measure = measure,
-            )
-            val dY = buttonSize.height / 2 - textHeight / 2
-            canvas.texts.draw(
-                info = info,
-                pointTopLeft = pointTopLeft + offsetOf(
-                    dX = buttonSize.width / 2 - measure.units(engine.fontAgent.getTextWidth(info, key)) / 2,
-                    dY = dY,
-                ),
-                measure = measure,
-                color = Color.GREEN,
-                text = key,
-            )
-            canvas.texts.draw(
-                info = info,
-                pointTopLeft = pointTopLeft + offsetOf(
-                    dX = buttonSize.width + buttonsPadding,
-                    dY = dY,
-                ),
-                measure = measure,
-                color = Color.GREEN,
-                text = text,
-            )
-        }
-        */
-        //
-        for (index in items.indices) {
-            val item = items[index]
-            val color = if (state.index == index) Color.YELLOW else Color.GREEN
-            val text = "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
-            val prefix = if (state.index == index) " > " else "   "
-            canvas.texts.draw(
-                info = info,
-                pointTopLeft = Point.Center + padding + textPadding + Offset.Empty.copy(dY = index * textHeight),
-                measure = measure,
-                color = color,
-                text = prefix + text, // todo
-            )
-        }
     }
 
     private fun <T : Any> onRenderItems(
@@ -1326,7 +1358,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 info = info,
                 pointTopLeft = Point.Center + padding + textPadding,
                 measure = measure,
-                color = Color.GREEN,
+                color = Color.GREEN.copy(alpha = 0.5f),
                 text = "no items",
             )
             return

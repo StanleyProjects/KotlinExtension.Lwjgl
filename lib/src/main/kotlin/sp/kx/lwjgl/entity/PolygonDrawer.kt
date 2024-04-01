@@ -146,4 +146,15 @@ interface PolygonDrawer {
         radius: Double,
         edgeCount: Int,
     )
+
+    fun drawCircle(
+        borderColor: Color,
+        fillColor: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
 }

@@ -502,4 +502,40 @@ internal object GLPolygonDrawer : PolygonDrawer {
             }
         }
     }
+
+    override fun drawCircle(
+        borderColor: Color,
+        fillColor: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>
+    ) {
+        val points = (0..edgeCount).map {
+            val radians = it * 2 * kotlin.math.PI / edgeCount
+            pointCenter.plus(
+                dX = kotlin.math.cos(radians) * radius,
+                dY = kotlin.math.sin(radians) * radius,
+            )
+        }
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            val fStart = points[0]
+            val fFinish = points[1]
+            vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, offset = offset, measure = measure)
+            for (i in 2 until points.size) {
+                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
+            }
+            GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, offset = offset, measure = measure)
+        }
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            points.forEach {
+                GLUtil.vertexOf(it, offset = offset, measure = measure)
+            }
+        }
+    }
 }
