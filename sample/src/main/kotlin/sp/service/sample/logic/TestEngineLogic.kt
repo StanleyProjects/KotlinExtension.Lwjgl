@@ -340,7 +340,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
 
     private fun onPressInventory(button: KeyboardButton, state: PlayerState.Inventory) {
         when (button) {
-            KeyboardButton.I, KeyboardButton.ESCAPE -> {
+            KeyboardButton.I, KeyboardButton.ESCAPE, KeyboardButton.TAB -> {
                 env.state = PlayerState.Walking
             }
             else -> {
@@ -381,7 +381,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             KeyboardButton.F -> {
                 onInteraction()
             }
-            KeyboardButton.I -> {
+            KeyboardButton.I, KeyboardButton.TAB -> {
                 env.state = PlayerState.Inventory()
             }
             else -> {
@@ -1165,6 +1165,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             return
         }
         // todo joystick
+        /*
         val buttonsPadding = 0.5
         val buttonSize = sizeOf(1.0, 1.0)
         val buttons = mapOf(
@@ -1217,16 +1218,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 text = text,
             )
         }
+        */
         //
         for (index in items.indices) {
             val item = items[index]
             val color = if (state.index == index) Color.YELLOW else Color.GREEN
+            val text = "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
+            val prefix = if (state.index == index) " > " else "   "
             canvas.texts.draw(
                 info = info,
                 pointTopLeft = Point.Center + padding + textPadding + Offset.Empty.copy(dY = index * textHeight),
                 measure = measure,
                 color = color,
-                text = "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4), // todo
+                text = prefix + text, // todo
             )
         }
     }
