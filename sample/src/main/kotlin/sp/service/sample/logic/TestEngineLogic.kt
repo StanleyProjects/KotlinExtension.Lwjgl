@@ -121,6 +121,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 return "Inventory(index: $index)"
             }
         }
+        class ItemsSwap(
+            var index: Int = 0,
+            var issuer: Boolean = true,
+            val crateId: UUID,
+        ) : PlayerState {
+            fun copy(index: Int, issuer: Boolean = this.issuer): ItemsSwap {
+                return ItemsSwap(
+                    index = index,
+                    issuer = issuer,
+                    crateId = crateId,
+                )
+            }
+        }
     }
 
     private data class Environment(
@@ -365,7 +378,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
                 }
                 env.ownership[item.id] = itemPosition.id
-                println("ownership: " + env.ownership) // todo
             }
             else -> {
                 // noop
@@ -390,10 +402,54 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onPressItemsSwap(button: KeyboardButton, state: PlayerState.ItemsSwap) {
+        when (button) {
+            KeyboardButton.ESCAPE -> {
+                env.state = PlayerState.Walking
+            }
+            else -> {
+                // noop
+            }
+        }
+        val items = env.items.filter { item ->
+            env.ownership[item.id] == if (state.issuer) env.player.id else state.crateId
+        }
+        if (items.isNotEmpty()) {
+            when (button) {
+                KeyboardButton.W, KeyboardButton.UP -> {
+                    env.state = state.copy(index = (items.size + state.index - 1) % items.size)
+                }
+                KeyboardButton.S, KeyboardButton.DOWN -> {
+                    env.state = state.copy(index = (state.index + 1) % items.size)
+                }
+                KeyboardButton.F -> {
+                    val item = items[state.index]
+                    if (state.index == items.lastIndex) {
+                        env.state = state.copy(index = (items.size + state.index - 1) % items.size)
+                    }
+                    env.ownership[item.id] = if (state.issuer) state.crateId else env.player.id
+                }
+                else -> {
+                    // noop
+                }
+            }
+        }
+        when (button) {
+            KeyboardButton.A, KeyboardButton.LEFT,
+            KeyboardButton.D, KeyboardButton.RIGHT, -> {
+                env.state = state.copy(index = 0, issuer = !state.issuer)
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
     private fun onPressPlayerState(button: KeyboardButton, state: PlayerState) {
         when (state) {
             is PlayerState.Inventory -> onPressInventory(button, state)
             PlayerState.Walking -> onPressWalking(button)
+            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
         }
     }
 
@@ -425,9 +481,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             env.ownership[itemPosition.itemId] = env.player.id
             return
         }
-        val crate = getNearest(env.crates) { it.getPolygon(size = itemSize) }
+        val crate = getNearest(env.crates) { it.getPolygon(size = crateSize) }
         if (crate != null) {
-            // todo
+            env.state = PlayerState.ItemsSwap(crateId = crate.id)
             return
         }
     }
@@ -1235,6 +1291,106 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun <T : Any> onRenderItems(
+        canvas: Canvas,
+        borderSize: Size,
+        padding: Offset,
+        items: List<T>,
+        toText: (T) -> String,
+        selected: Int?,
+        title: String = "",
+        measure: Measure<Double, Double>,
+    ) {
+        canvas.polygons.drawRectangle(
+            borderColor = Color.GREEN,
+            fillColor = Color.BLACK.copy(alpha = 0.75f),
+            pointTopLeft = Point.Center + padding,
+            size = borderSize,
+            lineWidth = 0.1,
+            measure = measure,
+        )
+        val textHeight = 0.75
+        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
+        val textPadding = offsetOf(1.0, 1.0)
+        if (title.isNotBlank()) {
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = Point.Center + padding + offsetOf(dX = 1.0, dY = -1.0),
+                measure = measure,
+                color = if (selected == null) Color.GREEN else Color.YELLOW,
+                text = title,
+            )
+        }
+        if (items.isEmpty()) {
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = Point.Center + padding + textPadding,
+                measure = measure,
+                color = Color.GREEN,
+                text = "no items",
+            )
+            return
+        }
+        for (index in items.indices) {
+            val item = items[index]
+            val isSelected = selected == index
+            val color = if (isSelected) Color.YELLOW else Color.GREEN
+            val text = toText(item)
+            val prefix = if (isSelected) "> " else "  "
+            canvas.texts.draw(
+                info = info,
+                pointTopLeft = Point.Center + padding + textPadding + Offset.Empty.copy(dY = index * textHeight),
+                measure = measure,
+                color = color,
+                text = prefix + text, // todo
+            )
+        }
+    }
+
+    private fun onRenderItemsSwap(
+        canvas: Canvas,
+        state: PlayerState.ItemsSwap,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val size = engine.property.pictureSize - measure
+        val padding = offsetOf(2.0, 2.0)
+        val borderSize = sizeOf(
+            width = 8.0,
+            height = size.height - padding.dY * 4,
+        )
+        onRenderItems(
+            canvas = canvas,
+            borderSize = borderSize,
+            padding = padding,
+            items = env.items.filter { item ->
+                env.ownership[item.id] == env.player.id
+            },
+            toText = { item ->
+                "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
+            },
+            selected = state.index.takeIf { state.issuer },
+            measure = measure,
+        )
+        onRenderItems(
+            canvas = canvas,
+            borderSize = borderSize,
+            padding = offsetOf(
+                dX = padding.dX + borderSize.width + padding.dX,
+                dY = padding.dY,
+            ),
+            items = env.items.filter { item ->
+                env.ownership[item.id] == state.crateId
+            },
+            toText = { item ->
+                "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
+            },
+            selected = state.index.takeIf { !state.issuer },
+            title = "#${env.crates.indexOfFirst { it.id == state.crateId }} crate " + state.crateId.toString().substring(0, 4),
+            measure = measure,
+        )
+    }
+
     private fun onRenderPlayerState(
         canvas: Canvas,
         offset: Offset,
@@ -1243,6 +1399,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         when (val state = env.state) {
             PlayerState.Walking -> return
             is PlayerState.Inventory -> onRenderInventory(
+                canvas = canvas,
+                state = state,
+                offset = offset,
+                measure = measure,
+            )
+            is PlayerState.ItemsSwap -> onRenderItemsSwap(
                 canvas = canvas,
                 state = state,
                 offset = offset,
