@@ -49,3 +49,15 @@ internal fun <K : Any, V : Any> JSONObject.toMapStrings(
         values = { name, obj -> values(obj.getString(name)) }
     )
 }
+
+internal fun JSONObject.getStringOrNull(key: String): String? {
+    if (!has(key)) return null
+    if (isNull(key)) return null
+    return getString(key)
+}
+
+internal fun JSONObject.getJSONObjectOrNull(key: String): JSONObject? {
+    if (!has(key)) return null
+    if (isNull(key)) return null
+    return getJSONObject(key)
+}

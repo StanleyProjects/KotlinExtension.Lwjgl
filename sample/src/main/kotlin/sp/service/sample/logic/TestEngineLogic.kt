@@ -570,10 +570,21 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return kotlin.math.sqrt(width * width + height * height)
     }
 
+    private fun onInteractionRelay(relay: Relay) {
+        when (relay.type) {
+            is Relay.Type.RequiringItem -> {
+                if (env.ownership[relay.type.itemId] == env.player.id) {
+                    relay.toggle()
+                }
+            }
+            Relay.Type.Unconditional -> relay.toggle()
+        }
+    }
+
     private fun onInteraction() {
         val relay = getNearest(env.relays) { it.getPolygon(size = relaySize) }
         if (relay != null) {
-            relay.toggle()
+            onInteractionRelay(relay = relay)
             return
         }
         val itemPosition = getNearest(env.itemsPositions.filter { pos -> env.ownership.values.any { it == pos.id } }) { it.getPolygon(size = itemSize) }
@@ -856,7 +867,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
             val point = relay.point
-            val color = if (relay.enabled) Color.GREEN else Color.RED
+            val color = if (relay.enabled) Color.GREEN else when (relay.type) {
+                is Relay.Type.RequiringItem -> Color.YELLOW
+                Relay.Type.Unconditional -> Color.RED
+            }
             canvas.polygons.drawRectangle(
                 color = color,
                 pointTopLeft = point + itemOffset,

@@ -21,10 +21,20 @@ internal fun JSONObject.toCondition(): Condition {
 }
 
 internal fun JSONObject.toRelay(): Relay {
+    val type: Relay.Type = getJSONObjectOrNull("type")?.let { obj ->
+        when (val name = obj.getString("name")) {
+            "RequiringItem" -> {
+                val itemId = UUID.fromString(obj.getString("itemId"))
+                Relay.Type.RequiringItem(itemId = itemId)
+            }
+            else -> error("Relay type name \"$name\" is not supported!")
+        }
+    } ?: Relay.Type.Unconditional
     return Relay(
         id = UUID.fromString(getString("id")),
         enabled = optBoolean("enabled", false),
         point = getJSONObject("point").toPoint(),
+        type = type,
     )
 }
 
