@@ -1302,11 +1302,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val size = engine.property.pictureSize - measure
         val padding = offsetOf(2.0, 2.0)
         val borderSize = sizeOf(
             width = 8.0,
-            height = size.height - padding.dY * 4,
+            height = 8.0,
         )
         onRenderItems(
             canvas = canvas,
@@ -1385,11 +1384,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val size = engine.property.pictureSize - measure
         val padding = offsetOf(2.0, 2.0)
         val borderSize = sizeOf(
             width = 8.0,
-            height = size.height - padding.dY * 4,
+            height = 8.0,
         )
         onRenderItems(
             canvas = canvas,
