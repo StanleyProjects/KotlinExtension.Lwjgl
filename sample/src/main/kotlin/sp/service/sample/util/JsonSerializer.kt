@@ -10,6 +10,7 @@ import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.ItemPosition
+import sp.service.sample.entity.ItemTag
 import sp.service.sample.entity.Relay
 import java.util.UUID
 
@@ -21,20 +22,19 @@ internal fun JSONObject.toCondition(): Condition {
 }
 
 internal fun JSONObject.toRelay(): Relay {
-    val type: Relay.Type = getJSONObjectOrNull("type")?.let { obj ->
-        when (val name = obj.getString("name")) {
-            "RequiringItem" -> {
-                val itemId = UUID.fromString(obj.getString("itemId"))
-                Relay.Type.RequiringItem(itemId = itemId)
-            }
-            else -> error("Relay type name \"$name\" is not supported!")
-        }
-    } ?: Relay.Type.Unconditional
+    val required: Relay.Required? = getJSONObjectOrNull("required")?.let { obj ->
+        val type = Relay.Required.Type.valueOf(obj.getString("type"))
+        val itemsTags = obj.strings("itemsTags", UUID::fromString)
+        Relay.Required(
+            type = type,
+            itemsTags = itemsTags,
+        )
+    }
     return Relay(
         id = UUID.fromString(getString("id")),
         enabled = optBoolean("enabled", false),
         point = getJSONObject("point").toPoint(),
-        type = type,
+        required = required,
     )
 }
 
@@ -58,6 +58,13 @@ internal fun JSONObject.toBarrier(): Barrier {
 
 internal fun JSONObject.toItem(): Item {
     return Item(
+        id = UUID.fromString(getString("id")),
+        tags = strings("tags", UUID::fromString),
+    )
+}
+
+internal fun JSONObject.toItemTag(): ItemTag {
+    return ItemTag(
         id = UUID.fromString(getString("id")),
     )
 }

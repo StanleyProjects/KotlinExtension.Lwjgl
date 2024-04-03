@@ -15,9 +15,9 @@
     {
       "id": "b2cff302-435a-4854-9a3c-1990c81fe479",
       "point": { "x": -8, "y": 7 },
-      "type": {
-        "name": "RequiringItem",
-        "itemId": "9f7ee454-e882-42e0-a8ef-c071468c1e86"
+      "required": {
+        "type": "Have",
+        "itemsTags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
       }
     }
   ],
@@ -39,11 +39,17 @@
   ],
   "items": [
     {
-      "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86"
+      "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
+      "tags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
     },
     {
       "id": "c2e56cd6-e831-460a-b604-534b24c9547e"
     },
+    {
+      "id": "8d2582cb-0460-4bd3-a37c-9bc8230c5210"
+    }
+  ],
+  "itemsTags": [
     {
       "id": "8d2582cb-0460-4bd3-a37c-9bc8230c5210"
     }

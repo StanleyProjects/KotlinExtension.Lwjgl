@@ -7,11 +7,17 @@ internal class Relay(
     val id: UUID,
     var enabled: Boolean,
     val point: Point,
-    val type: Type,
+    val required: Required?,
 ) {
-    sealed interface Type {
-        data object Unconditional : Type
-        data class RequiringItem(val itemId: UUID) : Type
+    data class Required(
+        val type: Type,
+        val itemsTags: List<UUID>,
+    ) {
+        enum class Type {
+            Have,
+            Give,
+            Lose,
+        }
     }
 
     fun toggle() {

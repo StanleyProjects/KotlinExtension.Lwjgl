@@ -16,7 +16,7 @@ internal fun <T : Any> JSONArray.mapObjects(transform: (JSONObject) -> T): List<
 }
 
 internal fun <T : Any> JSONObject.objects(name: String, transform: (JSONObject) -> T): List<T> {
-    if (!has(name)) return emptyList()
+    if (!has(name) || isNull(name)) return emptyList()
     return getJSONArray(name).mapObjects(transform)
 }
 
@@ -27,7 +27,7 @@ internal fun <T : Any> JSONArray.mapStrings(transform: (String) -> T): List<T> {
 }
 
 internal fun <T : Any> JSONObject.strings(name: String, transform: (String) -> T): List<T> {
-    if (!has(name)) return emptyList()
+    if (!has(name) || isNull(name)) return emptyList()
     return getJSONArray(name).mapStrings(transform)
 }
 

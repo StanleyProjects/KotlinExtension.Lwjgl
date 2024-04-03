@@ -2,7 +2,6 @@ package sp.service.sample.entity
 
 import java.util.UUID
 
-internal class Item(
+internal data class ItemTag(
     val id: UUID,
-    val tags: List<UUID>,
 )

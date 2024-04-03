@@ -59,6 +59,7 @@ import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.ItemPosition
+import sp.service.sample.entity.ItemTag
 import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
@@ -70,6 +71,7 @@ import sp.service.sample.util.toCondition
 import sp.service.sample.util.toCrate
 import sp.service.sample.util.toItem
 import sp.service.sample.util.toItemPosition
+import sp.service.sample.util.toItemTag
 import sp.service.sample.util.toMap
 import sp.service.sample.util.toMapStrings
 import sp.service.sample.util.toPoint
@@ -142,6 +144,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val relays: List<Relay>,
         val barriers: List<Barrier>,
         val items: List<Item>,
+        val itemsTags: List<ItemTag>,
         val crates: List<Crate>,
         val itemsPositions: MutableList<ItemPosition>,
         val ownership: MutableMap<UUID, UUID>,
@@ -304,6 +307,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             ).toMutableMap(),
             barriersToConditions = barriersToConditions,
             conditionsToRelays = conditionsToRelays,
+            itemsTags = objects("itemsTags") { it.toItemTag() },
         )
     }
 
@@ -571,13 +575,25 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun onInteractionRelay(relay: Relay) {
-        when (relay.type) {
-            is Relay.Type.RequiringItem -> {
-                if (env.ownership[relay.type.itemId] == env.player.id) {
+        val required = relay.required
+        if (required == null) {
+            relay.toggle()
+            return
+        }
+        when (required.type) {
+            Relay.Required.Type.Have -> {
+                val contains = env.ownership.entries.filter { (_, ownerId) ->
+                    ownerId == env.player.id
+                }.any { (itemId, _) ->
+                    val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
+                    item.tags.any { required.itemsTags.contains(it) }
+                }
+                if (contains) {
                     relay.toggle()
                 }
             }
-            Relay.Type.Unconditional -> relay.toggle()
+            Relay.Required.Type.Give -> TODO("onInteractionRelay:${required.type}")
+            Relay.Required.Type.Lose -> TODO("onInteractionRelay:${required.type}")
         }
     }
 
@@ -867,9 +883,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
             val point = relay.point
-            val color = if (relay.enabled) Color.GREEN else when (relay.type) {
-                is Relay.Type.RequiringItem -> Color.YELLOW
-                Relay.Type.Unconditional -> Color.RED
+            val color = if (relay.enabled) Color.GREEN else when (relay.required?.type) {
+                Relay.Required.Type.Have -> Color.YELLOW
+                Relay.Required.Type.Give -> TODO()
+                Relay.Required.Type.Lose -> TODO()
+                null -> Color.RED
             }
             canvas.polygons.drawRectangle(
                 color = color,
