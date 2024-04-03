@@ -878,16 +878,35 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
+        val textHeight = 1.0
+        val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
 //        val info = FontInfoUtil.getFontInfo(height = 16f)
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
             val point = relay.point
-            val color = if (relay.enabled) Color.GREEN else when (relay.required?.type) {
-                Relay.Required.Type.Have -> Color.YELLOW
-                Relay.Required.Type.Give -> TODO()
-                Relay.Required.Type.Lose -> TODO()
-                null -> Color.RED
+            val color = if (relay.enabled) Color.GREEN else Color.RED
+            val textType = relay.required?.type?.let {
+                when (it) {
+                    Relay.Required.Type.Have -> "H"
+                    Relay.Required.Type.Give -> "G"
+                    Relay.Required.Type.Lose -> "L"
+                }
+            }
+            if (textType != null) {
+                val textTypeHeight = 0.75
+                val typeInfo = FontInfoUtil.getFontInfo(height = textTypeHeight, measure = measure)
+                val textOffset = offsetOf(
+                    dX = size.center().dX + 0.1,
+                    dY = - textTypeHeight / 2,
+                )
+                canvas.texts.draw(
+                    color = Color.GREEN,
+                    info = typeInfo,
+                    pointTopLeft = point + textOffset,
+                    offset = offset,
+                    measure = measure,
+                    text = textType,
+                )
             }
             canvas.polygons.drawRectangle(
                 color = color,
@@ -900,7 +919,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             val textWidth = engine.fontAgent.getTextWidth(info, text)
             val textOffset = offsetOf(
                 dX = measure.units(-textWidth / 2),
-                dY = measure.units(-info.height.toDouble() / 2),
+                dY = - textHeight / 2,
             )
             canvas.texts.draw(
                 color = Color.BLACK,
