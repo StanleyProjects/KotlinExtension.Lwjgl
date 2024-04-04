@@ -584,10 +584,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Relay.Required.Type.Have -> {
                 val contains = env.ownership.entries.filter { (_, ownerId) ->
                     ownerId == env.player.id
-                }.any { (itemId, _) ->
-                    val item = env.items.firstOrNull { it.id == itemId } ?: TODO()
-                    item.tags.any { required.itemsTags.contains(it) }
-                }
+                }.flatMap { (itemId, _) ->
+                    env.items.firstOrNull { it.id == itemId }?.tags ?: TODO()
+                }.containsAll(required.itemsTags)
                 if (contains) {
                     relay.toggle()
                 }
