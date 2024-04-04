@@ -5,7 +5,8 @@
   },
   "conditions": [
     { "id": "269ef859-6c6d-40dc-92b7-8b38277f1f04" },
-    { "id": "e1d97f6b-947d-4891-838e-d6e07c9c08ec" }
+    { "id": "e1d97f6b-947d-4891-838e-d6e07c9c08ec" },
+    { "id": "19e471fb-d583-4f63-b420-2eb9f95a9963" }
   ],
   "relays": [
     {
@@ -18,6 +19,14 @@
       "required": {
         "type": "Have",
         "itemsTags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
+      }
+    },
+    {
+      "id": "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f",
+      "point": { "x": -7, "y": -3 },
+      "required": {
+        "type": "Give",
+        "itemsTags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
       }
     }
   ],
@@ -35,6 +44,13 @@
         "start": { "x": -6, "y": 9 },
         "finish": { "x": -1, "y": 9 }
       }
+    },
+    {
+      "id": "d15ac98c-9ec4-4da0-8acb-82bb7038d56f",
+      "vector": {
+        "start": { "x": -10, "y": -2 },
+        "finish": { "x": -10, "y": 3 }
+      }
     }
   ],
   "items": [
@@ -43,33 +59,34 @@
       "tags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
     },
     {
-      "id": "c2e56cd6-e831-460a-b604-534b24c9547e"
-    },
-    {
-      "id": "8d2582cb-0460-4bd3-a37c-9bc8230c5210"
+      "id": "27744119-c9c7-4742-b78a-0dfdbf4711a1",
+      "tags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
     }
   ],
   "itemsTags": [
     {
       "id": "8d2582cb-0460-4bd3-a37c-9bc8230c5210"
+    },
+    {
+      "id": "5ad83350-25f3-4fdb-8880-9bfb21dee17f"
     }
   ],
   "crates": [
-    {
-      "id": "eed81bb1-0083-48dd-abc0-7db347c827c0",
-      "point": { "x": -4, "y": -4 }
-    }
   ],
   "ownership": {
     "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
-    "c2e56cd6-e831-460a-b604-534b24c9547e": "229287ed-a629-48d7-93bc-a5fe219e1e82",
-    "8d2582cb-0460-4bd3-a37c-9bc8230c5210": "229287ed-a629-48d7-93bc-a5fe219e1e82"
+    "27744119-c9c7-4742-b78a-0dfdbf4711a1": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2"
   },
   "itemsPositions": [
     {
       "id": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
       "itemId": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
       "point": { "x": 4, "y": 12 }
+    },
+    {
+      "id": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2",
+      "itemId": "27744119-c9c7-4742-b78a-0dfdbf4711a1",
+      "point": { "x": -4, "y": 12 }
     }
   ],
   "barriersToConditions": {
@@ -78,6 +95,9 @@
     ],
     "65dfcf6d-2456-4b7a-81a2-ccaf0541a7aa": [
       "e1d97f6b-947d-4891-838e-d6e07c9c08ec"
+    ],
+    "d15ac98c-9ec4-4da0-8acb-82bb7038d56f": [
+      "19e471fb-d583-4f63-b420-2eb9f95a9963"
     ]
   },
   "conditionsToRelays": {
@@ -86,6 +106,9 @@
     ],
     "e1d97f6b-947d-4891-838e-d6e07c9c08ec": [
       "b2cff302-435a-4854-9a3c-1990c81fe479"
+    ],
+    "19e471fb-d583-4f63-b420-2eb9f95a9963": [
+      "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f"
     ]
   }
 }

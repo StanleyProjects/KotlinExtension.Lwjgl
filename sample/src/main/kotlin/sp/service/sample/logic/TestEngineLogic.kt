@@ -262,7 +262,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         //
         pointOf(x = 9, y = -9),
         pointOf(x = -9, y = -9),
+        //w
+        pointOf(x = -9, y = -2),
+        pointOf(x = -10, y = -2),
+        pointOf(x = -10, y = -4),
+        pointOf(x = -15, y = -4),
+        pointOf(x = -15, y = 4),
+        pointOf(x = -10, y = 4),
+        pointOf(x = -10, y = 3),
+        pointOf(x = -9, y = 3),
         pointOf(x = -9, y = 5),
+        //
         pointOf(x = -10, y = 5),
         //
         pointOf(x = -10, y = 8),
@@ -607,7 +617,27 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     relay.toggle()
                 }
             }
-            Relay.Required.Type.Give -> TODO("onInteractionRelay:${required.type}")
+            Relay.Required.Type.Give -> {
+                if (relay.enabled) {
+                    val itemId = env.ownership.entries.single { (_, ownerId) ->
+                        ownerId == relay.id
+                    }.key
+                    env.ownership[itemId] = env.player.id
+                    relay.enabled = false
+                } else {
+                    val item = env.ownership.entries.filter { (_, ownerId) ->
+                        ownerId == env.player.id
+                    }.map { (itemId, _) ->
+                        env.items.firstOrNull { it.id == itemId } ?: TODO()
+                    }.firstOrNull {
+                        it.tags.containsAll(required.itemsTags)
+                    }
+                    if (item != null) {
+                        env.ownership[item.id] = relay.id
+                        relay.enabled = true
+                    }
+                }
+            }
             Relay.Required.Type.Lose -> TODO("onInteractionRelay:${required.type}")
         }
     }
@@ -1643,10 +1673,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             )
         }
         //
-//        onRenderGrid(
-//            canvas = canvas,
-//            offset = offset,
-//            measure = measure,
-//        )
+        onRenderGrid(
+            canvas = canvas,
+            offset = offset,
+            measure = measure,
+        )
     }
 }
