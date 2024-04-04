@@ -52,6 +52,7 @@ object WindowUtil {
             xPosition.toInt(),
             yPosition.toInt()
         )
+//        GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, monitorSize.width.toInt(), monitorSize.height.toInt(), GLFW.GLFW_DONT_CARE)
         //
         GLFW.glfwMakeContextCurrent(windowId)
         GL.createCapabilities()

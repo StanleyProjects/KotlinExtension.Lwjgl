@@ -335,7 +335,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     )
 
     private fun getColor(index: Int): Color {
-        return colors[index.absoluteValue.toDouble().ct(colors.size.toDouble()).toInt()]
+        return colors[index.toDouble().ct(colors.size.toDouble()).toInt()]
     }
 
     private fun onPressInventory(button: JoystickButton, state: PlayerState.Inventory) {
