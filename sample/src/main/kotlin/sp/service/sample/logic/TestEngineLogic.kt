@@ -19,6 +19,7 @@ import sp.kx.math.angleOf
 import sp.kx.math.center
 import sp.kx.math.centerPoint
 import sp.kx.math.copy
+import sp.kx.math.ct
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
@@ -79,6 +80,7 @@ import sp.service.sample.util.toRelay
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player private constructor(
@@ -321,6 +323,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private val ds4Mapping = JsonJoystickMapping(
         ResourceUtil.requireResourceAsStream("dualshock4.json").reader().readText(),
     )
+
+    private val colors = listOf(
+//        colorOf(0xff000000),
+        colorOf(0xff0000ff),
+        colorOf(0xff00ff00),
+        colorOf(0xffff0000),
+        colorOf(0xffff00ff),
+        colorOf(0xffffff00),
+        colorOf(0xffffffff),
+    )
+
+    private fun getColor(index: Int): Color {
+        return colors[index.absoluteValue.toDouble().ct(colors.size.toDouble()).toInt()]
+    }
 
     private fun onPressInventory(button: JoystickButton, state: PlayerState.Inventory) {
         when (button) {
@@ -992,10 +1008,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = 0.7, measure = measure)
         for (itemPosition in env.itemsPositions) {
             val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: continue
-            val (index: Int, _) = env.items.withIndex().firstOrNull { (_, item) -> item.id == itemId } ?: TODO()
+            val (index: Int, item) = env.items.withIndex().firstOrNull { (_, item) -> item.id == itemId } ?: TODO()
             val point = itemPosition.point
+            val color = getColor(index = item.tags.firstOrNull()?.hashCode() ?: -1)
             canvas.polygons.drawRectangle(
-                color = Color.YELLOW,
+                color = color,
                 pointTopLeft = point + itemOffset,
                 size = size,
                 offset = offset,
