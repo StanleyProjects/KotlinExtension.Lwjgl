@@ -9,8 +9,8 @@ import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
-import sp.service.sample.entity.ItemPosition
 import sp.service.sample.entity.ItemTag
+import sp.service.sample.entity.Position
 import sp.service.sample.entity.Relay
 import java.util.UUID
 
@@ -32,7 +32,6 @@ internal fun JSONObject.toRelay(): Relay {
     }
     return Relay(
         id = UUID.fromString(getString("id")),
-        point = getJSONObject("point").toPoint(),
         required = required,
     )
 }
@@ -68,10 +67,9 @@ internal fun JSONObject.toItemTag(): ItemTag {
     )
 }
 
-internal fun JSONObject.toItemPosition(): ItemPosition {
-    return ItemPosition(
+internal fun JSONObject.toPosition(): Position {
+    return Position(
         id = UUID.fromString(getString("id")),
-        itemId = UUID.fromString(getString("itemId")),
         point = getJSONObject("point").toPoint(),
     )
 }

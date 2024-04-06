@@ -3,8 +3,7 @@ package sp.service.sample.entity
 import sp.kx.math.Point
 import java.util.UUID
 
-internal data class ItemPosition(
+internal data class Position(
     val id: UUID,
-    val itemId: UUID,
     var point: Point,
 )

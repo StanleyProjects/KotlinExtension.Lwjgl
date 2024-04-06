@@ -59,8 +59,8 @@ import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
-import sp.service.sample.entity.ItemPosition
 import sp.service.sample.entity.ItemTag
+import sp.service.sample.entity.Position
 import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
@@ -71,16 +71,15 @@ import sp.service.sample.util.toBarrier
 import sp.service.sample.util.toCondition
 import sp.service.sample.util.toCrate
 import sp.service.sample.util.toItem
-import sp.service.sample.util.toItemPosition
 import sp.service.sample.util.toItemTag
 import sp.service.sample.util.toMap
 import sp.service.sample.util.toMapStrings
 import sp.service.sample.util.toPoint
+import sp.service.sample.util.toPosition
 import sp.service.sample.util.toRelay
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     class Player private constructor(
@@ -148,7 +147,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val items: List<Item>,
         val itemsTags: List<ItemTag>,
         val crates: List<Crate>,
-        val itemsPositions: MutableList<ItemPosition>,
+        val positions: MutableList<Position>,
         val ownership: MutableMap<UUID, UUID>,
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
@@ -312,7 +311,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             barriers = objects("barriers") { it.toBarrier() },
             items = objects("items") { it.toItem() },
             crates = objects("crates") { it.toCrate() },
-            itemsPositions = objects("itemsPositions") { it.toItemPosition() }.toMutableList(),
+            positions = objects("positions") { it.toPosition() }.toMutableList(),
             ownership = getJSONObject("ownership").toMapStrings(
                 keys = UUID::fromString,
                 values = UUID::fromString,
@@ -357,9 +356,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 // noop
             }
         }
-        val items = env.items.filter { item ->
-            env.ownership[item.id] == env.player.id
-        }
+        val items = env.items.dependents(env.player.id) { it.id }
         if (items.isEmpty()) return
         when (button) {
             JoystickButton.DPAD_UP -> {
@@ -370,11 +367,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
             JoystickButton.Y -> {
                 val item = items[state.index]
-                val itemPosition = item.setOrCreatePosition(point = env.player.point.copy())
+                val position = item.setOrCreatePosition(point = env.player.point.copy())
                 if (state.index == items.lastIndex) {
                     env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
                 }
-                env.ownership[item.id] = itemPosition.id
+                env.ownership[item.id] = position.id
             }
             else -> {
                 // noop
@@ -408,9 +405,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 // noop
             }
         }
-        val items = env.items.filter { item ->
-            env.ownership[item.id] == if (state.issuer) env.player.id else state.crateId
-        }
+        val ownerId = if (state.issuer) env.player.id else state.crateId
+        val items = env.items.dependents(ownerId) { it.id }
         if (items.isNotEmpty()) {
             when (button) {
                 JoystickButton.DPAD_UP -> {
@@ -466,18 +462,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         },
     )
 
-    private fun Item.setOrCreatePosition(point: Point): ItemPosition {
-        val position = env.itemsPositions.firstOrNull { it.itemId == id }
+    private fun Item.setOrCreatePosition(point: Point): Position {
+        val position = getPositionOrNull(id)
         if (position != null) {
             position.point = point
             return position
         }
-        val newPosition = ItemPosition(
+        val newPosition = Position(
             id = UUID.randomUUID(),
-            itemId = id,
             point = point,
         )
-        env.itemsPositions += newPosition
+        env.positions += newPosition
         return newPosition
     }
 
@@ -490,9 +485,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 // noop
             }
         }
-        val items = env.items.filter { item ->
-            env.ownership[item.id] == env.player.id
-        }
+        val items = env.items.dependents(env.player.id) { it.id }
         if (items.isEmpty()) return
         when (button) {
             KeyboardButton.W, KeyboardButton.UP -> {
@@ -503,11 +496,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
             KeyboardButton.X -> {
                 val item = items[state.index]
-                val itemPosition = item.setOrCreatePosition(point = env.player.point.copy())
+                val position = item.setOrCreatePosition(point = env.player.point.copy())
                 if (state.index == items.lastIndex) {
                     env.state = PlayerState.Inventory(index = (items.size + state.index - 1) % items.size)
                 }
-                env.ownership[item.id] = itemPosition.id
+                env.ownership[item.id] = position.id
             }
             else -> {
                 // noop
@@ -541,9 +534,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 // noop
             }
         }
-        val items = env.items.filter { item ->
-            env.ownership[item.id] == if (state.issuer) env.player.id else state.crateId
-        }
+        val ownerId = if (state.issuer) env.player.id else state.crateId
+        val items = env.items.dependents(ownerId) { it.id }
         if (items.isNotEmpty()) {
             when (button) {
                 KeyboardButton.W, KeyboardButton.UP -> {
@@ -613,15 +605,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     private fun Relay.isEnabled(): Boolean {
         return when (required?.type) {
             null, Relay.Required.Type.Have -> enabledRelays.contains(id)
-            Relay.Required.Type.Give -> env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == id }
+            Relay.Required.Type.Give -> env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == id } != null
             Relay.Required.Type.Lose -> TODO()
         }
     }
 
-    private fun <T : Any> Iterable<T>.noneOrSingleOrError(predicate: (T) -> Boolean): Boolean {
+    private fun <T : Any> Iterable<T>.noneOrSingleOrError(predicate: (T) -> Boolean): T? {
         val filtered = filter(predicate)
-        if (filtered.isEmpty()) return false
-        if (filtered.size == 1) return true
+        if (filtered.isEmpty()) return null
+        if (filtered.size == 1) return filtered[0]
         TODO()
     }
 
@@ -630,32 +622,28 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Relay.Required.Type.Have -> {
                 val contains = env.ownership.entries.filter { (_, ownerId) ->
                     ownerId == env.player.id
-                }.flatMap { (itemId, _) ->
-                    env.items.firstOrNull { it.id == itemId }?.tags ?: TODO()
+                }.flatMap { (issuerId, _) ->
+                    env.items.firstOrNull { it.id == issuerId }?.tags ?: TODO()
                 }.containsAll(relay.required.itemsTags)
                 if (contains) {
                     enabledRelays.toggle(relay.id)
                 }
             }
             Relay.Required.Type.Give -> {
-                val entries = env.ownership.entries.filter { (_, ownerId) ->
-                    ownerId == relay.id
-                }
-                if (entries.isEmpty()) {
+                val entry = env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id }
+                if (entry == null) {
                     env.ownership.entries.filter { (_, ownerId) ->
                         ownerId == env.player.id
-                    }.map { (itemId, _) ->
-                        env.items.single { it.id == itemId }
+                    }.map { (issuerId, _) ->
+                        env.items.single { it.id == issuerId }
                     }.firstOrNull {
                         it.tags.containsAll(relay.required.itemsTags)
                     }?.also { item ->
                         env.ownership[item.id] = relay.id
                     }
-                } else if (entries.size == 1) {
-                    val (itemId, _) = entries.single()
-                    env.ownership[itemId] = env.player.id
                 } else {
-                    TODO()
+                    val (issuerId, _) = entry
+                    env.ownership[issuerId] = env.player.id
                 }
             }
             Relay.Required.Type.Lose -> TODO("onInteractionRelay:${relay.required.type}")
@@ -665,15 +653,61 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun <I : Any, O : Any> Map<UUID, UUID>.getDependents(
+        issuers: List<I>,
+        getIssuerId: (I) -> UUID,
+        owners: List<O>,
+        getOwnerId: (O) -> UUID,
+    ): List<Pair<I, O>> {
+        return mapNotNull { (issuerId, ownerId) ->
+            issuers.firstOrNull { getIssuerId(it) == issuerId }?.let { item ->
+                owners.firstOrNull { getOwnerId(it) == ownerId }?.let { owner ->
+                    item to owner
+                }
+            }
+        }
+    }
+
+    private fun <T : Any> List<T>.dependents(ownerId: UUID, getIssuerId: (T) -> UUID): List<T> {
+        return filter {
+            env.ownership[getIssuerId(it)] == ownerId
+        }
+    }
+
+    private fun getPositionOrNull(issuerId: UUID): Position? {
+        return env.ownership[issuerId]?.let { ownerId ->
+            env.positions.firstOrNull { it.id == ownerId }
+        }
+    }
+
+    private fun onInteractionItem(item: Item) {
+        env.ownership[item.id]?.also { ownerId ->
+            env.positions.removeIf { it.id == ownerId }
+        }
+        env.ownership[item.id] = env.player.id
+    }
+
     private fun onInteraction() {
-        val relay = getNearest(env.relays) { it.getPolygon(size = relaySize) }
+        val relays = env.ownership.getDependents(
+            env.relays,
+            { it.id },
+            env.positions,
+            { it.id },
+        )
+        val relay = getNearest(relays) { (_, position) -> position.getPolygon(size = relaySize) }?.first
         if (relay != null) {
             onInteractionRelay(relay = relay)
             return
         }
-        val itemPosition = getNearest(env.itemsPositions.filter { pos -> env.ownership.values.any { it == pos.id } }) { it.getPolygon(size = itemSize) }
-        if (itemPosition != null) {
-            env.ownership[itemPosition.itemId] = env.player.id
+        val items = env.ownership.getDependents(
+            env.items,
+            { it.id },
+            env.positions,
+            { it.id },
+        )
+        val item = getNearest(items) { (_, position) -> position.getPolygon(size = itemSize) }?.first
+        if (item != null) {
+            onInteractionItem(item = item)
             return
         }
         val crate = getNearest(env.crates) { it.getPolygon(size = crateSize) }
@@ -910,21 +944,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    private fun Relay.getPolygon(size: Size): List<Point> {
-        val pointTopLeft = point + size.center() * -1.0
-        val pointBottomRight = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
-        )
-        return listOf(
-            pointTopLeft,
-            pointOf(pointBottomRight.x, pointTopLeft.y),
-            pointBottomRight,
-            pointOf(pointTopLeft.x, pointBottomRight.y),
-            pointTopLeft,
-        )
-    }
-
     private fun Crate.getPolygon(size: Size): List<Point> {
         val pointTopLeft = point + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
@@ -948,10 +967,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val textHeight = 1.0
         val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
-//        val info = FontInfoUtil.getFontInfo(height = 16f)
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
-            val point = relay.point
+            val point = getPositionOrNull(relay.id)?.point ?: continue
             val enabled = relay.isEnabled()
             val color = if (enabled) Color.GREEN else Color.RED
             val textType = relay.required?.type?.let {
@@ -1038,7 +1056,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private fun ItemPosition.getPolygon(size: Size): List<Point> {
+    private fun Position.getPolygon(size: Size): List<Point> {
         val pointTopLeft = point + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
@@ -1060,10 +1078,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ) {
         val itemOffset = size.center() * - 1.0
         val info = FontInfoUtil.getFontInfo(height = 0.7, measure = measure)
-        for (itemPosition in env.itemsPositions) {
-            val (itemId, _) = env.ownership.entries.firstOrNull { (_, ownerId) -> ownerId == itemPosition.id } ?: continue
-            val (index: Int, item) = env.items.withIndex().firstOrNull { (_, item) -> item.id == itemId } ?: TODO()
-            val point = itemPosition.point
+        for (index in env.items.indices) {
+            val item = env.items[index]
+            val point = getPositionOrNull(item.id)?.point ?: continue
             val color = getColor(index = item.tags.firstOrNull()?.hashCode() ?: -1)
             canvas.polygons.drawRectangle(
                 color = color,
@@ -1402,9 +1419,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val nearest = getNearest(env.relays) {
-            it.getPolygon(size = relaySize)
-        }?.point ?: getNearest(env.itemsPositions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
+        val relays = env.ownership.getDependents(
+            env.relays,
+            { it.id },
+            env.positions,
+            { it.id },
+        )
+        val nearest = getNearest(relays) { (_, position) ->
+            position.getPolygon(size = relaySize)
+        }?.second?.point ?: getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
             it.getPolygon(size = itemSize)
         }?.point ?: getNearest(env.crates) {
             it.getPolygon(size = crateSize)
@@ -1432,9 +1455,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas = canvas,
             borderSize = borderSize,
             padding = padding,
-            items = env.items.filter { item ->
-                env.ownership[item.id] == env.player.id
-            },
+            items = env.items.dependents(env.player.id) { it.id },
             toText = { item ->
                 "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
             },
@@ -1514,9 +1535,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             canvas = canvas,
             borderSize = borderSize,
             padding = padding,
-            items = env.items.filter { item ->
-                env.ownership[item.id] == env.player.id
-            },
+            items = env.items.dependents(env.player.id) { it.id },
             toText = { item ->
                 "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
             },
@@ -1530,9 +1549,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 dX = padding.dX + borderSize.width + padding.dX,
                 dY = padding.dY,
             ),
-            items = env.items.filter { item ->
-                env.ownership[item.id] == state.crateId
-            },
+            items = env.items.dependents(state.crateId) { it.id },
             toText = { item ->
                 "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
             },
@@ -1595,8 +1612,13 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val barriers = env.barriers.filter { barrier ->
             !isPassable(barrier)
         }.map { it.vector }
-        val relays = env.relays.flatMap {
-            it.getPolygon(relaySize).toVectors()
+        val relays = env.ownership.getDependents(
+            env.relays,
+            { it.id },
+            env.positions,
+            { it.id },
+        ).flatMap { (_, position) ->
+            position.getPolygon(relaySize).toVectors()
         }
         val crates = env.crates.flatMap {
             it.getPolygon(crateSize).toVectors()
