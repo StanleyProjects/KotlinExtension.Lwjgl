@@ -32,7 +32,6 @@ internal fun JSONObject.toRelay(): Relay {
     }
     return Relay(
         id = UUID.fromString(getString("id")),
-        enabled = optBoolean("enabled", false),
         point = getJSONObject("point").toPoint(),
         required = required,
     )

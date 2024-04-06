@@ -5,7 +5,6 @@ import java.util.UUID
 
 internal class Relay(
     val id: UUID,
-    var enabled: Boolean,
     val point: Point,
     val required: Required?,
 ) {
@@ -18,9 +17,5 @@ internal class Relay(
             Give,
             Lose,
         }
-    }
-
-    fun toggle() {
-        enabled = !enabled
     }
 }

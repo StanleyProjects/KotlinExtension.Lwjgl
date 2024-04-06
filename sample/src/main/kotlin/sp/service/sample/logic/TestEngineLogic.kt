@@ -600,45 +600,68 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return kotlin.math.sqrt(width * width + height * height)
     }
 
-    private fun onInteractionRelay(relay: Relay) {
-        val required = relay.required
-        if (required == null) {
-            relay.toggle()
-            return
+    private val enabledRelays = mutableSetOf<UUID>()
+
+    private fun <T : Any> MutableCollection<T>.toggle(item: T) {
+        if (contains(item)) {
+            remove(item)
+        } else {
+            add(item)
         }
-        when (required.type) {
+    }
+
+    private fun Relay.isEnabled(): Boolean {
+        return when (required?.type) {
+            null, Relay.Required.Type.Have -> enabledRelays.contains(id)
+            Relay.Required.Type.Give -> env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == id }
+            Relay.Required.Type.Lose -> TODO()
+        }
+    }
+
+    private fun <T : Any> Iterable<T>.noneOrSingleOrError(predicate: (T) -> Boolean): Boolean {
+        val filtered = filter(predicate)
+        if (filtered.isEmpty()) return false
+        if (filtered.size == 1) return true
+        TODO()
+    }
+
+    private fun onInteractionRelay(relay: Relay) {
+        when (relay.required?.type) {
             Relay.Required.Type.Have -> {
                 val contains = env.ownership.entries.filter { (_, ownerId) ->
                     ownerId == env.player.id
                 }.flatMap { (itemId, _) ->
                     env.items.firstOrNull { it.id == itemId }?.tags ?: TODO()
-                }.containsAll(required.itemsTags)
+                }.containsAll(relay.required.itemsTags)
                 if (contains) {
-                    relay.toggle()
+                    enabledRelays.toggle(relay.id)
                 }
             }
             Relay.Required.Type.Give -> {
-                if (relay.enabled) {
-                    val itemId = env.ownership.entries.single { (_, ownerId) ->
-                        ownerId == relay.id
-                    }.key
-                    env.ownership[itemId] = env.player.id
-                    relay.enabled = false
-                } else {
-                    val item = env.ownership.entries.filter { (_, ownerId) ->
+                val entries = env.ownership.entries.filter { (_, ownerId) ->
+                    ownerId == relay.id
+                }
+                if (entries.isEmpty()) {
+                    env.ownership.entries.filter { (_, ownerId) ->
                         ownerId == env.player.id
                     }.map { (itemId, _) ->
-                        env.items.firstOrNull { it.id == itemId } ?: TODO()
+                        env.items.single { it.id == itemId }
                     }.firstOrNull {
-                        it.tags.containsAll(required.itemsTags)
-                    }
-                    if (item != null) {
+                        it.tags.containsAll(relay.required.itemsTags)
+                    }?.also { item ->
                         env.ownership[item.id] = relay.id
-                        relay.enabled = true
                     }
+                } else if (entries.size == 1) {
+                    val (itemId, _) = entries.single()
+                    env.ownership[itemId] = env.player.id
+                } else {
+                    TODO()
                 }
             }
-            Relay.Required.Type.Lose -> TODO("onInteractionRelay:${required.type}")
+            Relay.Required.Type.Lose -> TODO("onInteractionRelay:${relay.required.type}")
+            null -> {
+                enabledRelays.toggle(relay.id)
+            }
         }
     }
 
@@ -929,7 +952,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
             val point = relay.point
-            val color = if (relay.enabled) Color.GREEN else Color.RED
+            val enabled = relay.isEnabled()
+            val color = if (enabled) Color.GREEN else Color.RED
             val textType = relay.required?.type?.let {
                 when (it) {
                     Relay.Required.Type.Have -> "H"
@@ -960,7 +984,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 offset = offset,
                 measure = measure,
             )
-            val text = if (relay.enabled) "on" else "off"
+            val text = if (enabled) "on" else "off"
             val textWidth = engine.fontAgent.getTextWidth(info, text)
             val textOffset = offsetOf(
                 dX = measure.units(-textWidth / 2),
@@ -1280,7 +1304,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             if (ids.isNullOrEmpty()) TODO()
             ids.all { relayId ->
                 val relay = env.relays.firstOrNull { it.id == relayId } ?: TODO()
-                relay.enabled
+                relay.isEnabled()
             }
         }
     }
