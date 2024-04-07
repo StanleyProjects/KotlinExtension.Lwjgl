@@ -175,6 +175,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 Relay.Required.Type.Lose -> TODO()
             }
         }
+
+        fun getAppropriate(tags: Collection<UUID>): List<Item> {
+            return ownership.entries.filter { (_, ownerId) ->
+                ownerId == player.id
+            }.map { (issuerId, _) ->
+                items.single { it.id == issuerId }
+            }.filter {
+                it.tags.containsAll(tags)
+            }
+        }
     }
 
 //    private val measure = measureOf(16.0)
@@ -609,13 +619,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
             else -> TODO()
         }
-        val items = env.ownership.entries.filter { (_, ownerId) ->
-            ownerId == env.player.id
-        }.map { (issuerId, _) ->
-            env.items.single { it.id == issuerId }
-        }.filter {
-            it.tags.containsAll(relay.required.itemsTags)
-        }
+        val items = env.getAppropriate(relay.required.itemsTags)
         check(items.isNotEmpty())
         when (button) {
             KeyboardButton.F -> {
@@ -678,14 +682,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             Relay.Required.Type.Give -> {
                 val entry = env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id }
                 if (entry == null) {
-                    val count = env.ownership.entries.filter { (_, ownerId) ->
-                        ownerId == env.player.id
-                    }.map { (issuerId, _) ->
-                        env.items.single { it.id == issuerId }
-                    }.count {
-                        it.tags.containsAll(relay.required.itemsTags)
-                    }
-                    if (count > 0) {
+                    val items = env.getAppropriate(relay.required.itemsTags)
+                    if (items.isNotEmpty()) {
                         env.state = PlayerState.RelayItemsSwap(relayId = relay.id)
                     }
                 } else {
@@ -1506,13 +1504,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
             else -> TODO()
         }
-        val items = env.ownership.entries.filter { (_, ownerId) ->
-            ownerId == env.player.id
-        }.map { (issuerId, _) ->
-            env.items.single { it.id == issuerId }
-        }.filter {
-            it.tags.containsAll(relay.required.itemsTags)
-        }
+        val items = env.getAppropriate(relay.required.itemsTags)
         onRenderItems(
             canvas = canvas,
             borderSize = borderSize,
