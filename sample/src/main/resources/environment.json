@@ -6,7 +6,8 @@
   "conditions": [
     { "id": "269ef859-6c6d-40dc-92b7-8b38277f1f04" },
     { "id": "e1d97f6b-947d-4891-838e-d6e07c9c08ec" },
-    { "id": "19e471fb-d583-4f63-b420-2eb9f95a9963" }
+    { "id": "19e471fb-d583-4f63-b420-2eb9f95a9963" },
+    { "id": "3d1c80c3-5eaf-4312-8150-d66249113b6f" }
   ],
   "relays": [
     {
@@ -27,6 +28,14 @@
       "required": {
         "type": "Give",
         "itemsTags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
+      }
+    },
+    {
+      "id": "92d9b850-4c18-47c4-8cab-a8fc95441a37",
+      "point": { "x": 8, "y": -3 },
+      "required": {
+        "type": "Lose",
+        "itemsTags": ["8d84cd3a-48c4-4df5-829d-67ad76832673"]
       }
     }
   ],
@@ -50,6 +59,13 @@
       "vector": {
         "start": { "x": -10, "y": 0 },
         "finish": { "x": -10, "y": 4 }
+      }
+    },
+    {
+      "id": "260723c2-c9ae-46a5-a94f-3cef8880146b",
+      "vector": {
+        "start": { "x": 9, "y": 0 },
+        "finish": { "x": 9, "y": 4 }
       }
     }
   ],
@@ -108,6 +124,9 @@
     ],
     "d15ac98c-9ec4-4da0-8acb-82bb7038d56f": [
       "19e471fb-d583-4f63-b420-2eb9f95a9963"
+    ],
+    "260723c2-c9ae-46a5-a94f-3cef8880146b": [
+      "3d1c80c3-5eaf-4312-8150-d66249113b6f"
     ]
   },
   "conditionsToRelays": {
@@ -119,6 +138,9 @@
     ],
     "19e471fb-d583-4f63-b420-2eb9f95a9963": [
       "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f"
+    ],
+    "3d1c80c3-5eaf-4312-8150-d66249113b6f": [
+      "92d9b850-4c18-47c4-8cab-a8fc95441a37"
     ]
   }
 }

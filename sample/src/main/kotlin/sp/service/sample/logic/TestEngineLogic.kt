@@ -172,7 +172,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             return when (relay.required?.type) {
                 null, Relay.Required.Type.Have -> enabledRelays.contains(relay.id)
                 Relay.Required.Type.Give -> ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id } != null
-                Relay.Required.Type.Lose -> TODO()
+                Relay.Required.Type.Lose -> ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id } != null
             }
         }
 
@@ -288,6 +288,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         pointOf(x = 7, y = 9),
         pointOf(x = 7, y = 8),
         pointOf(x = 8, y = 8),
+        //sa
+        pointOf(x = 8, y = 4),
+        pointOf(x = 9, y = 4),
+        pointOf(x = 9, y = 5),
+        pointOf(x = 14, y = 5),
+        pointOf(x = 14, y = -1),
+        pointOf(x = 9, y = -1),
+        pointOf(x = 9, y = 0),
+        //
+        pointOf(x = 8, y = 0),
+        pointOf(x = 8, y = -2),
+        pointOf(x = 10, y = -2),
+        pointOf(x = 10, y = -4),
+        pointOf(x = 8, y = -4),
         //
         pointOf(x = 8, y = -9),
         pointOf(x = -9, y = -9),
@@ -614,7 +628,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         val relay = env.relays.single { it.id == state.relayId }
         when (relay.required?.type) {
-            Relay.Required.Type.Give -> {
+            Relay.Required.Type.Give,
+            Relay.Required.Type.Lose -> {
                 // noop
             }
             else -> TODO()
@@ -659,14 +674,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return kotlin.math.sqrt(width * width + height * height)
     }
 
-    private fun <T : Any> MutableCollection<T>.toggle(item: T) {
-        if (contains(item)) {
-            remove(item)
-        } else {
-            add(item)
-        }
-    }
-
     private fun onInteractionRelay(relay: Relay) {
         when (relay.required?.type) {
             Relay.Required.Type.Have -> {
@@ -691,7 +698,15 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     env.ownership[issuerId] = env.player.id
                 }
             }
-            Relay.Required.Type.Lose -> TODO("onInteractionRelay:${relay.required.type}")
+            Relay.Required.Type.Lose -> {
+                val entry = env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id }
+                if (entry == null) {
+                    val items = env.getAppropriate(relay.required.itemsTags)
+                    if (items.isNotEmpty()) {
+                        env.state = PlayerState.RelayItemsSwap(relayId = relay.id)
+                    }
+                }
+            }
             null -> env.toggle(relay)
         }
     }
@@ -1499,7 +1514,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
         val relay = env.relays.single { it.id == state.relayId }
         when (relay.required?.type) {
-            Relay.Required.Type.Give -> {
+            Relay.Required.Type.Give,
+            Relay.Required.Type.Lose -> {
                 // noop
             }
             else -> TODO()
