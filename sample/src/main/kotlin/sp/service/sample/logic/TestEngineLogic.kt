@@ -65,6 +65,7 @@ import sp.service.sample.entity.Relay
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
+import sp.service.sample.util.noneOrSingleOrError
 import sp.service.sample.util.objects
 import sp.service.sample.util.strings
 import sp.service.sample.util.toBarrier
@@ -137,6 +138,10 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 )
             }
         }
+        class RelayItemsSwap(
+            var index: Int = 0,
+            val relayId: UUID,
+        ) : PlayerState
     }
 
     private data class Environment(
@@ -152,7 +157,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val barriersToConditions: Map<UUID, Set<UUID>>,
         val conditionsToRelays: Map<UUID, Set<UUID>>,
     ) {
+        private val enabledRelays = mutableSetOf<UUID>()
         var state: PlayerState = PlayerState.Walking
+
+        fun toggle(relay: Relay) {
+            if (enabledRelays.contains(relay.id)) {
+                enabledRelays.remove(relay.id)
+            } else {
+                enabledRelays.add(relay.id)
+            }
+        }
+
+        fun isEnabled(relay: Relay): Boolean {
+            return when (relay.required?.type) {
+                null, Relay.Required.Type.Have -> enabledRelays.contains(relay.id)
+                Relay.Required.Type.Give -> ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id } != null
+                Relay.Required.Type.Lose -> TODO()
+            }
+        }
     }
 
 //    private val measure = measureOf(16.0)
@@ -437,11 +459,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onPressRelayItemsSwap(button: JoystickButton, state: PlayerState.RelayItemsSwap) {
+        TODO()
+    }
+
     private fun onPressPlayerState(button: JoystickButton, state: PlayerState) {
         when (state) {
             is PlayerState.Inventory -> onPressInventory(button, state)
             PlayerState.Walking -> onPressWalking(button)
             is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
+            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
         }
     }
 
@@ -566,11 +593,48 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun onPressRelayItemsSwap(button: KeyboardButton, state: PlayerState.RelayItemsSwap) {
+        when (button) {
+            KeyboardButton.ESCAPE -> {
+                env.state = PlayerState.Walking
+            }
+            else -> {
+                // noop
+            }
+        }
+        val relay = env.relays.single { it.id == state.relayId }
+        when (relay.required?.type) {
+            Relay.Required.Type.Give -> {
+                // noop
+            }
+            else -> TODO()
+        }
+        val items = env.ownership.entries.filter { (_, ownerId) ->
+            ownerId == env.player.id
+        }.map { (issuerId, _) ->
+            env.items.single { it.id == issuerId }
+        }.filter {
+            it.tags.containsAll(relay.required.itemsTags)
+        }
+        check(items.isNotEmpty())
+        when (button) {
+            KeyboardButton.F -> {
+                val item = items[state.index]
+                env.state = PlayerState.Walking
+                env.ownership[item.id] = relay.id
+            }
+            else -> {
+                // noop
+            }
+        }
+    }
+
     private fun onPressPlayerState(button: KeyboardButton, state: PlayerState) {
         when (state) {
             is PlayerState.Inventory -> onPressInventory(button, state)
             PlayerState.Walking -> onPressWalking(button)
             is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
+            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
         }
     }
 
@@ -591,29 +655,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return kotlin.math.sqrt(width * width + height * height)
     }
 
-    private val enabledRelays = mutableSetOf<UUID>()
-
     private fun <T : Any> MutableCollection<T>.toggle(item: T) {
         if (contains(item)) {
             remove(item)
         } else {
             add(item)
         }
-    }
-
-    private fun Relay.isEnabled(): Boolean {
-        return when (required?.type) {
-            null, Relay.Required.Type.Have -> enabledRelays.contains(id)
-            Relay.Required.Type.Give -> env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == id } != null
-            Relay.Required.Type.Lose -> TODO()
-        }
-    }
-
-    private fun <T : Any> Iterable<T>.noneOrSingleOrError(predicate: (T) -> Boolean): T? {
-        val filtered = filter(predicate)
-        if (filtered.isEmpty()) return null
-        if (filtered.size == 1) return filtered[0]
-        TODO()
     }
 
     private fun onInteractionRelay(relay: Relay) {
@@ -625,20 +672,21 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                     env.items.firstOrNull { it.id == issuerId }?.tags ?: TODO()
                 }.containsAll(relay.required.itemsTags)
                 if (contains) {
-                    enabledRelays.toggle(relay.id)
+                    env.toggle(relay)
                 }
             }
             Relay.Required.Type.Give -> {
                 val entry = env.ownership.entries.noneOrSingleOrError { (_, ownerId) -> ownerId == relay.id }
                 if (entry == null) {
-                    env.ownership.entries.filter { (_, ownerId) ->
+                    val count = env.ownership.entries.filter { (_, ownerId) ->
                         ownerId == env.player.id
                     }.map { (issuerId, _) ->
                         env.items.single { it.id == issuerId }
-                    }.firstOrNull {
+                    }.count {
                         it.tags.containsAll(relay.required.itemsTags)
-                    }?.also { item ->
-                        env.ownership[item.id] = relay.id
+                    }
+                    if (count > 0) {
+                        env.state = PlayerState.RelayItemsSwap(relayId = relay.id)
                     }
                 } else {
                     val (issuerId, _) = entry
@@ -646,9 +694,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 }
             }
             Relay.Required.Type.Lose -> TODO("onInteractionRelay:${relay.required.type}")
-            null -> {
-                enabledRelays.toggle(relay.id)
-            }
+            null -> env.toggle(relay)
         }
     }
 
@@ -963,7 +1009,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
             val point = relay.point
-            val enabled = relay.isEnabled()
+            val enabled = env.isEnabled(relay)
             val color = if (enabled) Color.GREEN else Color.RED
             val textType = relay.required?.type?.let {
                 when (it) {
@@ -1208,9 +1254,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return conditions.all { conditionId ->
             val ids = env.conditionsToRelays[conditionId]
             if (ids.isNullOrEmpty()) TODO()
-            ids.all { relayId ->
-                val relay = env.relays.firstOrNull { it.id == relayId } ?: TODO()
-                relay.isEnabled()
+            ids.all { id ->
+                val relay = env.relays.single { it.id == id }
+                env.isEnabled(relay)
             }
         }
     }
@@ -1442,6 +1488,44 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    private fun onRenderRelayItemsSwap(
+        canvas: Canvas,
+        state: PlayerState.RelayItemsSwap,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val padding = offsetOf(2.0, 2.0)
+        val borderSize = sizeOf(
+            width = 8.0,
+            height = 8.0,
+        )
+        val relay = env.relays.single { it.id == state.relayId }
+        when (relay.required?.type) {
+            Relay.Required.Type.Give -> {
+                // noop
+            }
+            else -> TODO()
+        }
+        val items = env.ownership.entries.filter { (_, ownerId) ->
+            ownerId == env.player.id
+        }.map { (issuerId, _) ->
+            env.items.single { it.id == issuerId }
+        }.filter {
+            it.tags.containsAll(relay.required.itemsTags)
+        }
+        onRenderItems(
+            canvas = canvas,
+            borderSize = borderSize,
+            padding = padding,
+            items = items,
+            toText = { item ->
+                "#${env.items.indexOf(item)} item " + item.id.toString().substring(0, 4)
+            },
+            selected = state.index,
+            measure = measure,
+        )
+    }
+
     private fun onRenderPlayerState(
         canvas: Canvas,
         offset: Offset,
@@ -1456,6 +1540,12 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 measure = measure,
             )
             is PlayerState.ItemsSwap -> onRenderItemsSwap(
+                canvas = canvas,
+                state = state,
+                offset = offset,
+                measure = measure,
+            )
+            is PlayerState.RelayItemsSwap -> onRenderRelayItemsSwap(
                 canvas = canvas,
                 state = state,
                 offset = offset,
