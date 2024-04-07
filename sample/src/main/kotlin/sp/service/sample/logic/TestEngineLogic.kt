@@ -688,13 +688,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun onInteraction() {
-        val relays = env.ownership.getDependents(
-            env.relays,
-            { it.id },
-            env.positions,
-            { it.id },
-        )
-        val relay = getNearest(relays) { (_, position) -> position.getPolygon(size = relaySize) }?.first
+        val relay = getNearest(env.relays) { it.getPolygon(size = relaySize) }
         if (relay != null) {
             onInteractionRelay(relay = relay)
             return
@@ -969,7 +963,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val info = FontInfoUtil.getFontInfo(height = textHeight, measure = measure)
         val itemOffset = size.center() * -1.0
         for (relay in env.relays) {
-            val point = getPositionOrNull(relay.id)?.point ?: continue
+            val point = relay.point
             val enabled = relay.isEnabled()
             val color = if (enabled) Color.GREEN else Color.RED
             val textType = relay.required?.type?.let {
@@ -1056,6 +1050,20 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    private fun Relay.getPolygon(size: Size): List<Point> {
+        val pointTopLeft = point + size.center() * -1.0
+        val pointBottomRight = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        return listOf(
+            pointTopLeft,
+            pointOf(pointBottomRight.x, pointTopLeft.y),
+            pointBottomRight,
+            pointOf(pointTopLeft.x, pointBottomRight.y),
+        )
+    }
+
     private fun Position.getPolygon(size: Size): List<Point> {
         val pointTopLeft = point + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
@@ -1106,95 +1114,6 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
-    private fun onRenderTriangles(
-        canvas: Canvas,
-        offset: Offset,
-        player: Player,
-        barriers: List<Vector>,
-        measure: Measure<Double, Double>,
-    ) {
-        val colors = listOf(
-            Color.YELLOW,
-            Color.RED,
-            Color.BLUE,
-            Color.GREEN,
-        )
-        val info = FontInfoUtil.getFontInfo(height = 16f)
-        val lineWidth = 0.1
-        barriers.forEachIndexed { index, barrier ->
-            val color = colors[index % colors.size]
-            val ab = env.player.point + barrier.start
-            canvas.vectors.draw(
-                color = color,
-                vector = ab,
-                offset = offset,
-                measure = measure,
-                lineWidth = lineWidth,
-            )
-            canvas.texts.draw(
-                color = color,
-                info = info,
-                pointTopLeft = ab.center(),
-                offset = offset,
-                measure = measure,
-                text = distanceOf(a = env.player.point, b = barrier.start).toString(total = 4, points = 2),
-            )
-            val ac = env.player.point + barrier.finish
-            canvas.vectors.draw(
-                color = color,
-                vector = ac,
-                offset = offset,
-                measure = measure,
-                lineWidth = lineWidth,
-            )
-            canvas.texts.draw(
-                color = color,
-                info = info,
-                pointTopLeft = ac.center(),
-                offset = offset,
-                measure = measure,
-                text = distanceOf(a = env.player.point, b = barrier.finish).toString(total = 4, points = 2),
-            )
-            val bc = ab.finish + ac.finish
-            val perpendicular = barrier.getPerpendicular(target = env.player.point)
-            val aH = env.player.point + perpendicular
-            canvas.vectors.draw(
-                color = color,
-                vector = aH,
-                offset = offset,
-                measure = measure,
-                lineWidth = lineWidth,
-            )
-            val tPoint = bc.center()
-            canvas.texts.draw(
-                color = color,
-                info = info,
-                pointTopLeft = tPoint,
-                offset = offset,
-                measure = measure,
-                text = aH.length().toString(total = 4, points = 2),
-            )
-            val shortest = barrier.getShortestDistance(target = env.player.point)
-            canvas.texts.draw(
-                color = color,
-                info = info,
-                pointTopLeft = tPoint.plus(dX = 0.0, dY = 1.0),
-                offset = offset,
-                measure = measure,
-                text = shortest.toString(total = 4, points = 2),
-            )
-        }
-    }
-
-    private fun <K : Any, V : Any> Iterable<K>.associateWithNotNull(valueSelector: (K) -> V?): Map<K, V> {
-        val result = mutableMapOf<K, V>()
-        for (key in this) {
-            val value = valueSelector(key)
-            if (value != null) result[key] = value
-        }
-        return result
-    }
-
     private fun getCorrectedPoint(
         minDistance: Double,
         target: Point,
@@ -1205,37 +1124,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return shortestPoint.moved(length = minDistance, angle = angle)
     }
 
-    private fun angleOf(p1: Point, p2: Point, p3: Point): Double {
-        val a = distanceOf(p1, p3)
-        val b = distanceOf(p2, p3)
-        val c = distanceOf(p1, p2)
-        val cosA = (a * a + c * c - b * b) / 2 * a * c
-        return kotlin.math.acos(cosA)
-    }
-
-    private fun <T : Any> Iterable<T>.print(
-        title: String,
-        transform: (T) -> String = { it.toString() },
-    ) {
-        val message = """
-            |
-            |$title:
-            ${mapIndexed { index, it -> index to it }.joinToString(separator = "\n") { (index, it) -> "| $index] " + transform(it) }}
-        """.trimMargin()
-        println(message)
-    }
-
     private fun Vector.closerThan(point: Point, minDistance: Double): Boolean {
         return getShortestDistance(point).lt(other = minDistance, points = 12)
-    }
-
-    private fun <K : Any, V : Any> MutableMap<K, V>.change(
-        keySupplier: () -> K?,
-        valueTransform: (V) -> V,
-    ) {
-        val key = keySupplier() ?: return
-        val value = get(key) ?: return
-        put(key, valueTransform(value))
     }
 
     private fun <T : Any> getNearest(
@@ -1419,15 +1309,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val relays = env.ownership.getDependents(
-            env.relays,
-            { it.id },
-            env.positions,
-            { it.id },
-        )
-        val nearest = getNearest(relays) { (_, position) ->
-            position.getPolygon(size = relaySize)
-        }?.second?.point ?: getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
+        val point = getNearest(env.relays) {
+            it.getPolygon(size = relaySize)
+        }?.point ?: getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
             it.getPolygon(size = itemSize)
         }?.point ?: getNearest(env.crates) {
             it.getPolygon(size = crateSize)
@@ -1435,7 +1319,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         onRenderInteraction(
             canvas = canvas,
             offset = offset,
-            point = nearest,
+            point = point,
             measure = measure,
         )
     }
@@ -1612,13 +1496,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val barriers = env.barriers.filter { barrier ->
             !isPassable(barrier)
         }.map { it.vector }
-        val relays = env.ownership.getDependents(
-            env.relays,
-            { it.id },
-            env.positions,
-            { it.id },
-        ).flatMap { (_, position) ->
-            position.getPolygon(relaySize).toVectors()
+        val relays = env.relays.flatMap {
+            it.getPolygon(relaySize).toVectors()
         }
         val crates = env.crates.flatMap {
             it.getPolygon(crateSize).toVectors()

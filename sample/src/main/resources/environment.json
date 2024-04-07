@@ -10,10 +10,12 @@
   ],
   "relays": [
     {
-      "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264"
+      "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264",
+      "point": { "x": 1, "y": 7 }
     },
     {
       "id": "b2cff302-435a-4854-9a3c-1990c81fe479",
+      "point": { "x": -8, "y": 7 },
       "required": {
         "type": "Have",
         "itemsTags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
@@ -21,6 +23,7 @@
     },
     {
       "id": "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f",
+      "point": { "x": -7, "y": -3 },
       "required": {
         "type": "Give",
         "itemsTags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
@@ -73,9 +76,6 @@
   "ownership": {
     "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
     "27744119-c9c7-4742-b78a-0dfdbf4711a1": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2",
-    "bb21c9a3-4ab0-414d-8342-6fbedae99264": "dd6a7db8-a6fa-49ab-b774-10fad55c5fac",
-    "b2cff302-435a-4854-9a3c-1990c81fe479": "be13308c-8533-4236-9cff-75ce6eef96df",
-    "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f": "ef7b2ea1-8412-44c0-acd6-47f7c2c032de"
   },
   "positions": [
     {
@@ -85,18 +85,6 @@
     {
       "id": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2",
       "point": { "x": -4, "y": 12 }
-    },
-    {
-      "id": "dd6a7db8-a6fa-49ab-b774-10fad55c5fac",
-      "point": { "x": 1, "y": 7 }
-    },
-    {
-      "id": "be13308c-8533-4236-9cff-75ce6eef96df",
-      "point": { "x": -8, "y": 7 }
-    },
-    {
-      "id": "ef7b2ea1-8412-44c0-acd6-47f7c2c032de",
-      "point": { "x": -7, "y": -3 }
     }
   ],
   "barriersToConditions": {
