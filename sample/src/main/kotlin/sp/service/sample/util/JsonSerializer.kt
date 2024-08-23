@@ -9,9 +9,9 @@ import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
-import sp.service.sample.entity.ItemTag
 import sp.service.sample.entity.Position
 import sp.service.sample.entity.Relay
+import sp.service.sample.entity.Tag
 import java.util.UUID
 
 internal fun JSONObject.toCondition(): Condition {
@@ -49,9 +49,20 @@ internal fun JSONObject.toVector(): Vector {
 }
 
 internal fun JSONObject.toBarrier(): Barrier {
+    val tags = getJSONArray("tags").let { array ->
+        (0 until array.length()).map { index ->
+            array.getJSONArray(index).let { ids ->
+                (0 until ids.length()).map {
+                    UUID.fromString(ids.getString(it))
+                }
+            }
+        }
+    }
     return Barrier(
         id = UUID.fromString(getString("id")),
         vector = getJSONObject("vector").toVector(),
+        opened = getBoolean("opened"),
+        tags = tags,
     )
 }
 
@@ -62,8 +73,8 @@ internal fun JSONObject.toItem(): Item {
     )
 }
 
-internal fun JSONObject.toItemTag(): ItemTag {
-    return ItemTag(
+internal fun JSONObject.toTag(): Tag {
+    return Tag(
         id = UUID.fromString(getString("id")),
     )
 }

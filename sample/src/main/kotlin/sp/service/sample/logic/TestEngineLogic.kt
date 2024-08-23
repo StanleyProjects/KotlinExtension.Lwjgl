@@ -18,11 +18,13 @@ import sp.kx.math.Vector
 import sp.kx.math.angleOf
 import sp.kx.math.center
 import sp.kx.math.centerPoint
+import sp.kx.math.contains
 import sp.kx.math.copy
 import sp.kx.math.ct
 import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
+import sp.kx.math.getIntersection
 import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
@@ -59,9 +61,9 @@ import sp.service.sample.entity.Barrier
 import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
-import sp.service.sample.entity.ItemTag
 import sp.service.sample.entity.Position
 import sp.service.sample.entity.Relay
+import sp.service.sample.entity.Tag
 import sp.service.sample.util.FontInfoUtil
 import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
@@ -72,12 +74,12 @@ import sp.service.sample.util.toBarrier
 import sp.service.sample.util.toCondition
 import sp.service.sample.util.toCrate
 import sp.service.sample.util.toItem
-import sp.service.sample.util.toItemTag
 import sp.service.sample.util.toMap
 import sp.service.sample.util.toMapStrings
 import sp.service.sample.util.toPoint
 import sp.service.sample.util.toPosition
 import sp.service.sample.util.toRelay
+import sp.service.sample.util.toTag
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
@@ -125,6 +127,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 return "Inventory(index: $index)"
             }
         }
+        /*
         class ItemsSwap(
             var index: Int = 0,
             var issuer: Boolean = true,
@@ -138,24 +141,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 )
             }
         }
-        class RelayItemsSwap(
-            var index: Int = 0,
-            val relayId: UUID,
-        ) : PlayerState
+        */
+//        class RelayItemsSwap(var index: Int = 0, val relayId: UUID) : PlayerState
     }
 
     private data class Environment(
         val player: Player,
-        val conditions: List<Condition>,
-        val relays: List<Relay>,
         val barriers: List<Barrier>,
         val items: List<Item>,
-        val itemsTags: List<ItemTag>,
-        val crates: List<Crate>,
+        val tags: List<Tag>,
         val positions: MutableList<Position>,
         val ownership: MutableMap<UUID, UUID>,
-        val barriersToConditions: Map<UUID, Set<UUID>>,
-        val conditionsToRelays: Map<UUID, Set<UUID>>,
+//        val conditions: List<Condition>,
+//        val relays: List<Relay>,
+//        val crates: List<Crate>,
+//        val barriersToConditions: Map<UUID, Set<UUID>>,
+//        val conditionsToRelays: Map<UUID, Set<UUID>>,
     ) {
         private val enabledRelays = mutableSetOf<UUID>()
         var state: PlayerState = PlayerState.Walking
@@ -331,6 +332,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     ).toVectors()
 
     private fun JSONObject.toEnvironment(): Environment {
+        /*
         val barriersToConditions = getJSONObject("barriersToConditions").toMap(
             keys = UUID::fromString,
             values = { name, obj ->
@@ -343,6 +345,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 obj.strings(name, UUID::fromString).toSet()
             },
         )
+        */
         val player = getJSONObject("player").let {
             Player(
                 id = UUID.fromString(it.getString("id")),
@@ -351,19 +354,19 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
         return Environment(
             player = player,
-            conditions = objects("conditions") { it.toCondition() },
-            relays = objects("relays") { it.toRelay() },
             barriers = objects("barriers") { it.toBarrier() },
             items = objects("items") { it.toItem() },
-            crates = objects("crates") { it.toCrate() },
             positions = objects("positions") { it.toPosition() }.toMutableList(),
             ownership = getJSONObject("ownership").toMapStrings(
                 keys = UUID::fromString,
                 values = UUID::fromString,
             ).toMutableMap(),
-            barriersToConditions = barriersToConditions,
-            conditionsToRelays = conditionsToRelays,
-            itemsTags = objects("itemsTags") { it.toItemTag() },
+            tags = objects("tags") { it.toTag() },
+//            conditions = objects("conditions") { it.toCondition() },
+//            relays = objects("relays") { it.toRelay() },
+//            crates = objects("crates") { it.toCrate() },
+//            barriersToConditions = barriersToConditions,
+//            conditionsToRelays = conditionsToRelays,
         )
     }
 
@@ -441,6 +444,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    /*
     private fun onPressItemsSwap(button: JoystickButton, state: PlayerState.ItemsSwap) {
         when (button) {
             JoystickButton.B -> {
@@ -482,17 +486,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
         }
     }
+    */
 
-    private fun onPressRelayItemsSwap(button: JoystickButton, state: PlayerState.RelayItemsSwap) {
-        TODO()
-    }
+//    private fun onPressRelayItemsSwap(button: JoystickButton, state: PlayerState.RelayItemsSwap) {
+//        TODO()
+//    }
 
     private fun onPressPlayerState(button: JoystickButton, state: PlayerState) {
         when (state) {
             is PlayerState.Inventory -> onPressInventory(button, state)
             PlayerState.Walking -> onPressWalking(button)
-            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
-            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
+//            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
+//            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
         }
     }
 
@@ -575,6 +580,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    /*
     private fun onPressItemsSwap(button: KeyboardButton, state: PlayerState.ItemsSwap) {
         when (button) {
             KeyboardButton.ESCAPE -> {
@@ -616,7 +622,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
         }
     }
+    */
 
+    /*
     private fun onPressRelayItemsSwap(button: KeyboardButton, state: PlayerState.RelayItemsSwap) {
         when (button) {
             KeyboardButton.ESCAPE -> {
@@ -647,13 +655,14 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             }
         }
     }
+    */
 
     private fun onPressPlayerState(button: KeyboardButton, state: PlayerState) {
         when (state) {
             is PlayerState.Inventory -> onPressInventory(button, state)
             PlayerState.Walking -> onPressWalking(button)
-            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
-            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
+//            is PlayerState.ItemsSwap -> onPressItemsSwap(button, state)
+//            is PlayerState.RelayItemsSwap -> onPressRelayItemsSwap(button, state)
         }
     }
 
@@ -674,6 +683,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return kotlin.math.sqrt(width * width + height * height)
     }
 
+    /*
     private fun onInteractionRelay(relay: Relay) {
         when (relay.required?.type) {
             Relay.Required.Type.Have -> {
@@ -710,6 +720,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             null -> env.toggle(relay)
         }
     }
+    */
 
     private fun <I : Any, O : Any> Map<UUID, UUID>.getDependents(
         issuers: List<I>,
@@ -745,10 +756,33 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         env.ownership[item.id] = env.player.id
     }
 
+    private fun onInteractionBarrier(barrier: Barrier) {
+        val tags = env.ownership.entries.filter { (_, ownerId) ->
+            ownerId == env.player.id
+        }.flatMap { (issuerId, _) ->
+            env.items.firstOrNull { it.id == issuerId }?.tags ?: TODO()
+        }.toSet()
+        val contains = barrier.tags.any(tags::containsAll)
+        if (contains) barrier.opened = !barrier.opened
+    }
+
     private fun onInteraction() {
-        val relay = getNearest(env.relays) { it.getPolygon(size = relaySize) }
-        if (relay != null) {
-            onInteractionRelay(relay = relay)
+//        val relay = getNearest(env.relays) { it.getPolygon(size = relaySize) }
+//        if (relay != null) {
+//            onInteractionRelay(relay = relay)
+//            return
+//        }
+
+        println("env.player.radius: ${env.player.radius}")
+        println("barriers:distance: ${env.barriers.map { it.id to it.vector.getShortestDistance(env.player.point) }}")
+        val barriers = env.barriers.filter { barrier ->
+            val distance = barrier.vector.getShortestDistance(env.player.point)
+            !distance.lt(env.player.radius, 10)
+        }
+        println("barriers: ${barriers.map { it.id }}")
+        val barrier = getNearest(barriers) { listOf(it.vector.start, it.vector.finish) }
+        if (barrier != null) {
+            onInteractionBarrier(barrier = barrier)
             return
         }
         val items = env.ownership.getDependents(
@@ -757,16 +791,16 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             env.positions,
             { it.id },
         )
-        val item = getNearest(items) { (_, position) -> position.getPolygon(size = itemSize) }?.first
+        val item = getNearest(items) { (_, position) -> position.point.getPolygon(size = itemSize) }?.first
         if (item != null) {
             onInteractionItem(item = item)
             return
         }
-        val crate = getNearest(env.crates) { it.getPolygon(size = crateSize) }
-        if (crate != null) {
-            env.state = PlayerState.ItemsSwap(crateId = crate.id)
-            return
-        }
+//        val crate = getNearest(env.crates) { it.getPolygon(size = crateSize) }
+//        if (crate != null) {
+//            env.state = PlayerState.ItemsSwap(crateId = crate.id)
+//            return
+//        }
     }
 
     override fun shouldEngineStop(): Boolean {
@@ -1011,6 +1045,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
+    /*
     private fun onRenderRelays(
         canvas: Canvas,
         size: Size,
@@ -1070,7 +1105,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             )
         }
     }
+    */
 
+    /*
     private fun onRenderCrates(
         canvas: Canvas,
         size: Size,
@@ -1107,6 +1144,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             )
         }
     }
+    */
 
     private fun Relay.getPolygon(size: Size): List<Point> {
         val pointTopLeft = point + size.center() * -1.0
@@ -1122,8 +1160,8 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         )
     }
 
-    private fun Position.getPolygon(size: Size): List<Point> {
-        val pointTopLeft = point + size.center() * -1.0
+    private fun Point.getPolygon(size: Size): List<Point> {
+        val pointTopLeft = this + size.center() * -1.0
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
             dY = size.height,
@@ -1193,11 +1231,29 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         return getNearest(
             target = env.player.point,
             list = list,
-            minDistance = env.player.size.diagonal() / 2,
+//            minDistance = env.player.size.diagonal() / 2,
+            minDistance = env.player.radius * 1.5,
             points = 12,
             multiplier = 1.1,
             getPolygon = getPolygon,
         )
+    }
+
+    private fun intersect(
+        target: Vector,
+        polygon: List<Point>,
+    ): Boolean {
+        if (polygon.isEmpty()) TODO()
+        if (polygon.size == 1) {
+            val point = polygon.single()
+            return target.contains(point)
+        }
+        for (index in 1 until polygon.size) {
+            val vector = polygon[index - 1] + polygon[index]
+            val point = vector.getIntersection(target) ?: continue
+            if (vector.contains(point) && target.contains(point)) return true
+        }
+        return false
     }
 
     private fun <T : Any> getNearest(
@@ -1211,6 +1267,11 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         var nearest: Pair<T, Double>? = null
         for (item in list) {
             val polygon = getPolygon(item)
+            if (polygon.size == 1) {
+                val distance = distanceOf(target, polygon.single())
+                if (distance.gt(other = minDistance * multiplier, points = points)) return null
+                return item
+            }
             for (index in 1 until polygon.size) {
                 val vector = polygon[index - 1] + polygon[index]
                 val distance = vector.getShortestDistance(target)
@@ -1262,16 +1323,17 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
     }
 
     private fun isPassable(barrier: Barrier): Boolean {
-        val conditions = env.barriersToConditions[barrier.id]
-        if (conditions.isNullOrEmpty()) return false
-        return conditions.all { conditionId ->
-            val ids = env.conditionsToRelays[conditionId]
-            if (ids.isNullOrEmpty()) TODO()
-            ids.all { id ->
-                val relay = env.relays.single { it.id == id }
-                env.isEnabled(relay)
-            }
-        }
+        return barrier.opened
+//        val conditions = env.barriersToConditions[barrier.id]
+//        if (conditions.isNullOrEmpty()) return false
+//        return conditions.all { conditionId ->
+//            val ids = env.conditionsToRelays[conditionId]
+//            if (ids.isNullOrEmpty()) TODO()
+//            ids.all { id ->
+//                val relay = env.relays.single { it.id == id }
+//                env.isEnabled(relay)
+//            }
+//        }
     }
 
     private fun onRenderGrid(
@@ -1367,13 +1429,22 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val point = getNearest(env.relays) {
-            it.getPolygon(size = relaySize)
-        }?.point ?: getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
-            it.getPolygon(size = itemSize)
-        }?.point ?: getNearest(env.crates) {
-            it.getPolygon(size = crateSize)
-        }?.point ?: return
+//        val point = getNearest(env.relays) {
+//            it.getPolygon(size = relaySize)
+//        }?.point ?: getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
+//            it.getPolygon(size = itemSize)
+//        }?.point ?: getNearest(env.crates) {
+//            it.getPolygon(size = crateSize)
+//        }?.point ?: return
+        val barriers = env.barriers.filter { barrier ->
+            val distance = barrier.vector.getShortestDistance(env.player.point)
+            !distance.lt(env.player.radius, 10)
+        }
+        val point = getNearest(env.positions.filter { pos -> env.ownership.values.any { it == pos.id } }) {
+            it.point.getPolygon(size = itemSize)
+        }?.point ?: getNearest(barriers) {
+            listOf(it.vector.start, it.vector.finish)
+        }?.vector?.center() ?: return
         onRenderInteraction(
             canvas = canvas,
             offset = offset,
@@ -1462,6 +1533,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         }
     }
 
+    /*
     private fun onRenderItemsSwap(
         canvas: Canvas,
         state: PlayerState.ItemsSwap,
@@ -1500,7 +1572,9 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         )
     }
+    */
 
+    /*
     private fun onRenderRelayItemsSwap(
         canvas: Canvas,
         state: PlayerState.RelayItemsSwap,
@@ -1533,6 +1607,7 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             measure = measure,
         )
     }
+    */
 
     private fun onRenderPlayerState(
         canvas: Canvas,
@@ -1547,18 +1622,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
                 offset = offset,
                 measure = measure,
             )
-            is PlayerState.ItemsSwap -> onRenderItemsSwap(
-                canvas = canvas,
-                state = state,
-                offset = offset,
-                measure = measure,
-            )
-            is PlayerState.RelayItemsSwap -> onRenderRelayItemsSwap(
-                canvas = canvas,
-                state = state,
-                offset = offset,
-                measure = measure,
-            )
+//            is PlayerState.ItemsSwap -> onRenderItemsSwap(
+//                canvas = canvas,
+//                state = state,
+//                offset = offset,
+//                measure = measure,
+//            )
+//            is PlayerState.RelayItemsSwap -> onRenderRelayItemsSwap(
+//                canvas = canvas,
+//                state = state,
+//                offset = offset,
+//                measure = measure,
+//            )
         }
     }
 
@@ -1593,17 +1668,18 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
         val barriers = env.barriers.filter { barrier ->
             !isPassable(barrier)
         }.map { it.vector }
-        val relays = env.relays.flatMap {
-            it.getPolygon(relaySize).toVectors()
-        }
-        val crates = env.crates.flatMap {
-            it.getPolygon(crateSize).toVectors()
-        }
+//        val relays = env.relays.flatMap {
+//            it.getPolygon(relaySize).toVectors()
+//        }
+//        val crates = env.crates.flatMap {
+//            it.getPolygon(crateSize).toVectors()
+//        }
         val finalPoint = getFinalPoint(
             player = env.player,
             minDistance = env.player.radius,
             target = target,
-            vectors = walls + barriers + relays + crates,
+//            vectors = walls + barriers + relays + crates,
+            vectors = walls + barriers,
         ) ?: return
         env.player.point.set(finalPoint)
     }
@@ -1662,24 +1738,24 @@ internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
             barriers = env.barriers,
             measure = measure,
         ) // todo
-        onRenderRelays(
-            canvas = canvas,
-            size = relaySize,
-            offset = offset,
-            measure = measure,
-        ) // todo
+//        onRenderRelays(
+//            canvas = canvas,
+//            size = relaySize,
+//            offset = offset,
+//            measure = measure,
+//        ) // todo
         onRenderItems(
             canvas = canvas,
             size = itemSize,
             offset = offset,
             measure = measure,
         ) // todo
-        onRenderCrates(
-            canvas = canvas,
-            size = crateSize,
-            offset = offset,
-            measure = measure,
-        ) // todo
+//        onRenderCrates(
+//            canvas = canvas,
+//            size = crateSize,
+//            offset = offset,
+//            measure = measure,
+//        ) // todo
         //
         onRenderPlayerState(
             canvas = canvas,

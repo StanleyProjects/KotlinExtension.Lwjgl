@@ -3,144 +3,38 @@
     "id": "229287ed-a629-48d7-93bc-a5fe219e1e82",
     "point": { "x": 0, "y": 0 }
   },
-  "conditions": [
-    { "id": "269ef859-6c6d-40dc-92b7-8b38277f1f04" },
-    { "id": "e1d97f6b-947d-4891-838e-d6e07c9c08ec" },
-    { "id": "19e471fb-d583-4f63-b420-2eb9f95a9963" },
-    { "id": "3d1c80c3-5eaf-4312-8150-d66249113b6f" }
-  ],
-  "relays": [
-    {
-      "id": "bb21c9a3-4ab0-414d-8342-6fbedae99264",
-      "point": { "x": 1, "y": 7 }
-    },
-    {
-      "id": "b2cff302-435a-4854-9a3c-1990c81fe479",
-      "point": { "x": -7, "y": 7 },
-      "required": {
-        "type": "Have",
-        "itemsTags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
-      }
-    },
-    {
-      "id": "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f",
-      "point": { "x": -9, "y": -3 },
-      "required": {
-        "type": "Give",
-        "itemsTags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
-      }
-    },
-    {
-      "id": "92d9b850-4c18-47c4-8cab-a8fc95441a37",
-      "point": { "x": 8, "y": -3 },
-      "required": {
-        "type": "Lose",
-        "itemsTags": ["8d84cd3a-48c4-4df5-829d-67ad76832673"]
-      }
-    }
-  ],
+
   "barriers": [
     {
       "id": "0102ec7e-4a1b-482e-9095-82f5526d451d",
       "vector": {
         "start": { "x": 3, "y": 9 },
         "finish": { "x": 7, "y": 9 }
-      }
-    },
-    {
-      "id": "65dfcf6d-2456-4b7a-81a2-ccaf0541a7aa",
-      "vector": {
-        "start": { "x": -5, "y": 9 },
-        "finish": { "x": -1, "y": 9 }
-      }
-    },
-    {
-      "id": "d15ac98c-9ec4-4da0-8acb-82bb7038d56f",
-      "vector": {
-        "start": { "x": -10, "y": 0 },
-        "finish": { "x": -10, "y": 4 }
-      }
-    },
-    {
-      "id": "260723c2-c9ae-46a5-a94f-3cef8880146b",
-      "vector": {
-        "start": { "x": 9, "y": 0 },
-        "finish": { "x": 9, "y": 4 }
-      }
+      },
+      "opened": false,
+      "tags": [
+        ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
+      ]
     }
   ],
   "items": [
     {
       "id": "9f7ee454-e882-42e0-a8ef-c071468c1e86",
       "tags": ["8d2582cb-0460-4bd3-a37c-9bc8230c5210"]
-    },
-    {
-      "id": "27744119-c9c7-4742-b78a-0dfdbf4711a1",
-      "tags": ["5ad83350-25f3-4fdb-8880-9bfb21dee17f"]
-    },
-    {
-      "id": "5d4ba2ac-8059-4134-b4eb-11a6c2ba9dff",
-      "tags": ["8d84cd3a-48c4-4df5-829d-67ad76832673"]
     }
   ],
-  "itemsTags": [
+  "tags": [
     {
       "id": "8d2582cb-0460-4bd3-a37c-9bc8230c5210"
-    },
-    {
-      "id": "5ad83350-25f3-4fdb-8880-9bfb21dee17f"
-    },
-    {
-      "id": "8d84cd3a-48c4-4df5-829d-67ad76832673"
     }
   ],
-  "crates": [
-  ],
-  "ownership": {
-    "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
-    "27744119-c9c7-4742-b78a-0dfdbf4711a1": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2",
-    "5d4ba2ac-8059-4134-b4eb-11a6c2ba9dff": "ec3b97a0-a2d3-4466-b183-7ba93b9ca891"
-  },
   "positions": [
     {
       "id": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
-      "point": { "x": 4, "y": 12 }
-    },
-    {
-      "id": "19ba00f1-9fe9-4b27-a0ac-8b0195c1dfe2",
       "point": { "x": -4, "y": 12 }
-    },
-    {
-      "id": "ec3b97a0-a2d3-4466-b183-7ba93b9ca891",
-      "point": { "x": -13, "y": 1 }
     }
   ],
-  "barriersToConditions": {
-    "0102ec7e-4a1b-482e-9095-82f5526d451d": [
-      "269ef859-6c6d-40dc-92b7-8b38277f1f04"
-    ],
-    "65dfcf6d-2456-4b7a-81a2-ccaf0541a7aa": [
-      "e1d97f6b-947d-4891-838e-d6e07c9c08ec"
-    ],
-    "d15ac98c-9ec4-4da0-8acb-82bb7038d56f": [
-      "19e471fb-d583-4f63-b420-2eb9f95a9963"
-    ],
-    "260723c2-c9ae-46a5-a94f-3cef8880146b": [
-      "3d1c80c3-5eaf-4312-8150-d66249113b6f"
-    ]
-  },
-  "conditionsToRelays": {
-    "269ef859-6c6d-40dc-92b7-8b38277f1f04": [
-      "bb21c9a3-4ab0-414d-8342-6fbedae99264"
-    ],
-    "e1d97f6b-947d-4891-838e-d6e07c9c08ec": [
-      "b2cff302-435a-4854-9a3c-1990c81fe479"
-    ],
-    "19e471fb-d583-4f63-b420-2eb9f95a9963": [
-      "1feab4c4-a5cd-4c87-b31f-cd065dfdeb8f"
-    ],
-    "3d1c80c3-5eaf-4312-8150-d66249113b6f": [
-      "92d9b850-4c18-47c4-8cab-a8fc95441a37"
-    ]
+  "ownership": {
+    "9f7ee454-e882-42e0-a8ef-c071468c1e86": "b17307f9-0147-4dc2-aab3-b1f77e8559a9",
   }
 }
