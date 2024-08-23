@@ -3,7 +3,7 @@ repositories {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
 }
 
-version = "0.1.0"
+version = "0.1.1"
 
 plugins {
     id("application")
