@@ -5,4 +5,5 @@
 !.gitignore
 !build.gradle.kts
 !settings.gradle.kts
+!LICENSE
 !README.md
