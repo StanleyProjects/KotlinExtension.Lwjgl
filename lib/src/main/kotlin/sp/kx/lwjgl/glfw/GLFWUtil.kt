@@ -4,7 +4,6 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWJoystickCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWVidMode
-import org.lwjgl.glfw.GLFWWindowCloseCallbackI
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
@@ -28,21 +27,21 @@ object GLFWUtil {
         size: Size,
         title: CharSequence,
         monitorPointerId: Long = MemoryUtil.NULL,
-        sharePointerId: Long = MemoryUtil.NULL
+        sharePointerId: Long = MemoryUtil.NULL,
     ): Long {
         return GLFW.glfwCreateWindow(
             size.width.toInt(),
             size.height.toInt(),
             title,
             monitorPointerId,
-            sharePointerId
+            sharePointerId,
         )
     }
 
     fun onKeyCallback(
-        block: (Long, Int, Int, Int, Int) -> Unit
+        block: (Long, Int, Int, Int, Int) -> Unit,
     ): GLFWKeyCallback {
-        return object: GLFWKeyCallback() {
+        return object : GLFWKeyCallback() {
             override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
                 block(window, key, scancode, action, mods)
             }
@@ -50,9 +49,9 @@ object GLFWUtil {
     }
 
     fun onJoystickCallback(
-        block: (id: Int, event: Int) -> Unit
+        block: (id: Int, event: Int) -> Unit,
     ): GLFWJoystickCallback {
-        return object: GLFWJoystickCallback() {
+        return object : GLFWJoystickCallback() {
             override fun invoke(jid: Int, event: Int) {
                 block(jid, event)
             }
@@ -81,7 +80,7 @@ object GLFWUtil {
         texelDataType: Int,
         pixels: ByteBuffer,
         levelOfDetailNumber: Int = 0,
-        textureBorderWidth: Int = 0
+        textureBorderWidth: Int = 0,
     ) {
         GL11.glTexImage2D(
             textureTarget,
@@ -92,7 +91,7 @@ object GLFWUtil {
             textureBorderWidth,
             texelDataFormat,
             texelDataType,
-            pixels
+            pixels,
         )
     }
 }

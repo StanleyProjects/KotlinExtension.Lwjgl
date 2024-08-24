@@ -21,7 +21,7 @@ object STBUtil {
         xBuffer: FloatBuffer,
         yBuffer: FloatBuffer,
         quad: STBTTAlignedQuad,
-        isAlignToInteger: Boolean = false
+        isAlignToInteger: Boolean = false,
     ) {
         val width = fontHeight * 128.0
         val height = fontHeight * 16.0
@@ -33,7 +33,7 @@ object STBUtil {
             xBuffer,
             yBuffer,
             quad,
-            isAlignToInteger
+            isAlignToInteger,
         )
     }
 }
@@ -45,7 +45,7 @@ fun STBTTPackContext.pack(
     strideInBytes: Int = 0,
     padding: Int = 1,
     alloc: Long? = null,
-    block: () -> Unit
+    block: () -> Unit,
 ) {
     STBTruetype.stbtt_PackBegin(
         this,
@@ -54,7 +54,7 @@ fun STBTTPackContext.pack(
         height,
         strideInBytes,
         padding,
-        alloc ?: MemoryUtil.NULL
+        alloc ?: MemoryUtil.NULL,
     )
     block()
     STBTruetype.stbtt_PackEnd(this)
@@ -65,7 +65,7 @@ fun STBTTPackContext.packFontRange(
     fontIndex: Int,
     fontSize: Float,
     firstUnicodeCharInRange: Int,
-    charBufferForRange: STBTTPackedchar.Buffer
+    charBufferForRange: STBTTPackedchar.Buffer,
 ) {
     STBTruetype.stbtt_PackFontRange(
         this,
@@ -73,7 +73,7 @@ fun STBTTPackContext.packFontRange(
         fontIndex,
         fontSize,
         firstUnicodeCharInRange,
-        charBufferForRange
+        charBufferForRange,
     )
 }
 
@@ -85,7 +85,7 @@ fun STBTTFontinfo.toFontVMetrics(fontHeight: Float): FontVMetrics {
     val scale = STBTruetype.stbtt_ScaleForPixelHeight(this, fontHeight)
     return FontVMetrics(
         ascent = ascentBuffer[0] * scale,
-        descent = descentBuffer[0] * scale
+        descent = descentBuffer[0] * scale,
     )
 }
 
@@ -100,7 +100,7 @@ fun STBTTFontinfo.toBitmapBox(fontHeight: Float): BitmapBox {
         left = x0Buffer.get(0),
         bottom = y0Buffer.get(0),
         right = x1Buffer.get(0),
-        top = y1Buffer.get(0)
+        top = y1Buffer.get(0),
     )
 }
 

@@ -52,7 +52,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
@@ -68,7 +68,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,
@@ -89,7 +89,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
@@ -107,7 +107,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,
@@ -128,7 +128,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, offset = offset, measure = measure)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, offset = offset, measure = measure)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, offset = offset, measure = measure)
@@ -145,7 +145,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,
@@ -166,7 +166,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, measure = measure)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, measure = measure)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth, measure = measure)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, measure = measure)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, measure = measure)
@@ -176,13 +176,13 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, offset: Offset) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = setOf(
             pointTopLeft,
             pointOf(pointBottomRight.x, pointTopLeft.y),
             pointBottomRight,
-            pointOf(pointTopLeft.x, pointBottomRight.y)
+            pointOf(pointTopLeft.x, pointBottomRight.y),
         )
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
@@ -202,7 +202,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             pointTopLeft,
             pointOf(pointBottomRight.x, pointTopLeft.y),
             pointBottomRight,
-            pointOf(pointTopLeft.x, pointBottomRight.y)
+            pointOf(pointTopLeft.x, pointBottomRight.y),
         )
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
@@ -218,7 +218,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         pointTopLeft: Point,
         size: Size,
         offset: Offset,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
@@ -228,11 +228,12 @@ internal object GLPolygonDrawer : PolygonDrawer {
             pointTopLeft,
             pointOf(pointBottomRight.x, pointTopLeft.y),
             pointBottomRight,
-            pointOf(pointTopLeft.x, pointBottomRight.y)
+            pointOf(pointTopLeft.x, pointBottomRight.y),
         )
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
+            // todo loop to 4 vertexOf(Double, Double)
             points.forEach {
                 GLUtil.vertexOf(it, offset = offset, measure = measure)
             }
@@ -244,7 +245,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         pointTopLeft: Point,
         size: Size,
         direction: Double,
-        pointOfRotation: Point
+        pointOfRotation: Point,
     ) {
         GLUtil.onMatrix {
             GL11.glTranslated(pointOfRotation.x, pointOfRotation.y, 0.0)
@@ -266,7 +267,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         size: Size,
         offset: Offset,
         direction: Double,
-        pointOfRotation: Point
+        pointOfRotation: Point,
     ) {
         GLUtil.onMatrix {
             GLUtil.translated(point = pointOfRotation, offset = offset)
@@ -288,7 +289,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         size: Size,
         measure: Measure<Double, Double>,
         direction: Double,
-        pointOfRotation: Point
+        pointOfRotation: Point,
     ) {
         GLUtil.onMatrix {
             GLUtil.translated(point = pointOfRotation, measure = measure)
@@ -310,11 +311,11 @@ internal object GLPolygonDrawer : PolygonDrawer {
         pointTopLeft: Point,
         size: Size,
         measure: Measure<Double, Double>,
-        lineWidth: Double
+        lineWidth: Double,
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,
@@ -329,7 +330,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, measure = measure)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, measure = measure)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth, measure = measure)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, measure = measure)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, measure = measure)
@@ -346,7 +347,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,
@@ -361,7 +362,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, offset = offset, measure = measure)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
             }
             vertexOf(start = points.last(), finish = fStart, lineWidth = lineWidth, offset = offset, measure = measure)
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, offset = offset, measure = measure)
@@ -376,7 +377,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         measure: Measure<Double, Double>,
         lineWidth: Double,
         direction: Double,
-        pointOfRotation: Point
+        pointOfRotation: Point,
     ) {
         GLUtil.onMatrix {
             GLUtil.translated(point = pointOfRotation, offset = offset, measure = measure)
@@ -401,7 +402,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         measure: Measure<Double, Double>,
         lineWidth: Double,
         direction: Double,
-        pointOfRotation: Point
+        pointOfRotation: Point,
     ) {
         GLUtil.onMatrix {
             GLUtil.translated(point = pointOfRotation, measure = measure)
@@ -475,7 +476,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth)
             }
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2)
         }
@@ -511,7 +512,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         edgeCount: Int,
         lineWidth: Double,
         offset: Offset,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         val points = (0..edgeCount).map {
             val radians = it * 2 * kotlin.math.PI / edgeCount
@@ -527,7 +528,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             val fFinish = points[1]
             vertexOf(start = fStart, finish = fFinish, lineWidth = lineWidth, offset = offset, measure = measure)
             for (i in 2 until points.size) {
-                vertexOf(start = points[i-1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
+                vertexOf(start = points[i - 1], finish = points[i], lineWidth = lineWidth, offset = offset, measure = measure)
             }
             GLUtil.vertexOfMoved(fStart, length = lineWidth / 2, angle = angleOf(fStart, fFinish) - kotlin.math.PI / 2, offset = offset, measure = measure)
         }
