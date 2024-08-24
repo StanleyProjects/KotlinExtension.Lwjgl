@@ -7,9 +7,7 @@ import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
 import sp.kx.math.Vector
 import sp.kx.math.angle
-import sp.kx.math.angleOf
 import sp.kx.math.measure.Measure
-import sp.kx.math.moved
 
 internal object GLVectorDrawer : VectorDrawer {
     override fun draw(color: Color, vector: Vector) {

@@ -1,5 +1,11 @@
 package sp.kx.lwjgl.entity
 
+@Deprecated(
+    message = """
+        1) interface to data class
+        2) floats to bytes
+    """,
+)
 interface Color {
     companion object {
         const val MAX_VALUE = 1f
@@ -37,8 +43,8 @@ private data class ColorImpl(
     override val red: Float,
     override val green: Float,
     override val blue: Float,
-    override val alpha: Float
-): Color
+    override val alpha: Float,
+) : Color
 
 private fun Long.toFloatArray(): FloatArray {
     return FloatArray(4) {
@@ -64,13 +70,13 @@ fun color(
     red: Float,
     green: Float,
     blue: Float,
-    alpha: Float = Color.MAX_VALUE
+    alpha: Float = Color.MAX_VALUE,
 ): Color {
     val expectedRange = Color.MIN_VALUE..Color.MAX_VALUE
     mapOf(
         "red" to red,
         "green" to green,
-        "blue" to blue
+        "blue" to blue,
     ).forEach { (key, value) ->
         check(value in expectedRange) {
             "The color $key($value) is out of range $expectedRange!"
@@ -83,6 +89,6 @@ fun color(
         red = red,
         green = green,
         blue = blue,
-        alpha = alpha
+        alpha = alpha,
     )
 }

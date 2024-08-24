@@ -12,5 +12,5 @@ sealed interface Engine {
 internal class EngineImpl(
     override val input: EngineInputState,
     override val property: MutableEngineProperty,
-    override val fontAgent: FontAgent
+    override val fontAgent: FontAgent,
 ) : Engine

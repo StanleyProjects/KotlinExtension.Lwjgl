@@ -7,7 +7,7 @@ import sp.kx.lwjgl.entity.font.FontAgent
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.system.use
 
-internal class STBFontAgent(private val storage: STBFontStorage): FontAgent {
+internal class STBFontAgent(private val storage: STBFontStorage) : FontAgent {
     private fun STBTTFontinfo.getTextWidth(height: Float, text: CharSequence): Double {
         val result = MemoryStack.stackPush().use {
             val widthBuffer = it.mallocInt(1)

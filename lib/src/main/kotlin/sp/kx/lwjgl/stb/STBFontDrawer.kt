@@ -8,7 +8,6 @@ import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.use
-import sp.kx.math.Point
 
 internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
     companion object {
@@ -55,7 +54,7 @@ internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
                             index = char.code,
                             xBuffer = xBuffer,
                             yBuffer = yBuffer,
-                            quad = quad
+                            quad = quad,
                         )
                         quad.draw()
                     }

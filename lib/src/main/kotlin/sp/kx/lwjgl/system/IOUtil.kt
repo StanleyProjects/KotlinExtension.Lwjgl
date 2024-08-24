@@ -1,10 +1,10 @@
 package sp.kx.lwjgl.system
 
-fun <T: AutoCloseable?, R> T.use(block: (T) -> R): R {
+fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
     var error: Throwable? = null
     try {
         return block(this)
-    } catch(throwable: Throwable) {
+    } catch (throwable: Throwable) {
         error = throwable
         throw throwable
     } finally {
@@ -14,7 +14,7 @@ fun <T: AutoCloseable?, R> T.use(block: (T) -> R): R {
             error == null -> close()
             else -> try {
                 close()
-            } catch(ignored: Throwable) {}
+            } catch (ignored: Throwable) {}
         }
     }
 }
@@ -24,7 +24,7 @@ private fun AutoCloseable?.closeFinally(cause: Throwable?) = when {
     cause == null -> close()
     else -> try {
         close()
-    } catch(closeException: Throwable) {
+    } catch (closeException: Throwable) {
         cause.addSuppressed(closeException)
     }
 }

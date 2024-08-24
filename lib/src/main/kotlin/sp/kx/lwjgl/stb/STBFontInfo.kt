@@ -10,5 +10,5 @@ data class STBFontInfo(
     val metrics: FontVMetrics,
     val buffer: STBTTPackedchar.Buffer,
     val container: ByteBuffer,
-    val info: STBTTFontinfo
+    val info: STBTTFontinfo,
 )

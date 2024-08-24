@@ -35,7 +35,7 @@ internal class STBFontStorage {
             context.pack(
                 pixels = pixels,
                 width = width,
-                height = height
+                height = height,
             ) {
                 charBuffer.limit(limit)
                 charBuffer.position(position)
@@ -47,7 +47,7 @@ internal class STBFontStorage {
                     fontIndex = 0,
                     fontSize = fontVMetrics.ascent - fontVMetrics.descent,
                     firstUnicodeCharInRange = position,
-                    charBufferForRange = charBuffer
+                    charBufferForRange = charBuffer,
                 )
                 charBuffer.clear()
             }
@@ -61,7 +61,7 @@ internal class STBFontStorage {
             height = height,
             texelDataFormat = GL11.GL_ALPHA,
             texelDataType = GL11.GL_UNSIGNED_BYTE,
-            pixels = pixels
+            pixels = pixels,
         )
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
@@ -71,7 +71,7 @@ internal class STBFontStorage {
                 STBTruetype.STBTT_PLATFORM_ID_MICROSOFT,
                 STBTruetype.STBTT_UNICODE_EID_UNICODE_1_1,
                 STBTruetype.STBTT_MS_LANG_ENGLISH,
-                nameId
+                nameId,
             )?.toArray()
             if (name != null) {
                 println("$nameId) ${String(name)}") // todo
@@ -82,7 +82,7 @@ internal class STBFontStorage {
             metrics = fontVMetrics,
             buffer = charBuffer,
             container = fontByteBuffer,
-            info = fontInfo
+            info = fontInfo,
         )
     }
 

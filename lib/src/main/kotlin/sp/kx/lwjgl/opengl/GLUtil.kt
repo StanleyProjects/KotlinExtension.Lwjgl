@@ -126,7 +126,7 @@ object GLUtil {
         right: Double = 0.0,
         bottom: Double = 0.0,
         near: Double = 0.0,
-        far: Double = 1.0
+        far: Double = 1.0,
     ) {
         GL11.glOrtho(
             left,
@@ -134,8 +134,7 @@ object GLUtil {
             bottom,
             top,
             near,
-            far
+            far,
         )
     }
-
 }

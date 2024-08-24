@@ -7,5 +7,5 @@ import kotlin.time.Duration
 
 internal class MutableEngineProperty(
     override val time: MutableDurationInterval = MutableDurationInterval(a = Duration.ZERO, b = Duration.ZERO),
-    override var pictureSize: Size
+    override var pictureSize: Size,
 ) : EngineProperty

@@ -23,7 +23,7 @@ object EngineUtil {
         val engine = EngineImpl(
             input = EngineInputState(keyboard),
             property = MutableEngineProperty(pictureSize = size),
-            fontAgent = fontStorage.agent
+            fontAgent = fontStorage.agent,
         )
         val logic = supplier(engine)
         WindowUtil.loopWindow(

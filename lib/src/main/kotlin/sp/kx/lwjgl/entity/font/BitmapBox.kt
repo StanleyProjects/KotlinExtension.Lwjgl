@@ -4,5 +4,5 @@ data class BitmapBox(
     val left: Int,
     val bottom: Int,
     val right: Int,
-    val top: Int
+    val top: Int,
 )

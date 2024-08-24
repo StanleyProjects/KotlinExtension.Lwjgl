@@ -13,15 +13,10 @@ import sp.kx.lwjgl.entity.PolygonDrawer
 import sp.kx.lwjgl.entity.TextDrawer
 import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.entity.font.FontDrawer
-import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
 import sp.kx.math.Point
 import sp.kx.math.Size
-import sp.kx.math.Vector
-import sp.kx.math.measure.Measure
-import sp.kx.math.plus
-import sp.kx.math.pointOf
 import java.io.PrintStream
 
 object WindowUtil {
@@ -34,7 +29,7 @@ object WindowUtil {
         title: String,
         onKeyCallback: GLFWKeyCallback,
 //        onJoystickCallback: GLFWJoystickCallback,
-        onWindowCloseCallback: GLFWWindowCloseCallbackI
+        onWindowCloseCallback: GLFWWindowCloseCallbackI,
     ): Long {
         GLFWErrorCallback.createPrint(errorPrintStream).set()
         check(GLFW.glfwInit()) { "Unable to initialize GLFW!" }
@@ -46,11 +41,11 @@ object WindowUtil {
         //
         val windowId = GLFWUtil.createWindow(size, title).checked { "Window id is null!" }
         val xPosition = (monitorSize.width - size.width) / 2
-        val yPosition = (monitorSize.height- size.height) / 2
+        val yPosition = (monitorSize.height - size.height) / 2
         GLFW.glfwSetWindowPos(
             windowId,
             xPosition.toInt(),
-            yPosition.toInt()
+            yPosition.toInt(),
         )
 //        GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, monitorSize.width.toInt(), monitorSize.height.toInt(), GLFW.GLFW_DONT_CARE)
         //
@@ -99,7 +94,7 @@ object WindowUtil {
         GL11.glLoadIdentity()
         GLUtil.ortho(
             right = size.width,
-            bottom = size.height
+            bottom = size.height,
         )
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glLoadIdentity()
@@ -114,7 +109,7 @@ object WindowUtil {
         fontDrawer: FontDrawer,
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
-        onRender: (Long, Canvas) -> Unit
+        onRender: (Long, Canvas) -> Unit,
     ) {
         GLUtil.clearColor(Color.BLACK)
         val canvas = WindowCanvas(fontDrawer)
@@ -156,7 +151,7 @@ object WindowUtil {
             onWindowCloseCallback = onWindowCloseCallback,
             size = size,
             title = title,
-            monitorIdSupplier = monitorIdSupplier
+            monitorIdSupplier = monitorIdSupplier,
         )
         GLFW.glfwShowWindow(windowId)
         loopWindow(windowId, fontDrawer, onPreLoop, onPostLoop, onRender)

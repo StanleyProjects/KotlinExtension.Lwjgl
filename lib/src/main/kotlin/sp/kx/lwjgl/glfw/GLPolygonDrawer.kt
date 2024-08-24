@@ -3,7 +3,6 @@ package sp.kx.lwjgl.glfw
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.PolygonDrawer
-import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
 import sp.kx.math.Point
@@ -17,17 +16,18 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = setOf(
             pointTopLeft,
             pointOf(pointBottomRight.x, pointTopLeft.y),
             pointBottomRight,
-            pointOf(pointTopLeft.x, pointBottomRight.y)
+            pointOf(pointTopLeft.x, pointBottomRight.y),
         )
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
+            // todo loop to 4 vertexOf(Double, Double)
             points.forEach {
                 GLUtil.vertexOf(it)
             }
@@ -37,7 +37,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Double) {
         val pointBottomRight = pointTopLeft.plus(
             dX = size.width,
-            dY = size.height
+            dY = size.height,
         )
         val points = listOf(
             pointTopLeft,

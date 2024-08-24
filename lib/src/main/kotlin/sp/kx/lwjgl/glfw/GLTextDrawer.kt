@@ -30,7 +30,7 @@ internal class GLTextDrawer(
         info: FontInfo,
         pointTopLeft: Point,
         measure: Measure<Double, Double>,
-        text: CharSequence
+        text: CharSequence,
     ) {
         fontDrawer.drawText(
             info = info,
@@ -47,7 +47,7 @@ internal class GLTextDrawer(
         pointTopLeft: Point,
         offset: Offset,
         measure: Measure<Double, Double>,
-        text: CharSequence
+        text: CharSequence,
     ) {
         fontDrawer.drawText(
             info = info,
