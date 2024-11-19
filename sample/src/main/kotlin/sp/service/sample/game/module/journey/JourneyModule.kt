@@ -237,7 +237,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         values.forEachIndexed { index, text ->
             val dY = info.height * values.size - info.height * index
             canvas.texts.draw(
-                color = Color.GREEN,
+                color = Color.Green,
                 info = info,
                 pointTopLeft = pointOf(x = x, y = engine.property.pictureSize.height - dY - padding),
                 text = text
@@ -247,20 +247,20 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
 
     private fun onRenderPlayer(canvas: Canvas, point: Point) {
         canvas.vectors.draw(
-            color = Color.WHITE,
+            color = Color.White,
             vector = vectorOf(point, length = radius, angle = direction.actual),
             lineWidth = 0.1,
         )
         val size = sizeOf(width = width, height = width)
         canvas.polygons.drawRectangle(
-            color = Color.YELLOW,
+            color = Color.Yellow,
             pointTopLeft = point.plus(dX = - size.width / 2, dY = - size.height / 2),
             size = size,
             direction = direction.actual,
             pointOfRotation = point,
         )
         canvas.polygons.drawCircle(
-            color = Color.WHITE,
+            color = Color.White,
             pointCenter = point,
             radius = radius,
             edgeCount = 16,
@@ -273,7 +273,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         val offset = center - point
         barriers.forEach { barrier ->
             canvas.vectors.draw(
-                color = Color.GREEN,
+                color = Color.Green,
                 vector = barrier.start.toVector(
                     finish = barrier.finish,
                     offset = offset,
@@ -287,19 +287,19 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
         val relative = center.plus(dX = -point.x, dY = -point.y)
         val length = pixelsPerUnit * 2
         canvas.vectors.draw(
-            color = Color.GREEN,
+            color = Color.Green,
             vector = relative.plus(dX = 0.0, dY = length) + relative.plus(dX = 0.0, dY = -length),
             lineWidth = 0.1,
         )
         canvas.vectors.draw(
-            color = Color.GREEN,
+            color = Color.Green,
             vector = relative.plus(dX = -length, dY = 0.0) + relative.plus(dX = length, dY = 0.0),
             lineWidth = 0.1,
         )
         val info = FontInfoUtil.getFontInfo(height = 16f)
         val text = "0/0"
         canvas.texts.draw(
-            color = Color.GREEN,
+            color = Color.Green,
             info = info,
             pointTopLeft = relative.plus(
                 dX = (info.height / 2).toDouble(),
@@ -311,10 +311,10 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
 
     private fun onRenderTriangles(canvas: Canvas, center: Point, barriers: List<Vector>) {
         val colors = listOf(
-            Color.YELLOW,
-            Color.RED,
-            Color.BLUE,
-            Color.GREEN,
+            Color.Yellow,
+            Color.Red,
+            Color.Blue,
+            Color.Green,
         )
         val offset = center - point
         val info = FontInfoUtil.getFontInfo(height = 16f)

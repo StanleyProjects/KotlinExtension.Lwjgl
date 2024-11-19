@@ -6,14 +6,25 @@ import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.measure.Measure
 import sp.kx.math.plus
+import kotlin.experimental.and
 
 object GLUtil {
     fun clearColor(color: Color) {
-        GL11.glClearColor(color.red, color.green, color.blue, color.alpha)
+        GL11.glClearColor(
+            color.red.toInt().and(0xff).toFloat() / 256,
+            color.green.toInt().and(0xff).toFloat() / 256,
+            color.blue.toInt().and(0xff).toFloat() / 256,
+            color.alpha.toInt().and(0xff).toFloat() / 256,
+        )
     }
 
     fun colorOf(color: Color) {
-        GL11.glColor4f(color.red, color.green, color.blue, color.alpha)
+        GL11.glColor4ub(
+            color.red,
+            color.green,
+            color.blue,
+            color.alpha,
+        )
     }
 
     fun vertexOf(first: Float, second: Float) {

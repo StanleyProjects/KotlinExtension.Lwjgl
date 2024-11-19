@@ -70,7 +70,7 @@ class GameEngineLogic(private val engine: Engine) : EngineLogic {
         canvas.texts.draw(
             info = FontInfoUtil.getFontInfo(height = 16f),
             pointTopLeft = pointOf(x = padding, y = padding),
-            color = Color.GREEN,
+            color = Color.Green,
             text = String.format("%.2f", fps)
         )
         when (state) {

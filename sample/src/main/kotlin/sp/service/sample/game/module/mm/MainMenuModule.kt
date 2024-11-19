@@ -32,14 +32,14 @@ class MainMenuModule(private val engine: Engine, private val broadcast: (Broadca
             canvas.texts.draw(
                 info = FontInfoUtil.getFontInfo(height = textHeight),
                 pointTopLeft = pointOf(x = h1, y = y + index * (h1 + p)),
-                color = Color.GREEN,
+                color = Color.Green,
                 text = item.getTitle()
             )
         }
         canvas.texts.draw(
             info = FontInfoUtil.getFontInfo(height = textHeight),
             pointTopLeft = pointOf(x = h1 / 2, y = y + position * (h1 + p)),
-            color = Color.YELLOW,
+            color = Color.Yellow,
             text = ">"
         )
     }

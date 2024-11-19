@@ -112,7 +112,7 @@ object WindowUtil {
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
     ) {
-        GLUtil.clearColor(Color.BLACK)
+        GLUtil.clearColor(Color.Black)
         val canvas = WindowCanvas(fontDrawer)
         onPreLoop(windowId)
         while (!GLFW.glfwWindowShouldClose(windowId)) {
