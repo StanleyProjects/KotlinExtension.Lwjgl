@@ -48,16 +48,33 @@ internal class ColorTest {
         )
     }
 
+    @Test
+    fun copyTest() {
+        val color = colorOf(0x01020304)
+        color.copy(alpha = 0x11).assert(
+            alpha = 0x11,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 0x12).assert(
+            alpha = 0x12,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+    }
+
     companion object {
-        private fun Byte.assert(expected: Int) {
-            assertEquals(expected, toInt().and(0xff), "byte: $this")
+        private fun Byte.assert(expected: Int, tag: String) {
+            assertEquals(expected, toInt().and(0xff), "byte($tag): $this")
         }
 
         private fun Color.assert(alpha: Int, red: Int, green: Int, blue: Int) {
-            this.alpha.assert(expected = alpha)
-            this.red.assert(expected = red)
-            this.green.assert(expected = green)
-            this.blue.assert(expected = blue)
+            this.alpha.assert(expected = alpha, tag = "alpha")
+            this.red.assert(expected = red, tag = "red")
+            this.green.assert(expected = green, tag = "green")
+            this.blue.assert(expected = blue, tag = "blue")
         }
     }
 }
