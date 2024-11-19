@@ -12,23 +12,27 @@ import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.stb.STBFontStorage
+import sp.kx.math.Size
 import sp.kx.math.sizeOf
 import kotlin.time.Duration.Companion.nanoseconds
 
 object EngineUtil {
-    fun run(supplier: (Engine) -> EngineLogic) {
-        val size = sizeOf(width = 640.0, height = 480.0)
+    fun run(
+        supplier: (Engine) -> EngineLogic,
+        size: Size? = null,
+        title: String = "Engine",
+    ) {
         val keyboard = StatefulKeyboard()
         val fontStorage = STBFontStorage()
         val engine = EngineImpl(
             input = EngineInputState(keyboard),
-            property = MutableEngineProperty(pictureSize = size),
+            property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
             fontAgent = fontStorage.agent,
         )
         val logic = supplier(engine)
         WindowUtil.loopWindow(
+            title = title,
             size = size,
-            title = "Engine",
             fontDrawer = fontStorage.drawer,
             onKeyCallback = GLFWUtil.onKeyCallback { _, key: Int, scanCode: Int, action: Int, _ ->
                 println("on -> keyboard callback: $key $scanCode $action")

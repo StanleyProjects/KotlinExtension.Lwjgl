@@ -24,16 +24,29 @@ object GLFWUtil {
     }
 
     fun createWindow(
-        size: Size,
         title: CharSequence,
-        monitorPointerId: Long = MemoryUtil.NULL,
+        size: Size,
+        sharePointerId: Long = MemoryUtil.NULL,
+    ): Long {
+        return createWindow(
+            title = title,
+            size = size,
+            monitorId = MemoryUtil.NULL,
+            sharePointerId = sharePointerId,
+        )
+    }
+
+    fun createWindow(
+        title: CharSequence,
+        monitorId: Long,
+        size: Size = getMonitorSize(monitorId),
         sharePointerId: Long = MemoryUtil.NULL,
     ): Long {
         return GLFW.glfwCreateWindow(
             size.width.toInt(),
             size.height.toInt(),
             title,
-            monitorPointerId,
+            monitorId,
             sharePointerId,
         )
     }

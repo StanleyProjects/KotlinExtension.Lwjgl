@@ -22,38 +22,39 @@ import java.io.PrintStream
 object WindowUtil {
     fun createWindow(
         errorPrintStream: PrintStream,
-        isVisible: Boolean,
-        isResizable: Boolean,
         monitorIdSupplier: () -> Long,
-        size: Size,
         title: String,
+        size: Size?,
         onKeyCallback: GLFWKeyCallback,
-//        onJoystickCallback: GLFWJoystickCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
     ): Long {
         GLFWErrorCallback.createPrint(errorPrintStream).set()
         check(GLFW.glfwInit()) { "Unable to initialize GLFW!" }
-        GLFW.glfwDefaultWindowHints()
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, isVisible.toGLFWInt())
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, isResizable.toGLFWInt())
         val monitorId = monitorIdSupplier().checked { "Monitor id is null!" }
-        val monitorSize = GLFWUtil.getMonitorSize(monitorId)
         //
-        val windowId = GLFWUtil.createWindow(size, title).checked { "Window id is null!" }
-        val xPosition = (monitorSize.width - size.width) / 2
-        val yPosition = (monitorSize.height - size.height) / 2
-        GLFW.glfwSetWindowPos(
-            windowId,
-            xPosition.toInt(),
-            yPosition.toInt(),
-        )
-//        GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, monitorSize.width.toInt(), monitorSize.height.toInt(), GLFW.GLFW_DONT_CARE)
+        GLFW.glfwDefaultWindowHints()
+        val windowId: Long
+        if (size == null) {
+            windowId = GLFWUtil.createWindow(title = title, monitorId = monitorId).checked { "Window id is null!" }
+            GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, 0, 0, GLFW.GLFW_DONT_CARE)
+        } else {
+            windowId = GLFWUtil.createWindow(title = title, size = size).checked { "Window id is null!" }
+            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE)
+//            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, isResizable.toGLFWInt()) // todo
+            val monitorSize = GLFWUtil.getMonitorSize(monitorId)
+            val xPosition = (monitorSize.width - size.width) / 2
+            val yPosition = (monitorSize.height - size.height) / 2
+            GLFW.glfwSetWindowPos(
+                windowId,
+                xPosition.toInt(),
+                yPosition.toInt(),
+            )
+        }
         //
         GLFW.glfwMakeContextCurrent(windowId)
         GL.createCapabilities()
         GLFW.glfwSwapInterval(1)
         GLFW.glfwSetKeyCallback(windowId, onKeyCallback)
-//        GLFW.glfwSetJoystickCallback(onJoystickCallback) // This is called when a joystick is connected to or disconnected from the system.
         GLFW.glfwSetWindowCloseCallback(windowId, onWindowCloseCallback)
         return windowId
     }
@@ -130,8 +131,8 @@ object WindowUtil {
     }
 
     fun loopWindow(
-        size: Size,
         title: String,
+        size: Size? = null,
         fontDrawer: FontDrawer,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
@@ -140,13 +141,9 @@ object WindowUtil {
         onRender: (Long, Canvas) -> Unit,
         monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
         errorPrintStream: PrintStream = System.err,
-        isVisible: Boolean = true,
-        isResizable: Boolean = false,
     ) {
         val windowId = createWindow(
             errorPrintStream = errorPrintStream,
-            isVisible = isVisible,
-            isResizable = isResizable,
             onKeyCallback = onKeyCallback,
             onWindowCloseCallback = onWindowCloseCallback,
             size = size,
