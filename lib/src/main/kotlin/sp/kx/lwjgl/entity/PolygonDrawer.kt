@@ -106,7 +106,15 @@ interface PolygonDrawer {
         measure: Measure<Double, Double>,
     )
 
-    // pointOfRotation
+    // direction
+
+    // todo pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2)
+//    fun drawRectangle(
+//        color: Color,
+//        pointTopLeft: Point,
+//        size: Size,
+//        direction: Double,
+//    )
 
     fun drawRectangle(
         color: Color,
@@ -143,6 +151,8 @@ interface PolygonDrawer {
         offset: Offset,
         measure: Measure<Double, Double>,
     )
+
+    // direction + lineWidth
 
     fun drawRectangle(
         color: Color,
@@ -218,6 +228,8 @@ interface PolygonDrawer {
         measure: Measure<Double, Double>,
     )
 
+    // circle + lineWidth
+
     fun drawCircle(
         color: Color,
         pointCenter: Point,
@@ -256,6 +268,8 @@ interface PolygonDrawer {
 //        offset: Offset,
 //        measure: Measure<Double, Double>,
 //    )
+
+    // circle + border
 
     // todo
 //    fun drawCircle(

@@ -574,6 +574,18 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            for (index in 0..edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                GLUtil.vertexOf(
+                    x = pointCenter.x + kotlin.math.cos(radians) * radius,
+                    y = pointCenter.y + kotlin.math.sin(radians) * radius,
+                    offset = offset,
+                    measure = measure,
+                )
+            }
+        }
         GLUtil.colorOf(borderColor)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             for (index in 0 until edgeCount) {
@@ -587,7 +599,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
                     dX = kotlin.math.cos(finishRadians) * radius,
                     dY = kotlin.math.sin(finishRadians) * radius,
                 )
-                vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth)
+                vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth, offset = offset, measure = measure)
             }
             val startRadians = (edgeCount - 1) * 2 * kotlin.math.PI / edgeCount
             val startPoint = pointCenter.plus(
@@ -599,7 +611,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
                 dX = kotlin.math.cos(finishRadians) * radius,
                 dY = kotlin.math.sin(finishRadians) * radius,
             )
-            vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth)
+            vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth, offset = offset, measure = measure)
             GLUtil.vertexOfMoved(
                 pointCenter.plus(
                     dX = kotlin.math.cos(0.0) * radius,
@@ -607,19 +619,9 @@ internal object GLPolygonDrawer : PolygonDrawer {
                 ),
                 length = lineWidth / 2,
                 angle = kotlin.math.PI / edgeCount - kotlin.math.PI / 2,
+                offset = offset,
+                measure = measure,
             )
-        }
-        GLUtil.colorOf(fillColor)
-        GLUtil.transaction(GL11.GL_POLYGON) {
-            for (index in 0..edgeCount) {
-                val radians = index * 2 * kotlin.math.PI / edgeCount
-                GLUtil.vertexOf(
-                    x = pointCenter.x + kotlin.math.cos(radians) * radius,
-                    y = pointCenter.y + kotlin.math.sin(radians) * radius,
-                    offset = offset,
-                    measure = measure,
-                )
-            }
         }
     }
 }
