@@ -2,7 +2,7 @@ object Version {
     const val jvmTarget = "17"
     const val kotlin = "1.9.20"
     const val ktlint = "0.50.0"
-    const val lwjgl = "3.3.3"
+    const val lwjgl = "3.3.4"
     const val math = "0.7.3-SNAPSHOT"
 
     object Lwjgl {
