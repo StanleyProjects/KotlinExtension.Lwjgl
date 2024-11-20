@@ -2,9 +2,9 @@ package sp.kx.lwjgl.util
 
 import org.lwjgl.glfw.GLFW
 import sp.kx.lwjgl.engine.Engine
-import sp.kx.lwjgl.engine.EngineImpl
 import sp.kx.lwjgl.engine.EngineInputState
-import sp.kx.lwjgl.engine.EngineLogic
+import sp.kx.lwjgl.engine.EngineLogics
+import sp.kx.lwjgl.engine.MutableEngine
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
 import sp.kx.lwjgl.glfw.GLFWUtil
@@ -18,13 +18,13 @@ import kotlin.time.Duration.Companion.nanoseconds
 
 object EngineUtil {
     fun run(
-        supplier: (Engine) -> EngineLogic,
+        supplier: (Engine) -> EngineLogics,
         size: Size? = null,
         title: String = "Engine",
     ) {
         val keyboard = StatefulKeyboard()
         val fontStorage = STBFontStorage()
-        val engine = EngineImpl(
+        val engine = MutableEngine(
             input = EngineInputState(keyboard),
             property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
             fontAgent = fontStorage.agent,
@@ -53,6 +53,7 @@ object EngineUtil {
                 // todo
             },
             onRender = { windowId, canvas ->
+                // todo time provider
                 val now = System.nanoTime().toDouble().nanoseconds
                 engine.property.time.b = now
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)

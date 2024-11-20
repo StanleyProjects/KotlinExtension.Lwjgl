@@ -2,8 +2,7 @@ package sp.kx.lwjgl.engine
 
 import sp.kx.lwjgl.entity.Canvas
 
-@Deprecated("rename to EngineLogics")
-interface EngineLogic {
+interface EngineLogics {
     val inputCallback: EngineInputCallback
     fun shouldEngineStop(): Boolean
     fun onRender(canvas: Canvas)

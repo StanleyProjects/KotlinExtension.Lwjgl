@@ -3,7 +3,7 @@ package sp.service.sample.logic
 import org.json.JSONObject
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
-import sp.kx.lwjgl.engine.EngineLogic
+import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
@@ -85,7 +85,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 
-internal class TestEngineLogic(private val engine: Engine) : EngineLogic {
+internal class TestEngineLogic(private val engine: Engine) : EngineLogics {
     class Player private constructor(
         val id: UUID,
         val point: MutablePoint,

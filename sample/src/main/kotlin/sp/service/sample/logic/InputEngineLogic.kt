@@ -2,7 +2,7 @@ package sp.service.sample.logic
 
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
-import sp.kx.lwjgl.engine.EngineLogic
+import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
@@ -26,7 +26,7 @@ import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
 import java.io.InputStream
 
-class InputEngineLogic(private val engine: Engine) : EngineLogic {
+class InputEngineLogic(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
     private val ds4Mapping = JsonJoystickMapping(
         ResourceUtil.requireResourceAsStream("dualshock4.json").reader().readText(),

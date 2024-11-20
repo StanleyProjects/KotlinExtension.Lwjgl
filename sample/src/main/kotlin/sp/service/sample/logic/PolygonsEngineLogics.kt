@@ -2,13 +2,12 @@ package sp.service.sample.logic
 
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
-import sp.kx.lwjgl.engine.EngineLogic
+import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.copy
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.math.Point
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.frequency
 import sp.kx.math.offsetOf
@@ -19,7 +18,7 @@ import sp.kx.math.vectorOf
 import sp.service.sample.util.FontInfoUtil.getFontInfo
 import kotlin.random.Random
 
-internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogic {
+internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
 
     override val inputCallback = object : EngineInputCallback {

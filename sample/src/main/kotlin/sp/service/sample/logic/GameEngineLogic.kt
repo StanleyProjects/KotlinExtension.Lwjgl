@@ -2,7 +2,7 @@ package sp.service.sample.logic
 
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
-import sp.kx.lwjgl.engine.EngineLogic
+import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
@@ -15,7 +15,7 @@ import sp.service.sample.game.module.mm.MainMenuModule
 import sp.service.sample.util.FontInfoUtil
 import kotlin.time.Duration.Companion.seconds
 
-class GameEngineLogic(private val engine: Engine) : EngineLogic {
+class GameEngineLogic(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
 
     private var state: StateCommon = StateCommon.MAIN_MENU
