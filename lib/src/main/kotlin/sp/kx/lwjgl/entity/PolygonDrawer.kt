@@ -16,8 +16,59 @@ interface PolygonDrawer {
         color: Color,
         pointTopLeft: Point,
         size: Size,
+        offset: Offset,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        measure: Measure<Double, Double>,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    // lineWidth
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
         lineWidth: Double,
     )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    // border
 
     fun drawRectangle(
         borderColor: Color,
@@ -33,6 +84,15 @@ interface PolygonDrawer {
         pointTopLeft: Point,
         size: Size,
         lineWidth: Double,
+        offset: Offset,
+    )
+
+    fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
         measure: Measure<Double, Double>,
     )
 
@@ -46,27 +106,15 @@ interface PolygonDrawer {
         measure: Measure<Double, Double>,
     )
 
-    fun drawRectangle(
-        color: Color,
-        pointTopLeft: Point,
-        size: Size,
-        offset: Offset,
-    )
+    // direction
 
-    fun drawRectangle(
-        color: Color,
-        pointTopLeft: Point,
-        size: Size,
-        measure: Measure<Double, Double>,
-    )
-
-    fun drawRectangle(
-        color: Color,
-        pointTopLeft: Point,
-        size: Size,
-        offset: Offset,
-        measure: Measure<Double, Double>,
-    )
+    // todo pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2)
+//    fun drawRectangle(
+//        color: Color,
+//        pointTopLeft: Point,
+//        size: Size,
+//        direction: Double,
+//    )
 
     fun drawRectangle(
         color: Color,
@@ -80,25 +128,38 @@ interface PolygonDrawer {
         color: Color,
         pointTopLeft: Point,
         size: Size,
+        direction: Double,
+        pointOfRotation: Point,
         offset: Offset,
-        direction: Double,
-        pointOfRotation: Point,
     )
 
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
         size: Size,
-        measure: Measure<Double, Double>,
         direction: Double,
         pointOfRotation: Point,
+        measure: Measure<Double, Double>,
     )
 
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
         size: Size,
+        direction: Double,
+        pointOfRotation: Point,
+        offset: Offset,
         measure: Measure<Double, Double>,
+    )
+
+    // direction + lineWidth
+
+    fun drawRectangle(
+        color: Color,
+        pointTopLeft: Point,
+        size: Size,
+        direction: Double,
+        pointOfRotation: Point,
         lineWidth: Double,
     )
 
@@ -106,31 +167,68 @@ interface PolygonDrawer {
         color: Color,
         pointTopLeft: Point,
         size: Size,
-        measure: Measure<Double, Double>,
-        lineWidth: Double,
         direction: Double,
         pointOfRotation: Point,
+        lineWidth: Double,
+        offset: Offset,
     )
 
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
         size: Size,
-        offset: Offset,
-        measure: Measure<Double, Double>,
+        direction: Double,
+        pointOfRotation: Point,
         lineWidth: Double,
+        measure: Measure<Double, Double>,
     )
 
     fun drawRectangle(
         color: Color,
         pointTopLeft: Point,
         size: Size,
-        offset: Offset,
-        measure: Measure<Double, Double>,
-        lineWidth: Double,
         direction: Double,
         pointOfRotation: Point,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
     )
+
+    // circle
+
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+    )
+
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        offset: Offset,
+    )
+
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        measure: Measure<Double, Double>,
+    )
+
+    fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    // circle + lineWidth
 
     fun drawCircle(
         color: Color,
@@ -140,12 +238,70 @@ interface PolygonDrawer {
         lineWidth: Double,
     )
 
-    fun drawCircle(
-        color: Color,
-        pointCenter: Point,
-        radius: Double,
-        edgeCount: Int,
-    )
+    // todo
+//    fun drawCircle(
+//        color: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//        offset: Offset,
+//    )
+
+    // todo
+//    fun drawCircle(
+//        color: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//        measure: Measure<Double, Double>,
+//    )
+
+    // todo
+//    fun drawCircle(
+//        color: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//        offset: Offset,
+//        measure: Measure<Double, Double>,
+//    )
+
+    // circle + border
+
+    // todo
+//    fun drawCircle(
+//        borderColor: Color,
+//        fillColor: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//    )
+
+    // todo
+//    fun drawCircle(
+//        borderColor: Color,
+//        fillColor: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//        offset: Offset,
+//    )
+
+    // todo
+//    fun drawCircle(
+//        borderColor: Color,
+//        fillColor: Color,
+//        pointCenter: Point,
+//        radius: Double,
+//        edgeCount: Int,
+//        lineWidth: Double,
+//        measure: Measure<Double, Double>,
+//    )
 
     fun drawCircle(
         borderColor: Color,

@@ -1,94 +1,31 @@
 package sp.kx.lwjgl.entity
 
-@Deprecated(
-    message = """
-        1) interface to data class
-        2) floats to bytes
-    """,
-)
 interface Color {
+    val alpha: Byte
+    val red: Byte
+    val green: Byte
+    val blue: Byte
+
     companion object {
-        const val MAX_VALUE = 1f
-        const val MIN_VALUE = 0f
-
-        val WHITE = color(MAX_VALUE, MAX_VALUE, MAX_VALUE)
-        val BLACK = color(MIN_VALUE, MIN_VALUE, MIN_VALUE)
-        val RED = color(MAX_VALUE, MIN_VALUE, MIN_VALUE)
-        val GREEN = color(MIN_VALUE, MAX_VALUE, MIN_VALUE)
-        val BLUE = color(MIN_VALUE, MIN_VALUE, MAX_VALUE)
-        val YELLOW = color(MAX_VALUE, MAX_VALUE, MIN_VALUE)
-        val GRAY = colorOf(0xff888888)
-    }
-
-    val red: Float
-    val green: Float
-    val blue: Float
-    val alpha: Float
-
-    fun copy(alpha: Float): Color {
-        val expectedRange = Color.MIN_VALUE..Color.MAX_VALUE
-        check(alpha in expectedRange) {
-            "The alpha value is out of range $expectedRange!"
-        }
-        return ColorImpl(
-            red = red,
-            green = green,
-            blue = blue,
-            alpha = alpha,
-        )
+        val Black = colorOf(0xff000000)
+        val Red = colorOf(0xffff0000)
+        val Green = colorOf(0xff00ff00)
+        val Blue = colorOf(0xff0000ff)
+        val Yellow = colorOf(0xffffff00)
+        val White = colorOf(0xffffffff)
+        val Gray = colorOf(0xff888888)
     }
 }
 
-private data class ColorImpl(
-    override val red: Float,
-    override val green: Float,
-    override val blue: Float,
-    override val alpha: Float,
-) : Color
-
-private fun Long.toFloatArray(): FloatArray {
-    return FloatArray(4) {
-        shr(24 - it * 8).and(0xff).toFloat()
-    }
+fun Color.copy(alpha: Byte): Color {
+    var values = blue.toLong().and(0xff)
+    values = values.or(green.toLong().and(0xff).shl(8))
+    values = values.or(red.toLong().and(0xff).shl(16))
+    values = values.or(alpha.toLong().and(0xff).shl(24))
+    return colorOf(values = values)
 }
 
-fun colorOf(value: Long): Color {
-    val array = value.toFloatArray()
-    val alpha = array[0] / 255
-    val red = array[1] / 255
-    val green = array[2] / 255
-    val blue = array[3] / 255
-    return color(
-        alpha = alpha,
-        red = red,
-        green = green,
-        blue = blue,
-    )
-}
-
-fun color(
-    red: Float,
-    green: Float,
-    blue: Float,
-    alpha: Float = Color.MAX_VALUE,
-): Color {
-    val expectedRange = Color.MIN_VALUE..Color.MAX_VALUE
-    mapOf(
-        "red" to red,
-        "green" to green,
-        "blue" to blue,
-    ).forEach { (key, value) ->
-        check(value in expectedRange) {
-            "The color $key($value) is out of range $expectedRange!"
-        }
-    }
-    check(alpha in expectedRange) {
-        "The alpha value is out of range $expectedRange!"
-    }
-    return ColorImpl(
-        red = red,
-        green = green,
-        blue = blue,
-        alpha = alpha,
-    )
+fun Color.copy(alpha: Float): Color {
+    if (alpha < 0 || alpha > 1) TODO()
+    return copy(alpha = Byte.MAX_VALUE.toInt().and(0xff).times(alpha).toInt().toByte())
 }

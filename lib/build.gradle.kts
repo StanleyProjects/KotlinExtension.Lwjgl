@@ -10,12 +10,15 @@ import sp.gx.core.camelCase
 import sp.gx.core.check
 import sp.gx.core.colonCase
 import sp.gx.core.create
+import sp.gx.core.existing
+import sp.gx.core.file
+import sp.gx.core.filled
 import sp.gx.core.kebabCase
 import sp.gx.core.resolve
 import sp.gx.core.task
 import java.util.Locale
 
-version = "0.2.0"
+version = "0.2.4"
 
 val maven = Maven.Artifact(
     group = "com.github.kepocnhh",
@@ -34,6 +37,7 @@ repositories {
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("org.gradle.jacoco")
 }
 
 tasks.getByName<JavaCompile>("compileJava") {
@@ -54,6 +58,60 @@ dependencies {
     LwjglUtil.modules.forEach { name ->
         implementation(group = group, name = name)
     }
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.jupiter}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.jupiter}")
+}
+
+fun Test.getExecutionData(): File {
+    return buildDir()
+        .dir("jacoco")
+        .asFile("$name.exec")
+}
+
+val taskUnitTest = task<Test>("checkUnitTest") {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED") // https://github.com/gradle/gradle/issues/18647
+    doLast {
+        getExecutionData().existing().file().filled()
+    }
+}
+
+jacoco.toolVersion = Version.jacoco
+
+val taskCoverageReport = task<JacocoReport>("assembleCoverageReport") {
+    dependsOn(taskUnitTest)
+    reports {
+        csv.required = false
+        html.required = true
+        xml.required = false
+    }
+    sourceDirectories.setFrom(file("src/main/kotlin"))
+    classDirectories.setFrom(sourceSets.main.get().output.classesDirs)
+    executionData(taskUnitTest.getExecutionData())
+    doLast {
+        val report = buildDir()
+            .dir("reports/jacoco/$name/html")
+            .file("index.html")
+            .existing()
+            .file()
+            .filled()
+        println("Coverage report: ${report.absolutePath}")
+    }
+}
+
+task<JacocoCoverageVerification>("checkCoverage") {
+    dependsOn(taskCoverageReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = BigDecimal(0.96)
+            }
+        }
+    }
+    classDirectories.setFrom(taskCoverageReport.classDirectories)
+    executionData(taskCoverageReport.executionData)
 }
 
 "unstable".also { variant ->
