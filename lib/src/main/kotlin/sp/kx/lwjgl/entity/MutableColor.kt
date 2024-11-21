@@ -1,6 +1,6 @@
 package sp.kx.lwjgl.entity
 
-class MutableColor(var values: Long): Color {
+class MutableColor(var values: Long) : Color {
     override val alpha: Byte get() {
         return values.shr(24).toByte()
     }

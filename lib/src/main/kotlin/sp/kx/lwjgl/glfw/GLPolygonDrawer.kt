@@ -10,7 +10,6 @@ import sp.kx.math.Size
 import sp.kx.math.angleOf
 import sp.kx.math.measure.Measure
 import sp.kx.math.plus
-import sp.kx.math.pointOf
 
 internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size) {
@@ -103,7 +102,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         size: Size,
         lineWidth: Double,
         offset: Offset,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
