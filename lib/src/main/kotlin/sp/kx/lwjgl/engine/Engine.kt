@@ -6,4 +6,5 @@ sealed interface Engine {
     val input: EngineInputState
     val property: EngineProperty
     val fontAgent: FontAgent
+    val timer: TimeProvider
 }
