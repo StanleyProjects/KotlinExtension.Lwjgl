@@ -35,13 +35,13 @@ object EngineUtil {
             size = size,
             fontDrawer = fontStorage.drawer,
             onKeyCallback = GLFWUtil.onKeyCallback { _, key: Int, scanCode: Int, action: Int, _ ->
-                println("on -> keyboard callback: $key $scanCode $action")
+                println("on -> keyboard callback: $key $scanCode $action") // todo
                 val button = key.toKeyboardButtonOrNull()
                 if (button != null) {
                     val isPressed = action.toPressedOrNull()
                     if (isPressed != null) {
                         if (isPressed) {
-                            keyboard.states[button] = true
+                            keyboard.states.add(button)
                         } else {
                             keyboard.states.remove(button)
                         }

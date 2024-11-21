@@ -1,4 +1,4 @@
-package sp.service.sample.logic
+package sp.service.sample.logics
 
 import org.json.JSONObject
 import sp.kx.lwjgl.engine.Engine
@@ -26,13 +26,11 @@ import sp.kx.math.dby
 import sp.kx.math.distanceOf
 import sp.kx.math.eq
 import sp.kx.math.getIntersection
-import sp.kx.math.getPerpendicular
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
 import sp.kx.math.gt
 import sp.kx.math.ifNaN
 import sp.kx.math.isEmpty
-import sp.kx.math.length
 import sp.kx.math.lt
 import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDeviation
@@ -59,7 +57,6 @@ import sp.lwjgl.joysticks.JoystickAxis
 import sp.lwjgl.joysticks.JoystickButton
 import sp.lwjgl.joysticks.JoysticksStorage
 import sp.service.sample.entity.Barrier
-import sp.service.sample.entity.Condition
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Position
@@ -70,22 +67,21 @@ import sp.service.sample.util.JsonJoystickMapping
 import sp.service.sample.util.ResourceUtil
 import sp.service.sample.util.noneOrSingleOrError
 import sp.service.sample.util.objects
-import sp.service.sample.util.strings
 import sp.service.sample.util.toBarrier
-import sp.service.sample.util.toCondition
 import sp.service.sample.util.toCrate
 import sp.service.sample.util.toItem
-import sp.service.sample.util.toMap
 import sp.service.sample.util.toMapStrings
 import sp.service.sample.util.toPoint
 import sp.service.sample.util.toPosition
-import sp.service.sample.util.toRelay
 import sp.service.sample.util.toTag
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
-internal class TestEngineLogic(private val engine: Engine) : EngineLogics {
+internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
     class Player private constructor(
         val id: UUID,
         val point: MutablePoint,

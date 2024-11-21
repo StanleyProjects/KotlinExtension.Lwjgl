@@ -1,4 +1,4 @@
-package sp.service.sample.logic
+package sp.service.sample.logics
 
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
