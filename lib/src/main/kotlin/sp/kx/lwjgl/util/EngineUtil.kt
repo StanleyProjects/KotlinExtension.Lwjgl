@@ -24,6 +24,9 @@ object EngineUtil {
         size: Size? = null,
         timer: TimeProvider = SystemTimeProvider,
     ) {
+        // todo run once
+        // todo logger
+        // todo hide mouse
         val keyboard = StatefulKeyboard()
         val fontStorage = STBFontStorage()
         val engine = MutableEngine(
