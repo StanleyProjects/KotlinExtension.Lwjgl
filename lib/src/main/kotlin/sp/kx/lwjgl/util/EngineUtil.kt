@@ -35,7 +35,7 @@ object EngineUtil {
             fontAgent = fontStorage.agent,
             timer = timer,
         )
-        val logic = supplier(engine)
+        val logics = supplier(engine)
         WindowUtil.loopWindow(
             title = title,
             size = size,
@@ -51,7 +51,7 @@ object EngineUtil {
                         } else {
                             keyboard.states.remove(button)
                         }
-                        logic.inputCallback.onKeyboardButton(button, isPressed)
+                        logics.inputCallback.onKeyboardButton(button, isPressed)
                     }
                 }
             },
@@ -61,9 +61,9 @@ object EngineUtil {
             onRender = { windowId, canvas ->
                 engine.property.time.b = engine.timer.now()
                 engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
-                logic.onRender(canvas = canvas)
+                logics.onRender(canvas = canvas)
                 engine.property.time.a = engine.property.time.b
-                if (logic.shouldEngineStop()) {
+                if (logics.shouldEngineStop()) {
                     GLFW.glfwSetWindowShouldClose(windowId, true)
                 }
             },
