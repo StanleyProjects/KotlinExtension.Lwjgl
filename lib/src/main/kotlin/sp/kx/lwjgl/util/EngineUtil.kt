@@ -47,9 +47,9 @@ object EngineUtil {
                     val isPressed = action.toPressedOrNull()
                     if (isPressed != null) {
                         if (isPressed) {
-                            keyboard.states.add(button)
+                            keyboard.buttons[button] = engine.timer.now()
                         } else {
-                            keyboard.states.remove(button)
+                            keyboard.buttons.remove(button)
                         }
                         logics.inputCallback.onKeyboardButton(button, isPressed)
                     }
