@@ -22,6 +22,7 @@ import sp.kx.math.times
 import sp.kx.math.vectorOf
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Entities
+import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Player
 import sp.service.sample.util.FontInfoUtil
@@ -29,6 +30,7 @@ import sp.service.sample.util.FontInfoUtil
 internal class Renders(
     private val engine: Engine,
     private val env: Environment,
+    private val holder: InteractiveHolder,
 ) {
     private fun onRenderItems(
         canvas: Canvas,
@@ -166,16 +168,12 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val point = Entities.getNearestItem(
-            target = env.player.moving.point,
-            items = env.items,
-            maxDistance = 1.75,
-        )?.point ?: Entities.getNearestCrate(
-            target = env.player.moving.point,
-            crates = env.crates,
-            maxDistance = 1.75,
-        )?.point ?: return
+        val interactive = holder.interactive ?: return
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
+        val point = when (interactive.type) {
+            Interactive.Type.Item -> env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
+            Interactive.Type.Crate -> env.crates.firstOrNull { it.id == interactive.id }?.point ?: TODO()
+        }
         canvas.polygons.drawRectangle(
             borderColor = Color.Green,
             fillColor = Color.Green.copy(alpha = if (isPressed) 0.5f else 0f),

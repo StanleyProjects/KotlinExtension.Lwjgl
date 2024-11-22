@@ -2,10 +2,13 @@ package sp.service.sample
 
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.entity.Crate
-import sp.service.sample.entity.Entities
+import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 
-internal class Interactions(private val env: Environment) {
+internal class Interactions(
+    private val env: Environment,
+    private val holder: InteractiveHolder,
+) {
     private fun onInteractionItem(item: Item) {
         item.owner = env.player.id
     }
@@ -20,23 +23,16 @@ internal class Interactions(private val env: Environment) {
     }
 
     private fun onInteraction() {
-        val item = Entities.getNearestItem(
-            target = env.player.moving.point,
-            items = env.items,
-            maxDistance = 1.75,
-        )
-        if (item != null) {
-            onInteractionItem(item = item)
-            return
-        }
-        val crate = Entities.getNearestCrate(
-            target = env.player.moving.point,
-            crates = env.crates,
-            maxDistance = 1.75,
-        )
-        if (crate != null) {
-            onInteractionCrate(crate = crate)
-            return
+        val interactive = holder.interactive ?: return
+        when (interactive.type) {
+            Interactive.Type.Item -> {
+                val item = env.items.firstOrNull { it.id == interactive.id } ?: TODO()
+                onInteractionItem(item = item)
+            }
+            Interactive.Type.Crate -> {
+                val crate = env.crates.firstOrNull { it.id == interactive.id } ?: TODO()
+                onInteractionCrate(crate = crate)
+            }
         }
     }
 

@@ -27,6 +27,7 @@ import sp.kx.math.moved
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
+import sp.service.sample.Calculations
 import sp.service.sample.Environment
 import sp.service.sample.Interactions
 import sp.service.sample.Renders
@@ -42,8 +43,9 @@ import java.util.concurrent.atomic.AtomicLong
 internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
     private val env = getEnvironment()
-    private val renders = Renders(engine = engine, env = env)
-    private val interactions = Interactions(env = env)
+    private val calculations = Calculations(engine = engine, env = env)
+    private val renders = Renders(engine = engine, env = env, holder = calculations.getHolder())
+    private val interactions = Interactions(env = env, holder = calculations.getHolder())
     private val measure = MutableDoubleMeasure(24.0)
 
     override val inputCallback = object : EngineInputCallback {
@@ -160,6 +162,7 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
         if (env.state == Environment.State.Walking) {
             movePlayer()
         }
+        calculations.onRender()
         renders.onRender(canvas = canvas, measure = measure)
     }
 
