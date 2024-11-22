@@ -26,6 +26,7 @@ import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Player
 import sp.service.sample.util.FontInfoUtil
+import kotlin.time.Duration.Companion.seconds
 
 internal class Renders(
     private val engine: Engine,
@@ -163,17 +164,14 @@ internal class Renders(
         }
     }
 
-    private fun onRenderInteraction(
+    private fun onRenderInteractive(
         canvas: Canvas,
         offset: Offset,
         measure: Measure<Double, Double>,
+        interactive: Interactive.Crate,
     ) {
-        val interactive = holder.interactive ?: return
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
-        val point = when (interactive.type) {
-            Interactive.Type.Item -> env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
-            Interactive.Type.Crate -> env.crates.firstOrNull { it.id == interactive.id }?.point ?: TODO()
-        }
+        val point = env.crates.firstOrNull { it.id == interactive.id }?.point ?: TODO()
         canvas.polygons.drawRectangle(
             borderColor = Color.Green,
             fillColor = Color.Green.copy(alpha = if (isPressed) 0.5f else 0f),
@@ -192,6 +190,73 @@ internal class Renders(
             measure = measure,
             text = "F",
         )
+    }
+
+    private fun onRenderInteractive(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+        interactive: Interactive.Item,
+    ) {
+        val whenPressed = engine.input.keyboard.whenPressed(KeyboardButton.F)
+        val point = env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
+        val width = if (whenPressed == null) {
+            0.0
+        } else {
+            val max = 1.seconds
+            val diff = engine.timer.now() - whenPressed
+            diff.inWholeNanoseconds.toDouble() / max.inWholeNanoseconds
+        }
+        canvas.polygons.drawRectangle(
+            color = Color.Green.copy(alpha = 0.75f),
+            pointTopLeft = point,
+            size = sizeOf(width = width, height = 1.0),
+            offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+            measure = measure,
+        )
+        canvas.polygons.drawRectangle(
+            color = Color.Green,
+            pointTopLeft = point,
+            size = sizeOf(1.0, 1.0),
+            lineWidth = 0.1,
+            offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+            measure = measure,
+        )
+        val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
+        canvas.texts.draw(
+            color = Color.Green,
+            info = info,
+            pointTopLeft = point,
+            offset = offset + offsetOf(dX = 1.25, dY = -1.5),
+            measure = measure,
+            text = "F",
+        )
+    }
+
+    private fun onRenderInteractive(
+        canvas: Canvas,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val interactive = holder.interactive ?: return
+        when (interactive) {
+            is Interactive.Crate -> {
+                onRenderInteractive(
+                    canvas = canvas,
+                    offset = offset,
+                    measure = measure,
+                    interactive = interactive,
+                )
+            }
+            is Interactive.Item -> {
+                onRenderInteractive(
+                    canvas = canvas,
+                    offset = offset,
+                    measure = measure,
+                    interactive = interactive,
+                )
+            }
+        }
     }
 
     private fun onRenderSwap(
@@ -303,7 +368,7 @@ internal class Renders(
         //
         when (val state = env.state) {
             Environment.State.Walking -> {
-                onRenderInteraction(
+                onRenderInteractive(
                     canvas = canvas,
                     offset = offset,
                     measure = measure,

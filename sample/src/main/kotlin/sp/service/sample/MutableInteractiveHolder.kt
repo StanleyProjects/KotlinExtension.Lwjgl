@@ -13,31 +13,26 @@ internal class MutableInteractiveHolder(
 
     fun putIfAbsent(item: Item) {
         val oldValue = interactive
-        if (oldValue == null || oldValue.type != Interactive.Type.Item || oldValue.id != item.id) {
-            println("Item: ${item.id}")
-            interactive = Interactive(
-                id = item.id,
-                type = Interactive.Type.Item,
-                time = timer.now(),
-            )
-        }
+        if (oldValue is Interactive.Item && oldValue.id == item.id) return
+        println("Item: ${item.id}")
+        interactive = Interactive.Item(
+            id = item.id,
+            time = timer.now(),
+        )
     }
 
     fun putIfAbsent(crate: Crate) {
         val oldValue = interactive
-        if (oldValue == null || oldValue.type != Interactive.Type.Crate || oldValue.id != crate.id) {
-            println("Crate: ${crate.id}")
-            interactive = Interactive(
-                id = crate.id,
-                type = Interactive.Type.Crate,
-                time = timer.now(),
-            )
-        }
+        if (oldValue is Interactive.Crate && oldValue.id == crate.id) return
+        println("Crate: ${crate.id}")
+        interactive = Interactive.Crate(
+            id = crate.id,
+        )
     }
 
     fun clear() {
         if (interactive != null) {
-            println("clear ${interactive?.type} ${interactive?.id}")
+            println("clear $interactive")
             interactive = null
         }
     }

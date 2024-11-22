@@ -9,10 +9,6 @@ internal class Interactions(
     private val env: Environment,
     private val holder: InteractiveHolder,
 ) {
-    private fun onInteractionItem(item: Item) {
-        item.owner = env.player.id
-    }
-
     private fun onInteractionCrate(crate: Crate) {
         env.state = Environment.State.Swap(
             index = 0,
@@ -24,15 +20,12 @@ internal class Interactions(
 
     private fun onInteraction() {
         val interactive = holder.interactive ?: return
-        when (interactive.type) {
-            Interactive.Type.Item -> {
-                val item = env.items.firstOrNull { it.id == interactive.id } ?: TODO()
-                onInteractionItem(item = item)
-            }
-            Interactive.Type.Crate -> {
+        when (interactive) {
+            is Interactive.Crate -> {
                 val crate = env.crates.firstOrNull { it.id == interactive.id } ?: TODO()
                 onInteractionCrate(crate = crate)
             }
+            else -> Unit
         }
     }
 
