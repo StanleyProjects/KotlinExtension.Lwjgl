@@ -1,12 +1,12 @@
 package sp.service.sample
 
-import sp.kx.lwjgl.engine.TimeProvider
+import sp.kx.lwjgl.engine.Engine
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 
 internal class MutableInteractiveHolder(
-    private val timer: TimeProvider,
+    private val engine: Engine,
 ) : InteractiveHolder {
     override var interactive: Interactive? = null
         private set
@@ -17,7 +17,7 @@ internal class MutableInteractiveHolder(
         println("Item: ${item.id}")
         interactive = Interactive.Item(
             id = item.id,
-            time = timer.now(),
+            time = engine.property.time.b,
         )
     }
 

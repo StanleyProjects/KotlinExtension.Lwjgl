@@ -200,11 +200,11 @@ internal class Renders(
     ) {
         val whenPressed = engine.input.keyboard.whenPressed(KeyboardButton.F)
         val point = env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
-        val width = if (whenPressed == null) {
+        val width = if (whenPressed == null || whenPressed < interactive.time) {
             0.0
         } else {
             val max = 1.seconds
-            val diff = engine.timer.now() - whenPressed
+            val diff = engine.property.time.b - whenPressed
             diff.inWholeNanoseconds.toDouble() / max.inWholeNanoseconds
         }
         canvas.polygons.drawRectangle(

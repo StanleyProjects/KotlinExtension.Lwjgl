@@ -10,7 +10,7 @@ internal class Calculations(
     private val engine: Engine,
     private val env: Environment,
 ) {
-    private val holder = MutableInteractiveHolder(timer = engine.timer)
+    private val holder = MutableInteractiveHolder(engine = engine)
 
     private fun getInteractive() {
         val item = Entities.getNearestItem(
@@ -39,7 +39,7 @@ internal class Calculations(
         val whenPressed = engine.input.keyboard.whenPressed(KeyboardButton.F) ?: return
         if (whenPressed < interactive.time) return
         val max = 1.seconds
-        val diff = engine.timer.now() - whenPressed
+        val diff = engine.property.time.b - whenPressed
         if (diff < max) return
         item.owner = env.player.id
     }
