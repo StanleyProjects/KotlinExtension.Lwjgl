@@ -1,12 +1,22 @@
 package sp.service.sample
 
 import sp.kx.lwjgl.entity.input.KeyboardButton
+import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Entities
 import sp.service.sample.entity.Item
 
 internal class Interactions(private val env: Environment) {
     private fun onInteractionItem(item: Item) {
         item.owner = env.player.id
+    }
+
+    private fun onInteractionCrate(crate: Crate) {
+        env.state = Environment.State.Swap(
+            index = 0,
+            side = true,
+            src = env.player.id,
+            dst = crate.id,
+        )
     }
 
     private fun onInteraction() {
@@ -17,6 +27,15 @@ internal class Interactions(private val env: Environment) {
         )
         if (item != null) {
             onInteractionItem(item = item)
+            return
+        }
+        val crate = Entities.getNearestCrate(
+            target = env.player.moving.point,
+            crates = env.crates,
+            maxDistance = 1.75,
+        )
+        if (crate != null) {
+            onInteractionCrate(crate = crate)
             return
         }
     }
@@ -60,7 +79,38 @@ internal class Interactions(private val env: Environment) {
     }
 
     private fun onPressSwap(state: Environment.State.Swap, button: KeyboardButton) {
-        TODO("Interactions:onPressSwap($state, $button)")
+        when (button) {
+            KeyboardButton.ESCAPE -> {
+                env.state = Environment.State.Walking
+            }
+            else -> Unit
+        }
+        val owner = if (state.side) state.src else state.dst
+        val items = env.items.filter { it.owner == owner }
+        if (items.isNotEmpty()) when (button) {
+            KeyboardButton.W -> {
+                state.index = (items.size + state.index - 1) % items.size
+            }
+            KeyboardButton.S -> {
+                state.index = (state.index + 1) % items.size
+            }
+            KeyboardButton.F -> {
+                val item = items[state.index]
+                item.point.set(env.player.moving.point)
+                item.owner = if (state.side) state.dst else state.src
+                if (state.index == items.lastIndex) {
+                    state.index = (items.size + state.index - 1) % items.size
+                }
+            }
+            else -> Unit
+        }
+        when (button) {
+            KeyboardButton.A, KeyboardButton.D -> {
+                state.index = 0
+                state.side = !state.side
+            }
+            else -> Unit
+        }
     }
 
     fun onPress(button: KeyboardButton) {

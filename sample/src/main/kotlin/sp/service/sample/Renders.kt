@@ -201,7 +201,27 @@ internal class Renders(
         state: Environment.State.Swap,
         measure: Measure<Double, Double>,
     ) {
-        // todo
+        val size = sizeOf(8, 8)
+        onRenderItems(
+            canvas = canvas,
+            size = size,
+            items = env.items.filter { it.owner == state.src },
+            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
+            selected = state.index.takeIf { state.side },
+            title = "",
+            offset = offsetOf(2, 2),
+            measure = measure,
+        )
+        onRenderItems(
+            canvas = canvas,
+            size = size,
+            items = env.items.filter { it.owner == state.dst },
+            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
+            selected = state.index.takeIf { !state.side },
+            title = state.dst.toString().substring(0, 4),
+            offset = offsetOf(2.0 + size.width + 2.0, 2.0),
+            measure = measure,
+        )
     }
 
     private fun onRenderInventory(
