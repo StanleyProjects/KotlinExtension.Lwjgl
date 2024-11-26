@@ -197,9 +197,27 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
                 relays = emptyList(),
                 items = listOf(
                     Item(
-                        id = UUID(1, 1),
+                        id = UUID(1, index.incrementAndGet()),
+                        tags = setOf(UUID(2, 1)),
+                        point = MutablePoint(6.0, -2.0),
+                        owner = null,
+                    ),
+                    Item(
+                        id = UUID(1, index.incrementAndGet()),
                         tags = setOf(UUID(2, 1)),
                         point = MutablePoint(6.0, 0.0),
+                        owner = null,
+                    ),
+                    Item(
+                        id = UUID(1, index.incrementAndGet()),
+                        tags = setOf(UUID(2, 1)),
+                        point = MutablePoint(8.0, 0.0),
+                        owner = null,
+                    ),
+                    Item(
+                        id = UUID(1, index.incrementAndGet()),
+                        tags = setOf(UUID(2, 1)),
+                        point = MutablePoint(6.0, 2.0),
                         owner = null,
                     ),
                 ),

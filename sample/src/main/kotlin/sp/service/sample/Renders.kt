@@ -169,12 +169,14 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
         crate: Crate,
+        current: Boolean,
     ) {
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
         val point = crate.point
+        val color = if (current) Color.Green else Color.Green.copy(alpha = 0.5f)
         canvas.polygons.drawRectangle(
-            borderColor = Color.Green,
-            fillColor = Color.Green.copy(alpha = if (isPressed) 0.5f else 0f),
+            borderColor = color,
+            fillColor = Color.Green.copy(alpha = if (isPressed && current) 0.5f else 0f),
             pointTopLeft = point,
             size = sizeOf(1.0, 1.0),
             lineWidth = 0.1,
@@ -183,7 +185,7 @@ internal class Renders(
         )
         val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
         canvas.texts.draw(
-            color = Color.Green,
+            color = color,
             info = info,
             pointTopLeft = point,
             offset = offset + offsetOf(dX = 1.25, dY = -1.5),
@@ -198,24 +200,27 @@ internal class Renders(
         measure: Measure<Double, Double>,
         item: Item,
         time: Duration,
+        current: Boolean,
     ) {
-        val progress = engine.progress(
-            button = KeyboardButton.F,
-            min = time,
-        )
         val point = item.point
+        val color = if (current) Color.Green else Color.Green.copy(alpha = 0.5f)
+        if (current) {
+            canvas.polygons.drawRectangle(
+                color = Color.Green.copy(alpha = 0.75f),
+                pointTopLeft = point,
+                size = sizeOf(
+                    width = 1.0 * engine.progress(
+                        button = KeyboardButton.F,
+                        min = time,
+                    ),
+                    height = 1.0,
+                ),
+                offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+                measure = measure,
+            )
+        }
         canvas.polygons.drawRectangle(
-            color = Color.Green.copy(alpha = 0.75f),
-            pointTopLeft = point,
-            size = sizeOf(
-                width = 1.0 * progress,
-                height = 1.0,
-            ),
-            offset = offset + offsetOf(dX = 1.0, dY = -1.5),
-            measure = measure,
-        )
-        canvas.polygons.drawRectangle(
-            color = Color.Green,
+            color = color,
             pointTopLeft = point,
             size = sizeOf(1.0, 1.0),
             lineWidth = 0.1,
@@ -224,7 +229,7 @@ internal class Renders(
         )
         val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
         canvas.texts.draw(
-            color = Color.Green,
+            color = color,
             info = info,
             pointTopLeft = point,
             offset = offset + offsetOf(dX = 1.25, dY = -1.5),
@@ -238,6 +243,7 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
+        val interactive = holder.current ?: return
         holder.map.forEach { (type, ids) ->
             when {
                 type.isAssignableFrom(Item::class.java) -> {
@@ -249,6 +255,7 @@ internal class Renders(
                             measure = measure,
                             item = item,
                             time = time,
+                            current = interactive.type == type && interactive.id == id,
                         )
                     }
                 }
@@ -260,6 +267,7 @@ internal class Renders(
                             offset = offset,
                             measure = measure,
                             crate = crate,
+                            current = interactive.type == type && interactive.id == id,
                         )
                     }
                 }
