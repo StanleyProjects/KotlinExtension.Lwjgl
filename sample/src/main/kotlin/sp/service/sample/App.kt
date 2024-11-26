@@ -1,12 +1,12 @@
 package sp.service.sample
 
-import sp.kx.lwjgl.util.EngineUtil
+import sp.kx.lwjgl.engine.Engine
 import sp.kx.math.sizeOf
 import sp.service.sample.logics.TestEngineLogics
 
 fun main() {
 //	EngineUtil.run(::GameEngineLogic)
-	EngineUtil.run(::TestEngineLogics, size = sizeOf(640, 480), title = "foo bar baz")
+	Engine.run(::TestEngineLogics, size = sizeOf(640, 480), title = "foo bar baz")
 //	EngineUtil.run(::PolygonsEngineLogics, size = sizeOf(640, 480), title = "Polygons")
 //	EngineUtil.run(::InputEngineLogic)
 }
