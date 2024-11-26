@@ -41,7 +41,13 @@ sealed interface Engine {
             WindowUtil.loopWindow(
                 title = title,
                 size = size,
+                onWindowCloseCallback = {
+                    // todo
+                },
                 fontDrawer = fontStorage.drawer,
+                onPreLoop = { windowId: Long ->
+                    engine.property.launched = times.now()
+                },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
                         println("on -> keyboard callback: $key $scancode $action") // todo
@@ -55,9 +61,6 @@ sealed interface Engine {
                         logics.inputCallback.onKeyboardButton(button, isPressed)
                     }
                 },
-                onWindowCloseCallback = {
-                    // todo
-                },
                 onRender = { windowId, canvas ->
                     engine.property.time.b = times.now()
                     engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
@@ -66,9 +69,6 @@ sealed interface Engine {
                     if (logics.shouldEngineStop()) {
                         GLFW.glfwSetWindowShouldClose(windowId, true)
                     }
-                },
-                onPreLoop = { windowId ->
-                    // todo
                 },
                 onPostLoop = {
                     // todo

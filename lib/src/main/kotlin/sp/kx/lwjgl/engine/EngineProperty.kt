@@ -5,6 +5,7 @@ import sp.kx.math.measure.Interval
 import kotlin.time.Duration
 
 interface EngineProperty {
+    val launched: Duration
     val time: Interval<Duration>
     val pictureSize: Size
 }
