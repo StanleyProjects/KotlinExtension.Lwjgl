@@ -37,6 +37,7 @@ internal class Calculations(
 
     private fun onInteractiveItem(id: UUID, time: Duration) {
         val item = env.items.firstOrNull { it.id == id } ?: TODO()
+        // todo current ?
         val passed = engine.passed(KeyboardButton.F, time)
         if (passed) {
             item.owner = env.player.id
