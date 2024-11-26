@@ -69,6 +69,7 @@ interface PolygonDrawer {
     )
 
     // border
+    // todo border on border
 
     fun drawRectangle(
         borderColor: Color,
