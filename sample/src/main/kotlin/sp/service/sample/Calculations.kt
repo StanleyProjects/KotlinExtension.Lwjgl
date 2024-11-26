@@ -1,7 +1,9 @@
 package sp.service.sample
 
 import sp.kx.lwjgl.engine.Engine
+import sp.kx.lwjgl.engine.passed
 import sp.kx.lwjgl.entity.input.KeyboardButton
+import sp.kx.lwjgl.provider.Times
 import sp.service.sample.entity.Entities
 import sp.service.sample.entity.Interactive
 import kotlin.time.Duration.Companion.seconds
@@ -36,12 +38,10 @@ internal class Calculations(
 
     private fun onInteractive(interactive: Interactive.Item) {
         val item = env.items.firstOrNull { it.id == interactive.id } ?: TODO()
-        val whenPressed = engine.input.keyboard.whenPressed(KeyboardButton.F) ?: return
-        if (whenPressed < interactive.time) return
-        val max = 1.seconds
-        val diff = engine.property.time.b - whenPressed
-        if (diff < max) return
-        item.owner = env.player.id
+        val passed = engine.passed(KeyboardButton.F, interactive.time)
+        if (passed) {
+            item.owner = env.player.id
+        }
     }
 
     private fun onInteractive(interactive: Interactive) {

@@ -1,6 +1,7 @@
 package sp.service.sample
 
 import sp.kx.lwjgl.engine.Engine
+import sp.kx.lwjgl.engine.progress
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.copy
@@ -21,12 +22,10 @@ import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.vectorOf
 import sp.service.sample.entity.Crate
-import sp.service.sample.entity.Entities
 import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Player
 import sp.service.sample.util.FontInfoUtil
-import kotlin.time.Duration.Companion.seconds
 
 internal class Renders(
     private val engine: Engine,
@@ -198,19 +197,18 @@ internal class Renders(
         measure: Measure<Double, Double>,
         interactive: Interactive.Item,
     ) {
-        val whenPressed = engine.input.keyboard.whenPressed(KeyboardButton.F)
+        val progress = engine.progress(
+            button = KeyboardButton.F,
+            min = interactive.time,
+        )
         val point = env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
-        val width = if (whenPressed == null || whenPressed < interactive.time) {
-            0.0
-        } else {
-            val max = 1.seconds
-            val diff = engine.property.time.b - whenPressed
-            diff.inWholeNanoseconds.toDouble() / max.inWholeNanoseconds
-        }
         canvas.polygons.drawRectangle(
             color = Color.Green.copy(alpha = 0.75f),
             pointTopLeft = point,
-            size = sizeOf(width = width, height = 1.0),
+            size = sizeOf(
+                width = 1.0 * progress,
+                height = 1.0,
+            ),
             offset = offset + offsetOf(dX = 1.0, dY = -1.5),
             measure = measure,
         )
