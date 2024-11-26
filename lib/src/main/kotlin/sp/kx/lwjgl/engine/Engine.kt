@@ -9,8 +9,9 @@ import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.glfw.toPressedOrNull
+import sp.kx.lwjgl.provider.SystemTimes
+import sp.kx.lwjgl.provider.Times
 import sp.kx.lwjgl.stb.STBFontStorage
-import sp.kx.lwjgl.system.SystemTimeProvider
 import sp.kx.math.Size
 import sp.kx.math.sizeOf
 
@@ -18,14 +19,13 @@ sealed interface Engine {
     val input: EngineInputState
     val property: EngineProperty
     val fontAgent: FontAgent
-    val timer: TimeProvider
 
     companion object {
         fun run(
             supplier: (Engine) -> EngineLogics,
             title: String = "Engine",
             size: Size? = null,
-            timer: TimeProvider = SystemTimeProvider,
+            times: Times = SystemTimes,
         ) {
             // todo run once
             // todo logger
@@ -36,7 +36,6 @@ sealed interface Engine {
                 input = EngineInputState(keyboard),
                 property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
                 fontAgent = fontStorage.agent,
-                timer = timer,
             )
             val logics = supplier(engine)
             WindowUtil.loopWindow(
@@ -49,7 +48,7 @@ sealed interface Engine {
                         val button = key.toKeyboardButtonOrNull() ?: return
                         val isPressed = action.toPressedOrNull() ?: return
                         if (isPressed) {
-                            keyboard.buttons[button] = engine.timer.now()
+                            keyboard.buttons[button] = times.now()
                         } else {
                             keyboard.buttons.remove(button)
                         }
@@ -60,7 +59,7 @@ sealed interface Engine {
                     // todo
                 },
                 onRender = { windowId, canvas ->
-                    engine.property.time.b = engine.timer.now()
+                    engine.property.time.b = times.now()
                     engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                     logics.onRender(canvas = canvas)
                     engine.property.time.a = engine.property.time.b

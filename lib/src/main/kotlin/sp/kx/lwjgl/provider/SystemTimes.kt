@@ -1,10 +1,9 @@
-package sp.kx.lwjgl.system
+package sp.kx.lwjgl.provider
 
-import sp.kx.lwjgl.engine.TimeProvider
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 
-internal object SystemTimeProvider : TimeProvider {
+internal object SystemTimes : Times {
     override fun now(): Duration {
         return System.nanoTime().nanoseconds
     }

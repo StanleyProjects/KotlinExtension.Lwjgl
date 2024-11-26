@@ -1,7 +1,7 @@
-package sp.kx.lwjgl.engine
+package sp.kx.lwjgl.provider
 
 import kotlin.time.Duration
 
-interface TimeProvider {
+interface Times {
     fun now(): Duration
 }
