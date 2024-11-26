@@ -3,6 +3,7 @@ package sp.service.sample.entity
 import sp.kx.math.Point
 import sp.kx.math.distanceOf
 import sp.kx.math.gt
+import java.util.UUID
 
 internal object Entities {
     fun getNearestItem(
@@ -22,6 +23,30 @@ internal object Entities {
         return nearest?.first
     }
 
+    fun getNearestItems(
+        target: Point,
+        items: List<Item>,
+        maxDistance: Double,
+    ): List<Item> {
+        return items.filter {
+            it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 12)
+        }
+    }
+
+    fun getNearestItemIDs(
+        target: Point,
+        items: List<Item>,
+        maxDistance: Double,
+    ): Set<UUID> {
+        val result = mutableSetOf<UUID>()
+        for (it in items) {
+            if (it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 12)) {
+                result.add(it.id)
+            }
+        }
+        return result
+    }
+
     fun getNearestCrate(
         target: Point,
         crates: List<Crate>,
@@ -36,5 +61,29 @@ internal object Entities {
             }
         }
         return nearest?.first
+    }
+
+    fun getNearestCrates(
+        target: Point,
+        crates: List<Crate>,
+        maxDistance: Double,
+    ): List<Crate> {
+        return crates.filter {
+            !distanceOf(it.point, target).gt(other = maxDistance, points = 12)
+        }
+    }
+
+    fun getNearestCrateIDs(
+        target: Point,
+        crates: List<Crate>,
+        maxDistance: Double,
+    ): Set<UUID> {
+        val result = mutableSetOf<UUID>()
+        for (it in crates) {
+            if (!distanceOf(it.point, target).gt(other = maxDistance, points = 12)) {
+                result.add(it.id)
+            }
+        }
+        return result
     }
 }

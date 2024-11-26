@@ -19,13 +19,12 @@ internal class Interactions(
     }
 
     private fun onInteraction() {
-        val interactive = holder.interactive ?: return
-        when (interactive) {
-            is Interactive.Crate -> {
+        val interactive = holder.current ?: return
+        when {
+            interactive.type.isAssignableFrom(Crate::class.java) -> {
                 val crate = env.crates.firstOrNull { it.id == interactive.id } ?: TODO()
                 onInteractionCrate(crate = crate)
             }
-            else -> Unit
         }
     }
 

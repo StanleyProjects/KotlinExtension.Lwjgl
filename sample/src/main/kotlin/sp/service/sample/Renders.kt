@@ -26,6 +26,7 @@ import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Player
 import sp.service.sample.util.FontInfoUtil
+import kotlin.time.Duration
 
 internal class Renders(
     private val engine: Engine,
@@ -163,14 +164,14 @@ internal class Renders(
         }
     }
 
-    private fun onRenderInteractive(
+    private fun onRenderInteractiveCrate(
         canvas: Canvas,
         offset: Offset,
         measure: Measure<Double, Double>,
-        interactive: Interactive.Crate,
+        crate: Crate,
     ) {
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
-        val point = env.crates.firstOrNull { it.id == interactive.id }?.point ?: TODO()
+        val point = crate.point
         canvas.polygons.drawRectangle(
             borderColor = Color.Green,
             fillColor = Color.Green.copy(alpha = if (isPressed) 0.5f else 0f),
@@ -191,17 +192,18 @@ internal class Renders(
         )
     }
 
-    private fun onRenderInteractive(
+    private fun onRenderInteractiveItem(
         canvas: Canvas,
         offset: Offset,
         measure: Measure<Double, Double>,
-        interactive: Interactive.Item,
+        item: Item,
+        time: Duration,
     ) {
         val progress = engine.progress(
             button = KeyboardButton.F,
-            min = interactive.time,
+            min = time,
         )
-        val point = env.items.firstOrNull { it.id == interactive.id }?.point ?: TODO()
+        val point = item.point
         canvas.polygons.drawRectangle(
             color = Color.Green.copy(alpha = 0.75f),
             pointTopLeft = point,
@@ -236,23 +238,31 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val interactive = holder.interactive ?: return
-        when (interactive) {
-            is Interactive.Crate -> {
-                onRenderInteractive(
-                    canvas = canvas,
-                    offset = offset,
-                    measure = measure,
-                    interactive = interactive,
-                )
-            }
-            is Interactive.Item -> {
-                onRenderInteractive(
-                    canvas = canvas,
-                    offset = offset,
-                    measure = measure,
-                    interactive = interactive,
-                )
+        holder.map.forEach { (type, ids) ->
+            when {
+                type.isAssignableFrom(Item::class.java) -> {
+                    ids.forEach { (id, time) ->
+                        val item = env.items.firstOrNull { it.id == id } ?: TODO()
+                        onRenderInteractiveItem(
+                            canvas = canvas,
+                            offset = offset,
+                            measure = measure,
+                            item = item,
+                            time = time,
+                        )
+                    }
+                }
+                type.isAssignableFrom(Crate::class.java) -> {
+                    ids.forEach { (id, _) ->
+                        val crate = env.crates.firstOrNull { it.id == id } ?: TODO()
+                        onRenderInteractiveCrate(
+                            canvas = canvas,
+                            offset = offset,
+                            measure = measure,
+                            crate = crate,
+                        )
+                    }
+                }
             }
         }
     }
