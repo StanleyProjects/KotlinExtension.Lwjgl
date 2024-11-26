@@ -60,8 +60,4 @@ internal class Calculations(
     fun getHolder(): InteractiveHolder {
         return holder
     }
-
-    fun switchInteractive() {
-
-    }
 }

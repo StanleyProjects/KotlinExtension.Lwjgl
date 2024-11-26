@@ -42,4 +42,17 @@ internal class MutableInteractiveHolder(
             )
         }
     }
+
+    override fun switchCurrent() {
+        val current = current ?: return
+        val values = map.flatMap { (type, ids) -> ids.map { Interactive(type = type, id = it.key, time = it.value) } }
+        for (i in values.indices) {
+            val value = values[i]
+            if (value.type == current.type && value.id == current.id) {
+                val index = if (i == values.lastIndex) 0 else i + 1
+                this.current = values[index]
+                return
+            }
+        }
+    }
 }

@@ -30,6 +30,7 @@ internal class Interactions(
 
     private fun onPressWalking(button: KeyboardButton) {
         when (button) {
+            KeyboardButton.RIGHT -> holder.switchCurrent()
             KeyboardButton.F -> onInteraction()
             KeyboardButton.TAB -> {
                 env.state = Environment.State.Inventory(index = 0)
