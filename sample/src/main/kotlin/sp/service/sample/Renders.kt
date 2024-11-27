@@ -199,12 +199,11 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
         item: Item,
-        time: Duration,
-        current: Boolean,
+        time: Duration?,
     ) {
         val point = item.point
-        val color = if (current) Color.Green else Color.Green.copy(alpha = 0.5f)
-        if (current) {
+        val color = if (time != null) Color.Green else Color.Green.copy(alpha = 0.5f)
+        if (time != null) {
             canvas.polygons.drawRectangle(
                 color = Color.Green.copy(alpha = 0.75f),
                 pointTopLeft = point,
@@ -247,27 +246,26 @@ internal class Renders(
         holder.map.forEach { (type, ids) ->
             when {
                 type.isAssignableFrom(Item::class.java) -> {
-                    ids.forEach { (id, time) ->
+                    ids.forEach { id ->
                         val item = env.items.firstOrNull { it.id == id } ?: TODO()
                         onRenderInteractiveItem(
                             canvas = canvas,
                             offset = offset,
                             measure = measure,
                             item = item,
-                            time = time,
-                            current = interactive.type == type && interactive.id == id,
+                            time = interactive.getCurrentTime(type = type, id = id),
                         )
                     }
                 }
                 type.isAssignableFrom(Crate::class.java) -> {
-                    ids.forEach { (id, _) ->
+                    ids.forEach { id ->
                         val crate = env.crates.firstOrNull { it.id == id } ?: TODO()
                         onRenderInteractiveCrate(
                             canvas = canvas,
                             offset = offset,
                             measure = measure,
                             crate = crate,
-                            current = interactive.type == type && interactive.id == id,
+                            current = interactive.current(type = type, id = id),
                         )
                     }
                 }
