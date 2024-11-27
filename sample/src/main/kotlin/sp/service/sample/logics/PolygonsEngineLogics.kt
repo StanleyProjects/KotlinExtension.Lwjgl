@@ -23,17 +23,12 @@ import kotlin.time.Duration.Companion.seconds
 
 internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
-    private val buttons = mutableMapOf<KeyboardButton, Duration>()
-
     override val inputCallback = object : EngineInputCallback {
-
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
             when (button) {
                 KeyboardButton.ESCAPE -> {
-                    if (isPressed) {
-                        buttons[button] = System.nanoTime().nanoseconds
-                    } else {
-                        buttons.remove(button)
+                    if (!isPressed) {
+                        shouldEngineStopUnit = Unit
                     }
                 }
                 KeyboardButton.P -> {
@@ -69,25 +64,6 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 //        )
         val vectors = canvas.vectors
         val texts = canvas.texts
-        val duration = buttons[KeyboardButton.ESCAPE]
-        if (duration != null) {
-            val max = 1.seconds
-            val now = System.nanoTime().nanoseconds
-            val diff = now - duration
-            if (diff < max) {
-                val progress = 100.0 * diff.inWholeNanoseconds / max.inWholeNanoseconds
-                texts.draw(
-                    info = getFontInfo(height = 1.0, measure = measure),
-                    pointTopLeft = pointOf(x = 1, y = 0),
-                    color = Color.Green,
-                    text = "[ESC]${progress.toInt()}",
-                    measure = measure,
-                )
-            } else {
-                buttons.remove(KeyboardButton.ESCAPE)
-                shouldEngineStopUnit = Unit
-            }
-        }
         for(dX in 1..24) {
             val x = measure.magnitude * dX
             vectors.draw(
