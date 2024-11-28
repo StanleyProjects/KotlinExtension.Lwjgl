@@ -61,15 +61,13 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 //            color = Color.Green,
 //            text = String.format("%.2f", fps),
 //        )
-        val vectors = canvas.vectors
-        val texts = canvas.texts
         for(dX in 1..24) {
             val x = measure.magnitude * dX
-            vectors.draw(
+            canvas.vectors.draw(
                 color = Color.Green.copy(alpha = 0.75f),
                 vector = vectorOf(startX = x, startY = 0.0, finishX = x, finishY = engine.property.pictureSize.height),
             )
-            vectors.draw(
+            canvas.vectors.draw(
                 color = Color.Yellow.copy(alpha = 0.75f),
                 vector = vectorOf(
                     startX = x + measure.magnitude / 2,
@@ -78,7 +76,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                     finishY = engine.property.pictureSize.height,
                 ),
             )
-            texts.draw(
+            canvas.texts.draw(
                 info = getFontInfo(height = 0.5, measure = measure),
                 pointTopLeft = pointOf(x = dX, y = 0),
                 color = Color.Green,
@@ -88,11 +86,11 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         for(dY in 1..24) {
             val y = measure.magnitude * dY
-            vectors.draw(
+            canvas.vectors.draw(
                 color = Color.Green.copy(alpha = 0.75f),
                 vector = vectorOf(startX = 0.0, startY = y, finishX = engine.property.pictureSize.width, finishY = y),
             )
-            vectors.draw(
+            canvas.vectors.draw(
                 color = Color.Yellow.copy(alpha = 0.75f),
                 vector = vectorOf(
                     startX = 0.0,
@@ -101,7 +99,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                     finishY = y + measure.magnitude / 2,
                 ),
             )
-            texts.draw(
+            canvas.texts.draw(
                 info = getFontInfo(height = 0.5, measure = measure),
                 pointTopLeft = pointOf(x = 0, y = dY),
                 color = Color.Green,
@@ -109,11 +107,11 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                 measure = measure,
             )
         }
-        val polygons = canvas.polygons
         var color = 0
 
         //
 
+        /*
         val tl = pointOf(2, 2)
         val size = sizeOf(4, 4)
         val br = tl.plus(
@@ -139,15 +137,15 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             offset = Offset.Empty,
             measure = measure,
         )
-//        polygons.drawRectangle(
-//            fillColor = Color.Red,
-//            borderColor = Color.Green.copy(alpha = 0.5f),
-//            pointTopLeft = tl,
-//            size = size,
-//            lineWidth = 1.0,
-//            offset = Offset.Empty,
-//            measure = measure,
-//        )
+        canvas.polygons.drawRectangle(
+            fillColor = Color.Red.copy(alpha = 0.5f),
+            borderColor = Color.Green.copy(alpha = 0.5f),
+            pointTopLeft = tl,
+            size = size,
+            lineWidth = 1.0,
+            offset = Offset.Empty,
+            measure = measure,
+        )
         listOf(tl, tr, br, bl).forEach { point ->
             canvas.polygons.drawCircle(
                 color = Color.Yellow,
@@ -158,29 +156,30 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                 measure = measure,
             )
         }
+        */
 
-        return // todo
+//        return // todo
 
         //
 
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 1) + measure,
             size = sizeOf(1, 1) + measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 1) + measure,
             size = sizeOf(1, 1) + measure,
             offset = offsetOf(dX = 2, dY = 0) + measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(5, 1),
             size = sizeOf(1, 1),
             measure = measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 1),
             size = sizeOf(1, 1),
@@ -190,27 +189,27 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         // lineWidth
 
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 3) + measure,
             size = sizeOf(1, 1) + measure,
             lineWidth = 6.0,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 3) + measure,
             size = sizeOf(1, 1) + measure,
             lineWidth = measure.magnitude / 4,
             offset = offsetOf(dX = 2, dY = 0) + measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(5, 3),
             size = sizeOf(1, 1),
             lineWidth = 0.25,
             measure = measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = pointOf(1, 3),
             size = sizeOf(1, 1),
@@ -221,14 +220,14 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         // border
 
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
             pointTopLeft = pointOf(1, 5) + measure,
             size = sizeOf(1, 1) + measure,
             lineWidth = measure.magnitude / 4,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
             pointTopLeft = pointOf(1, 5) + measure,
@@ -236,7 +235,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             lineWidth = measure.magnitude / 4,
             offset = offsetOf(dX = 2, dY = 0) + measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
             pointTopLeft = pointOf(5, 5),
@@ -244,7 +243,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             lineWidth = 0.25,
             measure = measure,
         )
-        polygons.drawRectangle(
+        canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
             pointTopLeft = pointOf(1, 5),
@@ -258,7 +257,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         pointOf(1, 7).plus(measure).also { pointTopLeft ->
             val size = sizeOf(1, 2) + measure
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -268,7 +267,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(1, 7).plus(measure).also { pointTopLeft ->
             val size = sizeOf(1, 1) + measure
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -279,7 +278,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(5, 7).also { pointTopLeft ->
             val size = sizeOf(1, 1)
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -290,7 +289,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(1, 7).also { pointTopLeft ->
             val size = sizeOf(1, 1)
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -305,7 +304,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         pointOf(1, 9).plus(measure).also { pointTopLeft ->
             val size = sizeOf(1, 2) + measure
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -316,7 +315,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(1, 9).plus(measure).also { pointTopLeft ->
             val size = sizeOf(1, 1) + measure
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -328,7 +327,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(5, 9).also { pointTopLeft ->
             val size = sizeOf(1, 1)
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -340,7 +339,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         pointOf(1, 9).also { pointTopLeft ->
             val size = sizeOf(1, 1)
-            polygons.drawRectangle(
+            canvas.polygons.drawRectangle(
                 color = colors[color++],
                 pointTopLeft = pointTopLeft,
                 size = size,
@@ -354,27 +353,27 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         // circle
 
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             color = colors[color++],
             pointCenter = pointOf(9, 2) + measure,
             radius = measure.transform(0.5),
             edgeCount = 32,
         )
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             color = colors[color++],
             pointCenter = pointOf(9, 2) + measure,
             radius = measure.transform(0.5),
             edgeCount = 32,
             offset = offsetOf(dX = 2, dY = 0) + measure,
         )
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             color = colors[color++],
             pointCenter = pointOf(13, 2),
             radius = 0.5,
             edgeCount = 32,
             measure = measure,
         )
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             color = colors[color++],
             pointCenter = pointOf(13, 2),
             radius = 0.5,
@@ -385,7 +384,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         // circle + lineWidth
 
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             color = colors[color++],
             pointCenter = pointOf(9, 4) + measure,
             radius = measure.transform(0.5),
@@ -397,7 +396,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         // circle + border
 
         // todo
-        polygons.drawCircle(
+        canvas.polygons.drawCircle(
             fillColor = Color.Blue,
             borderColor = Color.Red,
             pointCenter = pointOf(13, 6),
@@ -412,7 +411,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
     companion object {
         private const val tag = "[Polygons]"
         private val colors = (0..128).map {
-            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.5f)
+            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.75f)
         }
     }
 }
