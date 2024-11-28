@@ -8,6 +8,6 @@ import sp.service.sample.logics.TestEngineLogics
 fun main() {
 //	EngineUtil.run(::GameEngineLogic)
 //	Engine.run(::TestEngineLogics, size = sizeOf(640, 480), title = "foo bar baz")
-	Engine.run(::PolygonsEngineLogics, size = sizeOf(640, 480), title = "Polygons")
+	Engine.run(::PolygonsEngineLogics, size = sizeOf(640 * 2, 480 * 2), title = "Polygons")
 //	EngineUtil.run(::InputEngineLogic)
 }

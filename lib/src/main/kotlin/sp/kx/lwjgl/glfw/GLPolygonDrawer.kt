@@ -8,6 +8,7 @@ import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.Size
 import sp.kx.math.angleOf
+import sp.kx.math.copy
 import sp.kx.math.measure.Measure
 import sp.kx.math.plus
 import sp.kx.math.pointOf
@@ -54,24 +55,40 @@ internal object GLPolygonDrawer : PolygonDrawer {
     // lineWidth
 
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Double) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
                 lineWidth = lineWidth,
             )
         }
     }
 
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, lineWidth: Double, offset: Offset) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
                 lineWidth = lineWidth,
                 offset = offset,
             )
@@ -85,12 +102,20 @@ internal object GLPolygonDrawer : PolygonDrawer {
         lineWidth: Double,
         measure: Measure<Double, Double>,
     ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
                 lineWidth = lineWidth,
                 measure = measure,
             )
@@ -105,12 +130,20 @@ internal object GLPolygonDrawer : PolygonDrawer {
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
                 lineWidth = lineWidth,
                 offset = offset,
                 measure = measure,
@@ -120,130 +153,324 @@ internal object GLPolygonDrawer : PolygonDrawer {
 
     // border
 
-    override fun drawRectangle(
-        borderColor: Color,
-        fillColor: Color,
-        pointTopLeft: Point,
-        size: Size,
+    private fun vertexOfFill(
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
         lineWidth: Double,
     ) {
-        GL11.glLineWidth(1f)
-        GLUtil.colorOf(fillColor)
-        GLUtil.transaction(GL11.GL_POLYGON) {
-            GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size)
-        }
-        GLUtil.colorOf(borderColor)
-        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
-            GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
-                lineWidth = lineWidth,
-            )
-        }
-    }
-
-    override fun drawRectangle(
-        borderColor: Color,
-        fillColor: Color,
-        pointTopLeft: Point,
-        size: Size,
-        lineWidth: Double,
-        offset: Offset,
-    ) {
-        GL11.glLineWidth(1f)
-        GLUtil.colorOf(fillColor)
-        GLUtil.transaction(GL11.GL_POLYGON) {
-            GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size, offset = offset)
-        }
-        GLUtil.colorOf(borderColor)
-        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
-            GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
-                lineWidth = lineWidth,
-                offset = offset,
-            )
-        }
-    }
-
-    override fun drawRectangle(
-        borderColor: Color,
-        fillColor: Color,
-        pointTopLeft: Point,
-        size: Size,
-        lineWidth: Double,
-        measure: Measure<Double, Double>,
-    ) {
-        GL11.glLineWidth(1f)
-        GLUtil.colorOf(fillColor)
-        GLUtil.transaction(GL11.GL_POLYGON) {
-            GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size, measure = measure)
-        }
-        GLUtil.colorOf(borderColor)
-        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
-            GLUtil.vertexOfMoved(
-                pointTopLeft = pointTopLeft,
-                size = size,
-                lineWidth = lineWidth,
-                measure = measure,
-            )
-        }
-    }
-
-    override fun drawRectangle(
-        borderColor: Color,
-        fillColor: Color,
-        pointTopLeft: Point,
-        size: Size,
-        lineWidth: Double,
-        offset: Offset,
-        measure: Measure<Double, Double>,
-    ) {
-        // todo
-        val br = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
-        )
-        val tr = pointOf(br.x, pointTopLeft.y)
-        val bl = pointOf(pointTopLeft.x, br.y)
-        val lw12 = lineWidth / 2
-        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
         // todo math
         val pi12 = kotlin.math.PI / 2
         val pi14 = kotlin.math.PI / 4
         val pi34 = pi12 + pi14
+        //
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        // #1
+        GLUtil.vertexOfMoved(
+            point = tl,
+            length = lw12s2,
+            angle = pi14,
+        )
+        // #2
+        GLUtil.vertexOfMoved(
+            point = tr,
+            length = lw12s2,
+            angle = pi34,
+        )
+        // #3
+        GLUtil.vertexOfMoved(
+            point = bl,
+            length = lw12s2,
+            angle = - pi14,
+        )
+        // #4
+        GLUtil.vertexOfMoved(
+            point = br,
+            length = lw12s2,
+            angle = - pi34,
+        )
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+    ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
         GL11.glLineWidth(1f)
         GLUtil.colorOf(fillColor)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
-            // #1
+            vertexOfFill(
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
+            )
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                point = pointTopLeft,
-                length = lw12s2,
-                angle = pi14,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
+            )
+        }
+    }
+
+    private fun vertexOfFill(
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
+        lineWidth: Double,
+        offset: Offset,
+    ) {
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        //
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        // #1
+        GLUtil.vertexOfMoved(
+            point = tl,
+            length = lw12s2,
+            angle = pi14,
+            offset = offset,
+        )
+        // #2
+        GLUtil.vertexOfMoved(
+            point = tr,
+            length = lw12s2,
+            angle = pi34,
+            offset = offset,
+        )
+        // #3
+        GLUtil.vertexOfMoved(
+            point = bl,
+            length = lw12s2,
+            angle = - pi14,
+            offset = offset,
+        )
+        // #4
+        GLUtil.vertexOfMoved(
+            point = br,
+            length = lw12s2,
+            angle = - pi34,
+            offset = offset,
+        )
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+    ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            vertexOfFill(
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
                 offset = offset,
+            )
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOfMoved(
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
+                offset = offset,
+            )
+        }
+    }
+
+    private fun vertexOfFill(
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    ) {
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        //
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        // #1
+        GLUtil.vertexOfMoved(
+            point = tl,
+            length = lw12s2,
+            angle = pi14,
+            measure = measure,
+        )
+        // #2
+        GLUtil.vertexOfMoved(
+            point = tr,
+            length = lw12s2,
+            angle = pi34,
+            measure = measure,
+        )
+        // #3
+        GLUtil.vertexOfMoved(
+            point = bl,
+            length = lw12s2,
+            angle = - pi14,
+            measure = measure,
+        )
+        // #4
+        GLUtil.vertexOfMoved(
+            point = br,
+            length = lw12s2,
+            angle = - pi34,
+            measure = measure,
+        )
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            vertexOfFill(
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
                 measure = measure,
             )
-            // #2
+        }
+        GLUtil.colorOf(borderColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOfMoved(
-                point = tr,
-                length = lw12s2,
-                angle = pi34,
-                offset = offset,
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
                 measure = measure,
             )
-            // #3
-            GLUtil.vertexOfMoved(
-                point = bl,
-                length = lw12s2,
-                angle = - pi14,
-                offset = offset,
-                measure = measure,
-            )
-            // #4
-            GLUtil.vertexOfMoved(
-                point = br,
-                length = lw12s2,
-                angle = - pi34,
+        }
+    }
+
+    private fun vertexOfFill(
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        //
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        // #1
+        GLUtil.vertexOfMoved(
+            point = tl,
+            length = lw12s2,
+            angle = pi14,
+            offset = offset,
+            measure = measure,
+        )
+        // #2
+        GLUtil.vertexOfMoved(
+            point = tr,
+            length = lw12s2,
+            angle = pi34,
+            offset = offset,
+            measure = measure,
+        )
+        // #3
+        GLUtil.vertexOfMoved(
+            point = bl,
+            length = lw12s2,
+            angle = - pi14,
+            offset = offset,
+            measure = measure,
+        )
+        // #4
+        GLUtil.vertexOfMoved(
+            point = br,
+            length = lw12s2,
+            angle = - pi34,
+            offset = offset,
+            measure = measure,
+        )
+    }
+
+    override fun drawRectangle(
+        borderColor: Color,
+        fillColor: Color,
+        pointTopLeft: Point,
+        size: Size,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        val br = pointTopLeft.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointTopLeft.copy(x = br.x)
+        val bl = pointTopLeft.copy(y = br.y)
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(fillColor)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            vertexOfFill(
+                tl = pointTopLeft,
+                tr = tr,
+                br = br,
+                bl = bl,
+                lineWidth = lineWidth,
                 offset = offset,
                 measure = measure,
             )
@@ -255,8 +482,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
                 tr = tr,
                 br = br,
                 bl = bl,
-                lw12 = lw12,
-                lw12s2 = lw12s2,
+                lineWidth = lineWidth,
                 offset = offset,
                 measure = measure,
             )

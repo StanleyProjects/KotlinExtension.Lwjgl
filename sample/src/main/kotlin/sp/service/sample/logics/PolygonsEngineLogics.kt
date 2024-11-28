@@ -102,6 +102,52 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         )
     }
 
+    private fun onRenderLineWidth(
+        canvas: Canvas,
+        padding: Offset,
+        index: Int,
+        size: Size,
+        tl: Point,
+    ) {
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
+        val lineWidth = 1.0
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera + measure,
+            size = size + measure,
+            lineWidth = measure.transform(lineWidth),
+        )
+        offset.dX = padding.dX * 1
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + measure,
+            size = size + measure,
+            lineWidth = measure.transform(lineWidth),
+            offset = offset + camera + measure,
+        )
+        offset.dX = padding.dX * 2
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera,
+            size = size,
+            lineWidth = lineWidth,
+            measure = measure,
+        )
+        offset.dX = padding.dX * 3
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl,
+            size = size,
+            lineWidth = lineWidth,
+            offset = offset + camera,
+            measure = measure,
+        )
+    }
+
     private fun onRenderBorders(
         canvas: Canvas,
         padding: Offset,
@@ -144,52 +190,6 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
-            pointTopLeft = tl,
-            size = size,
-            lineWidth = lineWidth,
-            offset = offset + camera,
-            measure = measure,
-        )
-    }
-
-    private fun onRenderLineWidth(
-        canvas: Canvas,
-        padding: Offset,
-        index: Int,
-        size: Size,
-        tl: Point,
-    ) {
-        var color = 10 * index
-        val offset = MutableOffset(
-            dX = 0.0,
-            dY = padding.dY * index,
-        )
-        val lineWidth = 1.0
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + offset + camera + measure,
-            size = size + measure,
-            lineWidth = measure.transform(lineWidth),
-        )
-        offset.dX = padding.dX * 1
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + measure,
-            size = size + measure,
-            lineWidth = measure.transform(lineWidth),
-            offset = offset + camera + measure,
-        )
-        offset.dX = padding.dX * 2
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + offset + camera,
-            size = size,
-            lineWidth = lineWidth,
-            measure = measure,
-        )
-        offset.dX = padding.dX * 3
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
             pointTopLeft = tl,
             size = size,
             lineWidth = lineWidth,
