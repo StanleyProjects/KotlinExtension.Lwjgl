@@ -8,6 +8,7 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.copy
 import sp.kx.lwjgl.entity.input.KeyboardButton
+import sp.kx.math.Offset
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.frequency
 import sp.kx.math.offsetOf
@@ -34,10 +35,8 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                 KeyboardButton.P -> {
                     if (!isPressed) {
                         when (measure.magnitude) {
-                            16.0 -> measure.magnitude = 24.0
-                            24.0 -> measure.magnitude = 32.0
-                            32.0 -> measure.magnitude = 40.0
-                            else -> measure.magnitude = 16.0
+                            56.0 -> measure.magnitude = 16.0
+                            else -> measure.magnitude += 8
                         }
                     }
                 }
@@ -52,7 +51,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         return ::shouldEngineStopUnit.isInitialized
     }
 
-    private val measure = MutableDoubleMeasure(32.0)
+    private val measure = MutableDoubleMeasure(56.0)
 
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
@@ -112,6 +111,55 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         }
         val polygons = canvas.polygons
         var color = 0
+
+        //
+
+        val tl = pointOf(2, 2)
+        val size = sizeOf(4, 4)
+        val br = tl.plus(
+            dX = size.width,
+            dY = size.height,
+        )
+        val tr = pointOf(br.x, tl.y)
+        val bl = pointOf(tl.x, br.y)
+        listOf(tl + tr, tr + br, br + bl, bl + tl).forEach { vector ->
+            canvas.vectors.draw(
+                color = Color.Blue,
+                vector = vector,
+                lineWidth = 0.1,
+                offset = Offset.Empty,
+                measure = measure,
+            )
+        }
+        canvas.polygons.drawRectangle(
+            color = Color.Green.copy(alpha = 0.5f),
+            pointTopLeft = tl,
+            size = size,
+            lineWidth = 1.0,
+            offset = Offset.Empty,
+            measure = measure,
+        )
+//        polygons.drawRectangle(
+//            fillColor = Color.Red,
+//            borderColor = Color.Green.copy(alpha = 0.5f),
+//            pointTopLeft = tl,
+//            size = size,
+//            lineWidth = 1.0,
+//            offset = Offset.Empty,
+//            measure = measure,
+//        )
+        listOf(tl, tr, br, bl).forEach { point ->
+            canvas.polygons.drawCircle(
+                color = Color.Yellow,
+                pointCenter = point,
+                radius = 0.1,
+                edgeCount = 4,
+                offset = Offset.Empty,
+                measure = measure,
+            )
+        }
+
+        return // todo
 
         //
 
@@ -364,7 +412,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
     companion object {
         private const val tag = "[Polygons]"
         private val colors = (0..128).map {
-            colorOf(0xff000000L + Random.nextLong(16777215))
+            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.5f)
         }
     }
 }
