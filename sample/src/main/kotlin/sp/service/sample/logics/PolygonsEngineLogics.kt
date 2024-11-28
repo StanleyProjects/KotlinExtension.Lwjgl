@@ -114,12 +114,13 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             dX = 0.0,
             dY = padding.dY * index,
         )
+        val lineWidth = 1.0
         canvas.polygons.drawRectangle(
             fillColor = colors[color++],
             borderColor = colors[color++],
             pointTopLeft = tl + offset + camera + measure,
             size = size + measure,
-            lineWidth = measure.magnitude / 4,
+            lineWidth = measure.transform(lineWidth),
         )
         offset.dX = padding.dX * 1
         canvas.polygons.drawRectangle(
@@ -127,7 +128,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             borderColor = colors[color++],
             pointTopLeft = tl + measure,
             size = size + measure,
-            lineWidth = measure.magnitude / 4,
+            lineWidth = measure.transform(lineWidth),
             offset = offset + camera + measure,
         )
         offset.dX = padding.dX * 2
@@ -136,7 +137,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             borderColor = colors[color++],
             pointTopLeft = tl + offset + camera,
             size = size,
-            lineWidth = 0.25,
+            lineWidth = lineWidth,
             measure = measure,
         )
         offset.dX = padding.dX * 3
@@ -145,7 +146,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             borderColor = colors[color++],
             pointTopLeft = tl,
             size = size,
-            lineWidth = 0.25,
+            lineWidth = lineWidth,
             offset = offset + camera,
             measure = measure,
         )
@@ -163,18 +164,19 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             dX = 0.0,
             dY = padding.dY * index,
         )
+        val lineWidth = 1.0
         canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = tl + offset + camera + measure,
             size = size + measure,
-            lineWidth = 6.0,
+            lineWidth = measure.transform(lineWidth),
         )
         offset.dX = padding.dX * 1
         canvas.polygons.drawRectangle(
             color = colors[color++],
             pointTopLeft = tl + measure,
             size = size + measure,
-            lineWidth = measure.magnitude / 4,
+            lineWidth = measure.transform(lineWidth),
             offset = offset + camera + measure,
         )
         offset.dX = padding.dX * 2
@@ -182,7 +184,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             color = colors[color++],
             pointTopLeft = tl + offset + camera,
             size = size,
-            lineWidth = 0.25,
+            lineWidth = lineWidth,
             measure = measure,
         )
         offset.dX = padding.dX * 3
@@ -190,7 +192,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             color = colors[color++],
             pointTopLeft = tl,
             size = size,
-            lineWidth = 0.25,
+            lineWidth = lineWidth,
             offset = offset + camera,
             measure = measure,
         )
@@ -382,10 +384,6 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
         //
 
-        val offset = MutableOffset(
-            dX = (size.width + padding.dX) * 0,
-            dY = (size.height + padding.dY) * 0,
-        )
         onRenderRectangles(
             canvas = canvas,
             padding = padding + size.toOffset(),
@@ -526,7 +524,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         private const val tag = "[Polygons]"
         private val index = AtomicInteger(0)
         private val colors = (0..128).map {
-            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.75f)
+            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.85f)
         }
     }
 }
