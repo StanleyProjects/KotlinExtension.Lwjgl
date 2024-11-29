@@ -17,7 +17,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_POLYGON) {
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size)
         }
     }
@@ -25,7 +25,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, offset: Offset) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_POLYGON) {
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size, offset = offset)
         }
     }
@@ -33,7 +33,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size, measure: Measure<Double, Double>) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_POLYGON) {
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size, measure = measure)
         }
     }
@@ -47,7 +47,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
     ) {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
-        GLUtil.transaction(GL11.GL_POLYGON) {
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(pointTopLeft = pointTopLeft, size = size, offset = offset, measure = measure)
         }
     }

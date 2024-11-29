@@ -52,31 +52,107 @@ object GLUtil {
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size) {
+        // #1
         vertexOf(point = pointTopLeft)
+        // #2
         vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y)
-        vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y + size.height)
+        // #3
         vertexOf(first = pointTopLeft.x, second = pointTopLeft.y + size.height)
+        // #4
+        vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y + size.height)
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size, offset: Offset) {
-        vertexOf(point = pointTopLeft, offset = offset)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, offset = offset)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, offset = offset)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, offset = offset)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            offset = offset,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            offset = offset,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+        )
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size, measure: Measure<Double, Double>) {
-        vertexOf(point = pointTopLeft, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, measure = measure)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, measure = measure)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            measure = measure,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            measure = measure,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            measure = measure,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            measure = measure,
+        )
     }
 
+    /**
+     *
+     * ```
+     *  1    2
+     * *----*
+     * |    |
+     * |3   |4
+     * *----*
+     * ```
+     *
+     **/
     fun vertexOf(pointTopLeft: Point, size: Size, offset: Offset, measure: Measure<Double, Double>) {
-        vertexOf(point = pointTopLeft, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, offset = offset, measure = measure)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            offset = offset,
+            measure = measure,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            offset = offset,
+            measure = measure,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+            measure = measure,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+            measure = measure,
+        )
     }
 
     fun translated(x: Double, y: Double) {
