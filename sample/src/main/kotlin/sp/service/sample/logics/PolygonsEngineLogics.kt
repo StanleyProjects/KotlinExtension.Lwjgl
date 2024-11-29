@@ -77,26 +77,42 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 
     private val measure = MutableDoubleMeasure(56.0)
 
-    private fun drawRectangle(
+    private fun onRenderRectangles(
         canvas: Canvas,
-        pointTopLeft: Point,
+        padding: Offset,
+        index: Int,
         size: Size,
-        offset: Offset,
+        tl: Point,
     ) {
-        val pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2)
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
         canvas.polygons.drawRectangle(
-            color = Color.Yellow,
-            pointTopLeft = pointTopLeft,
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera + measure,
+            size = size + measure,
+        )
+        offset.dX = padding.dX * 1
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + measure,
+            size = size + measure,
+            offset = offset + camera + measure,
+        )
+        offset.dX = padding.dX * 2
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera,
             size = size,
-            lineWidth = 0.05,
-            offset = offset + camera,
             measure = measure,
         )
-        canvas.polygons.drawCircle(
-            color = Color.Yellow,
-            pointCenter = pointOfRotation,
-            edgeCount = 4,
-            radius = 0.1,
+        offset.dX = padding.dX * 3
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl,
+            size = size,
             offset = offset + camera,
             measure = measure,
         )
@@ -198,42 +214,26 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         )
     }
 
-    private fun onRenderRectangles(
+    private fun drawRectangle(
         canvas: Canvas,
-        padding: Offset,
-        index: Int,
+        pointTopLeft: Point,
         size: Size,
-        tl: Point,
+        offset: Offset,
     ) {
-        var color = 10 * index
-        val offset = MutableOffset(
-            dX = 0.0,
-            dY = padding.dY * index,
-        )
+        val pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2)
         canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + offset + camera + measure,
-            size = size + measure,
-        )
-        offset.dX = padding.dX * 1
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + measure,
-            size = size + measure,
-            offset = offset + camera + measure,
-        )
-        offset.dX = padding.dX * 2
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl + offset + camera,
+            color = Color.Yellow,
+            pointTopLeft = pointTopLeft,
             size = size,
+            lineWidth = 0.05,
+            offset = offset + camera,
             measure = measure,
         )
-        offset.dX = padding.dX * 3
-        canvas.polygons.drawRectangle(
-            color = colors[color++],
-            pointTopLeft = tl,
-            size = size,
+        canvas.polygons.drawCircle(
+            color = Color.Yellow,
+            pointCenter = pointOfRotation,
+            edgeCount = 4,
+            radius = 0.1,
             offset = offset + camera,
             measure = measure,
         )
@@ -312,6 +312,84 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         )
     }
 
+    private fun onRenderDLW(
+        canvas: Canvas,
+        padding: Offset,
+        index: Int,
+        size: Size,
+        tl: Point,
+    ) {
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
+        val lineWidth = 1.0
+        drawRectangle(
+            canvas = canvas,
+            pointTopLeft = tl,
+            size = size,
+            offset = offset,
+        )
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera + measure,
+            size = size + measure,
+            direction = kotlin.math.PI / 4,
+            pointOfRotation = tl + offset + camera + size.center() + measure,
+            lineWidth = measure.transform(lineWidth),
+        )
+        offset.dX = padding.dX * 1
+        drawRectangle(
+            canvas = canvas,
+            pointTopLeft = tl,
+            size = size,
+            offset = offset,
+        )
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + measure,
+            size = size + measure,
+            direction = kotlin.math.PI / 4,
+            pointOfRotation = tl + size.center() + measure,
+            lineWidth = measure.transform(lineWidth),
+            offset = offset + camera + measure,
+        )
+        offset.dX = padding.dX * 2
+        drawRectangle(
+            canvas = canvas,
+            pointTopLeft = tl,
+            size = size,
+            offset = offset,
+        )
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl + offset + camera,
+            size = size,
+            direction = kotlin.math.PI / 4,
+            pointOfRotation = tl + offset + camera + size.center(),
+            lineWidth = lineWidth,
+            measure = measure,
+        )
+        offset.dX = padding.dX * 3
+        drawRectangle(
+            canvas = canvas,
+            pointTopLeft = tl,
+            size = size,
+            offset = offset,
+        )
+        canvas.polygons.drawRectangle(
+            color = colors[color++],
+            pointTopLeft = tl,
+            size = size,
+            direction = kotlin.math.PI / 4,
+            pointOfRotation = tl + size.center(),
+            lineWidth = lineWidth,
+            offset = offset + camera,
+            measure = measure,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
 //        canvas.texts.draw(
@@ -320,10 +398,11 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
 //            color = Color.Green,
 //            text = String.format("%.2f", fps),
 //        )
-        for(dX in 1..32) {
+        val grid = sizeOf(width = 32, height = 64)
+        for(dX in 1..grid.width.toInt()) {
             canvas.vectors.draw(
                 color = Color.Green.copy(alpha = 0.75f),
-                vector = vectorOf(startX = dX, startY = 0, finishX = dX, finishY = 32),
+                vector = vectorOf(startX = dX, startY = 0, finishX = dX, finishY = grid.height.toInt()),
                 offset = camera,
                 measure = measure
             )
@@ -333,7 +412,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                     startX = dX + 0.5,
                     startY = 0.0,
                     finishX = dX + 0.5,
-                    finishY = 32.0,
+                    finishY = grid.height,
                 ),
                 offset = camera,
                 measure = measure,
@@ -347,10 +426,10 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                 measure = measure,
             )
         }
-        for(dY in 1..32) {
+        for(dY in 1..grid.height.toInt()) {
             canvas.vectors.draw(
                 color = Color.Green.copy(alpha = 0.75f),
-                vector = vectorOf(startX = 0, startY = dY, finishX = 32, finishY = dY),
+                vector = vectorOf(startX = 0, startY = dY, finishX = grid.width.toInt(), finishY = dY),
                 offset = camera,
                 measure = measure,
             )
@@ -359,7 +438,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                 vector = vectorOf(
                     startX = 0.0,
                     startY = dY + 0.5,
-                    finishX = 32.0,
+                    finishX = grid.width,
                     finishY = dY + 0.5,
                 ),
                 offset = camera,
@@ -412,56 +491,15 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             size = sizeOf(2, 4),
             tl = tl,
         )
+        onRenderDLW(
+            canvas = canvas,
+            padding = padding + size.toOffset(),
+            index = 4,
+            size = sizeOf(3, 4),
+            tl = tl,
+        )
 
         return
-        // direction + lineWidth
-
-        pointOf(1, 9).plus(measure).also { pointTopLeft ->
-            val size = sizeOf(1, 2) + measure
-            canvas.polygons.drawRectangle(
-                color = colors[color++],
-                pointTopLeft = pointTopLeft,
-                size = size,
-                direction = kotlin.math.PI / 4,
-                pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2),
-                lineWidth = measure.magnitude / 4,
-            )
-        }
-        pointOf(1, 9).plus(measure).also { pointTopLeft ->
-            val size = size + measure
-            canvas.polygons.drawRectangle(
-                color = colors[color++],
-                pointTopLeft = pointTopLeft,
-                size = size,
-                direction = kotlin.math.PI / 4,
-                pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2),
-                lineWidth = measure.magnitude / 4,
-                offset = offsetOf(dX = 2, dY = 0) + measure,
-            )
-        }
-        pointOf(5, 9).also { pointTopLeft ->
-            canvas.polygons.drawRectangle(
-                color = colors[color++],
-                pointTopLeft = pointTopLeft,
-                size = size,
-                direction = kotlin.math.PI / 4,
-                pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2),
-                lineWidth = 0.25,
-                measure = measure,
-            )
-        }
-        pointOf(1, 9).also { pointTopLeft ->
-            canvas.polygons.drawRectangle(
-                color = colors[color++],
-                pointTopLeft = pointTopLeft,
-                size = size,
-                direction = kotlin.math.PI / 4,
-                pointOfRotation = pointTopLeft.plus(dX = size.width / 2, dY = size.height / 2),
-                lineWidth = 0.25,
-                offset = offsetOf(dX = 6, dY = 0),
-                measure = measure,
-            )
-        }
 
         // circle
 

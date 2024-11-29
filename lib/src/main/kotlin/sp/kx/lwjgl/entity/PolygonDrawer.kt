@@ -195,6 +195,8 @@ interface PolygonDrawer {
         measure: Measure<Double, Double>,
     )
 
+    // todo direction + border
+
     // circle
 
     fun drawCircle(
