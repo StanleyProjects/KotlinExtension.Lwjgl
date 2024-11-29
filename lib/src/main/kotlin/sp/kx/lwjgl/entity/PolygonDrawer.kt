@@ -271,37 +271,34 @@ interface PolygonDrawer {
 
     // circle + border
 
-    // todo
-//    fun drawCircle(
-//        borderColor: Color,
-//        fillColor: Color,
-//        pointCenter: Point,
-//        radius: Double,
-//        edgeCount: Int,
-//        lineWidth: Double,
-//    )
+    fun drawCircle(
+        borderColor: Color,
+        fillColor: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+    )
 
-    // todo
-//    fun drawCircle(
-//        borderColor: Color,
-//        fillColor: Color,
-//        pointCenter: Point,
-//        radius: Double,
-//        edgeCount: Int,
-//        lineWidth: Double,
-//        offset: Offset,
-//    )
+    fun drawCircle(
+        borderColor: Color,
+        fillColor: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        offset: Offset,
+    )
 
-    // todo
-//    fun drawCircle(
-//        borderColor: Color,
-//        fillColor: Color,
-//        pointCenter: Point,
-//        radius: Double,
-//        edgeCount: Int,
-//        lineWidth: Double,
-//        measure: Measure<Double, Double>,
-//    )
+    fun drawCircle(
+        borderColor: Color,
+        fillColor: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    )
 
     fun drawCircle(
         borderColor: Color,

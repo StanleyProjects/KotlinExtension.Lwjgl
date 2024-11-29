@@ -499,11 +499,34 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         val radius = 2.0
         val lineWidth = 1.0
         offset.dX = padding.dX * 0
-        // todo
+        canvas.polygons.drawCircle(
+            borderColor = colors[color++],
+            fillColor = colors[color++],
+            pointCenter = c + offset + camera + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            lineWidth = measure.transform(lineWidth),
+        )
         offset.dX = padding.dX * 1
-        // todo
+        canvas.polygons.drawCircle(
+            borderColor = colors[color++],
+            fillColor = colors[color++],
+            pointCenter = c + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            lineWidth = measure.transform(lineWidth),
+            offset = offset + camera + measure,
+        )
         offset.dX = padding.dX * 2
-        // todo
+        canvas.polygons.drawCircle(
+            borderColor = colors[color++],
+            fillColor = colors[color++],
+            pointCenter = c + offset + camera,
+            radius = radius,
+            edgeCount = 16,
+            lineWidth = lineWidth,
+            measure = measure,
+        )
         offset.dX = padding.dX * 3
         canvas.polygons.drawCircle(
             borderColor = colors[color++],
