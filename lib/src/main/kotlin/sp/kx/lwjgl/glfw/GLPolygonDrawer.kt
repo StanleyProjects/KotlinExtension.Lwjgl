@@ -714,7 +714,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
-            for (index in 0..edgeCount) {
+            for (index in 0 until edgeCount) {
                 val radians = index * 2 * kotlin.math.PI / edgeCount
                 GLUtil.vertexOf(
                     first = pointCenter.x + kotlin.math.cos(radians) * radius,
@@ -734,7 +734,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
-            for (index in 0..edgeCount) {
+            for (index in 0 until edgeCount) {
                 val radians = index * 2 * kotlin.math.PI / edgeCount
                 GLUtil.vertexOf(
                     x = pointCenter.x + kotlin.math.cos(radians) * radius,
@@ -755,7 +755,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
-            for (index in 0..edgeCount) {
+            for (index in 0 until edgeCount) {
                 val radians = index * 2 * kotlin.math.PI / edgeCount
                 GLUtil.vertexOf(
                     x = pointCenter.x + kotlin.math.cos(radians) * radius,
@@ -777,7 +777,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_POLYGON) {
-            for (index in 0..edgeCount) {
+            for (index in 0 until edgeCount) {
                 val radians = index * 2 * kotlin.math.PI / edgeCount
                 GLUtil.vertexOf(
                     x = pointCenter.x + kotlin.math.cos(radians) * radius,

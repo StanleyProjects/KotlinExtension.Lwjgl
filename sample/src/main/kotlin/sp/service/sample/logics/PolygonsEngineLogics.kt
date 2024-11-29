@@ -390,6 +390,51 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         )
     }
 
+    private fun onRenderCircles(
+        canvas: Canvas,
+        padding: Offset,
+        index: Int,
+        c: Point,
+    ) {
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
+        val radius = 2.0
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + offset + camera + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+        )
+        offset.dX = padding.dX * 1
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            offset = offset + camera + measure,
+        )
+        offset.dX = padding.dX * 2
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + offset + camera,
+            radius = radius,
+            edgeCount = 16,
+            measure = measure,
+        )
+        offset.dX = padding.dX * 3
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c,
+            radius = radius,
+            edgeCount = 16,
+            offset = offset + camera,
+            measure = measure,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
 //        canvas.texts.draw(
@@ -497,6 +542,12 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             index = 4,
             size = sizeOf(3, 4),
             tl = tl,
+        )
+        onRenderCircles(
+            canvas = canvas,
+            padding = padding + size.toOffset(),
+            index = 5,
+            c = tl + size.center(),
         )
 
         return
