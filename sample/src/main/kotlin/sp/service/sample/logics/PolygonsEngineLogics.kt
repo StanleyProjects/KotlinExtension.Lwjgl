@@ -435,6 +435,88 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         )
     }
 
+    private fun onRenderCirclesLW(
+        canvas: Canvas,
+        padding: Offset,
+        index: Int,
+        c: Point,
+    ) {
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
+        val radius = 2.0
+        val lineWidth = 1.0
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + offset + camera + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            lineWidth = measure.transform(lineWidth),
+        )
+        offset.dX = padding.dX * 1
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + measure,
+            radius = measure.transform(radius),
+            edgeCount = 16,
+            lineWidth = measure.transform(lineWidth),
+            offset = offset + camera + measure,
+        )
+        offset.dX = padding.dX * 2
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c + offset + camera,
+            radius = radius,
+            edgeCount = 16,
+            lineWidth = lineWidth,
+            measure = measure,
+        )
+        offset.dX = padding.dX * 3
+        canvas.polygons.drawCircle(
+            color = colors[color++],
+            pointCenter = c,
+            radius = radius,
+            edgeCount = 16,
+            lineWidth = lineWidth,
+            offset = offset + camera,
+            measure = measure,
+        )
+    }
+
+    private fun onRenderCirclesBorders(
+        canvas: Canvas,
+        padding: Offset,
+        index: Int,
+        c: Point,
+    ) {
+        var color = 10 * index
+        val offset = MutableOffset(
+            dX = 0.0,
+            dY = padding.dY * index,
+        )
+        val radius = 2.0
+        val lineWidth = 1.0
+        offset.dX = padding.dX * 0
+        // todo
+        offset.dX = padding.dX * 1
+        // todo
+        offset.dX = padding.dX * 2
+        // todo
+        offset.dX = padding.dX * 3
+        canvas.polygons.drawCircle(
+            borderColor = colors[color++],
+            fillColor = colors[color++],
+            pointCenter = c,
+            radius = radius,
+            edgeCount = 16,
+            lineWidth = lineWidth,
+            offset = offset + camera,
+            measure = measure,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
 //        canvas.texts.draw(
@@ -549,63 +631,17 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
             index = 5,
             c = tl + size.center(),
         )
-
-        return
-
-        // circle
-
-        canvas.polygons.drawCircle(
-            color = colors[color++],
-            pointCenter = pointOf(9, 2) + measure,
-            radius = measure.transform(0.5),
-            edgeCount = 32,
+        onRenderCirclesLW(
+            canvas = canvas,
+            padding = padding + size.toOffset(),
+            index = 6,
+            c = tl + size.center(),
         )
-        canvas.polygons.drawCircle(
-            color = colors[color++],
-            pointCenter = pointOf(9, 2) + measure,
-            radius = measure.transform(0.5),
-            edgeCount = 32,
-            offset = offsetOf(dX = 2, dY = 0) + measure,
-        )
-        canvas.polygons.drawCircle(
-            color = colors[color++],
-            pointCenter = pointOf(13, 2),
-            radius = 0.5,
-            edgeCount = 32,
-            measure = measure,
-        )
-        canvas.polygons.drawCircle(
-            color = colors[color++],
-            pointCenter = pointOf(13, 2),
-            radius = 0.5,
-            edgeCount = 32,
-            offset = offsetOf(dX = 2, dY = 0),
-            measure = measure,
-        )
-
-        // circle + lineWidth
-
-        canvas.polygons.drawCircle(
-            color = colors[color++],
-            pointCenter = pointOf(9, 4) + measure,
-            radius = measure.transform(0.5),
-            edgeCount = 32,
-            lineWidth = measure.magnitude / 4,
-        )
-        // todo
-
-        // circle + border
-
-        // todo
-        canvas.polygons.drawCircle(
-            fillColor = Color.Blue,
-            borderColor = Color.Red,
-            pointCenter = pointOf(13, 6),
-            radius = 0.5,
-            edgeCount = 32,
-            lineWidth = 0.25,
-            offset = offsetOf(dX = 2, dY = 0),
-            measure = measure,
+        onRenderCirclesBorders(
+            canvas = canvas,
+            padding = padding + size.toOffset(),
+            index = 7,
+            c = tl + size.center(),
         )
     }
 

@@ -800,38 +800,112 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GL11.glLineWidth(1f)
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
-            for (index in 0 until edgeCount) {
-                val startRadians = index * 2 * kotlin.math.PI / edgeCount
-                val startPoint = pointCenter.plus(
-                    dX = kotlin.math.cos(startRadians) * radius,
-                    dY = kotlin.math.sin(startRadians) * radius,
+            for (index in 0..edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius + lineWidth / 2,
+                    angle = radians,
                 )
-                val finishRadians = (index + 1) * 2 * kotlin.math.PI / edgeCount
-                val finishPoint = pointCenter.plus(
-                    dX = kotlin.math.cos(finishRadians) * radius,
-                    dY = kotlin.math.sin(finishRadians) * radius,
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius - lineWidth / 2,
+                    angle = radians,
                 )
-                vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth)
             }
-            val startRadians = (edgeCount - 1) * 2 * kotlin.math.PI / edgeCount
-            val startPoint = pointCenter.plus(
-                dX = kotlin.math.cos(startRadians) * radius,
-                dY = kotlin.math.sin(startRadians) * radius,
-            )
-            val finishRadians = edgeCount * 2 * kotlin.math.PI / edgeCount
-            val finishPoint = pointCenter.plus(
-                dX = kotlin.math.cos(finishRadians) * radius,
-                dY = kotlin.math.sin(finishRadians) * radius,
-            )
-            vertexOf(start = startPoint, finish = finishPoint, lineWidth = lineWidth)
-            GLUtil.vertexOfMoved(
-                pointCenter.plus(
-                    dX = kotlin.math.cos(0.0) * radius,
-                    dY = kotlin.math.sin(0.0) * radius,
-                ),
-                length = lineWidth / 2,
-                angle = kotlin.math.PI / edgeCount - kotlin.math.PI / 2,
-            )
+        }
+    }
+
+    override fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        offset: Offset
+    ) {
+        if (edgeCount < 3) TODO()
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            for (index in 0..edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius + lineWidth / 2,
+                    angle = radians,
+                    offset = offset,
+                )
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius - lineWidth / 2,
+                    angle = radians,
+                    offset = offset,
+                )
+            }
+        }
+    }
+
+    override fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        measure: Measure<Double, Double>
+    ) {
+        if (edgeCount < 3) TODO()
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            for (index in 0..edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius + lineWidth / 2,
+                    angle = radians,
+                    measure = measure,
+                )
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius - lineWidth / 2,
+                    angle = radians,
+                    measure = measure,
+                )
+            }
+        }
+    }
+
+    override fun drawCircle(
+        color: Color,
+        pointCenter: Point,
+        radius: Double,
+        edgeCount: Int,
+        lineWidth: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>
+    ) {
+        if (edgeCount < 3) TODO()
+        GL11.glLineWidth(1f)
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            for (index in 0..edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius + lineWidth / 2,
+                    angle = radians,
+                    offset = offset,
+                    measure = measure,
+                )
+                GLUtil.vertexOfMoved(
+                    point = pointCenter,
+                    length = radius - lineWidth / 2,
+                    angle = radians,
+                    offset = offset,
+                    measure = measure,
+                )
+            }
         }
     }
 
