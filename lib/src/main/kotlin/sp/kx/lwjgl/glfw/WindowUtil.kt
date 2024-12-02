@@ -38,9 +38,9 @@ object WindowUtil {
             windowId = GLFWUtil.createWindow(title = title, monitorId = monitorId).checked { "Window id is null!" }
             GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, 0, 0, GLFW.GLFW_DONT_CARE)
         } else {
+            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE) // todo
+            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE) // todo
             windowId = GLFWUtil.createWindow(title = title, size = size).checked { "Window id is null!" }
-            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE)
-//            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, isResizable.toGLFWInt()) // todo
             val monitorSize = GLFWUtil.getMonitorSize(monitorId)
             val xPosition = (monitorSize.width - size.width) / 2
             val yPosition = (monitorSize.height - size.height) / 2

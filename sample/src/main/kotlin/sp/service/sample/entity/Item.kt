@@ -1,8 +1,11 @@
 package sp.service.sample.entity
 
+import sp.kx.math.MutablePoint
 import java.util.UUID
 
 internal class Item(
     val id: UUID,
-    val tags: List<UUID>,
+    val tags: Set<UUID>,
+    val point: MutablePoint,
+    var owner: UUID?,
 )

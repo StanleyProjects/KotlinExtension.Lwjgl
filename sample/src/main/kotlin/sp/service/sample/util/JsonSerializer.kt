@@ -66,13 +66,6 @@ internal fun JSONObject.toBarrier(): Barrier {
     )
 }
 
-internal fun JSONObject.toItem(): Item {
-    return Item(
-        id = UUID.fromString(getString("id")),
-        tags = strings("tags", UUID::fromString),
-    )
-}
-
 internal fun JSONObject.toTag(): Tag {
     return Tag(
         id = UUID.fromString(getString("id")),

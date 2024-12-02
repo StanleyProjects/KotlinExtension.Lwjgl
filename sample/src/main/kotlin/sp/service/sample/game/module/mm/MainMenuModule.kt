@@ -46,7 +46,7 @@ class MainMenuModule(private val engine: Engine, private val broadcast: (Broadca
 
     fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
         when (button) {
-            KeyboardButton.ENTER -> {
+            KeyboardButton.Enter -> {
                 if (isPressed) {
                     broadcast(Broadcast.OnItem(MainMenuItem.values()[position]))
                 }

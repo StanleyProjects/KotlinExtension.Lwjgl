@@ -468,7 +468,7 @@ class JourneyModule(private val engine: Engine, private val broadcast: (Broadcas
 
     fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
         when (button) {
-            KeyboardButton.ESCAPE -> {
+            KeyboardButton.Escape -> {
                 if (isPressed) {
                     broadcast(Broadcast.Exit)
                 }

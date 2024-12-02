@@ -5,11 +5,7 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.Size
-import sp.kx.math.angleOf
 import sp.kx.math.measure.Measure
-import sp.kx.math.plus
-import sp.kx.math.pointOf
-import kotlin.experimental.and
 
 object GLUtil {
     fun clearColor(color: Color) {
@@ -55,31 +51,107 @@ object GLUtil {
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size) {
+        // #1
         vertexOf(point = pointTopLeft)
+        // #2
         vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y)
-        vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y + size.height)
+        // #3
         vertexOf(first = pointTopLeft.x, second = pointTopLeft.y + size.height)
+        // #4
+        vertexOf(first = pointTopLeft.x + size.width, second = pointTopLeft.y + size.height)
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size, offset: Offset) {
-        vertexOf(point = pointTopLeft, offset = offset)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, offset = offset)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, offset = offset)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, offset = offset)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            offset = offset,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            offset = offset,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+        )
     }
 
     fun vertexOf(pointTopLeft: Point, size: Size, measure: Measure<Double, Double>) {
-        vertexOf(point = pointTopLeft, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, measure = measure)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, measure = measure)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            measure = measure,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            measure = measure,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            measure = measure,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            measure = measure,
+        )
     }
 
+    /**
+     *
+     * ```
+     *  1    2
+     * *----*
+     * |    |
+     * |3   |4
+     * *----*
+     * ```
+     *
+     **/
     fun vertexOf(pointTopLeft: Point, size: Size, offset: Offset, measure: Measure<Double, Double>) {
-        vertexOf(point = pointTopLeft, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x + size.width, y = pointTopLeft.y + size.height, offset = offset, measure = measure)
-        vertexOf(x = pointTopLeft.x, y = pointTopLeft.y + size.height, offset = offset, measure = measure)
+        // #1
+        vertexOf(
+            point = pointTopLeft,
+            offset = offset,
+            measure = measure,
+        )
+        // #2
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y,
+            offset = offset,
+            measure = measure,
+        )
+        // #3
+        vertexOf(
+            x = pointTopLeft.x,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+            measure = measure,
+        )
+        // #4
+        vertexOf(
+            x = pointTopLeft.x + size.width,
+            y = pointTopLeft.y + size.height,
+            offset = offset,
+            measure = measure,
+        )
     }
 
     fun translated(x: Double, y: Double) {
@@ -110,129 +182,281 @@ object GLUtil {
         vertexOf(point.x + length * kotlin.math.cos(angle), point.y + length * kotlin.math.sin(angle))
     }
 
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
-    }
-
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double, offset: Offset) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
-    }
-
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double, measure: Measure<Double, Double>) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
-    }
-
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double, offset: Offset, measure: Measure<Double, Double>) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+    private fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        a1: Double,
+        a2: Double,
+    ) {
+        vertexOf(
+            first = point.x + length * kotlin.math.cos(a1),
+            second = point.y + length * kotlin.math.sin(a1),
+        )
+        vertexOf(
+            first = point.x + length * kotlin.math.cos(a2),
+            second = point.y + length * kotlin.math.sin(a2),
+        )
     }
 
     fun vertexOfMoved(
-        pointTopLeft: Point,
-        size: Size,
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
         lineWidth: Double,
     ) {
-        val br = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
-        )
-        val brtl = pointOf(br.x, pointTopLeft.y)
-        val tlbr = pointOf(pointTopLeft.x, br.y)
-        vertexOf(start = pointTopLeft, finish = brtl, lineWidth = lineWidth)
-        vertexOf(start = brtl, br, lineWidth = lineWidth)
-        vertexOf(start = br, finish = tlbr, lineWidth = lineWidth)
-        vertexOf(start = tlbr, finish = pointTopLeft, lineWidth = lineWidth)
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
         vertexOfMoved(
-            point = pointTopLeft,
-            length = lineWidth / 2,
-            angle = angleOf(pointTopLeft, brtl) - kotlin.math.PI / 2,
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+        )
+        vertexOfMoved(
+            point = tr,
+            a1 = pi34,
+            a2 = -pi14,
+            length = lw12s2,
+        )
+        vertexOfMoved(
+            point = br,
+            a1 = -pi34,
+            a2 = pi14,
+            length = lw12s2,
+        )
+        vertexOfMoved(
+            point = bl,
+            a1 = -pi14,
+            a2 = pi34,
+            length = lw12s2,
+        )
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
         )
     }
 
-    fun vertexOfMoved(
-        pointTopLeft: Point,
-        size: Size,
-        lineWidth: Double,
+    private fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        a1: Double,
+        a2: Double,
         offset: Offset,
     ) {
-        val br = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a1),
+            y = point.y + length * kotlin.math.sin(a1),
+            offset = offset,
         )
-        val brtl = pointOf(br.x, pointTopLeft.y)
-        val tlbr = pointOf(pointTopLeft.x, br.y)
-        vertexOf(start = pointTopLeft, finish = brtl, lineWidth = lineWidth, offset = offset)
-        vertexOf(start = brtl, br, lineWidth = lineWidth, offset = offset)
-        vertexOf(start = br, finish = tlbr, lineWidth = lineWidth, offset = offset)
-        vertexOf(start = tlbr, finish = pointTopLeft, lineWidth = lineWidth, offset = offset)
-        vertexOfMoved(
-            point = pointTopLeft,
-            length = lineWidth / 2,
-            angle = angleOf(pointTopLeft, brtl) - kotlin.math.PI / 2,
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a2),
+            y = point.y + length * kotlin.math.sin(a2),
             offset = offset,
         )
     }
 
     fun vertexOfMoved(
-        pointTopLeft: Point,
-        size: Size,
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
         lineWidth: Double,
+        offset: Offset,
+    ) {
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+            offset = offset,
+        )
+        vertexOfMoved(
+            point = tr,
+            a1 = pi34,
+            a2 = -pi14,
+            length = lw12s2,
+            offset = offset,
+        )
+        vertexOfMoved(
+            point = br,
+            a1 = -pi34,
+            a2 = pi14,
+            length = lw12s2,
+            offset = offset,
+        )
+        vertexOfMoved(
+            point = bl,
+            a1 = -pi14,
+            a2 = pi34,
+            length = lw12s2,
+            offset = offset,
+        )
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+            offset = offset,
+        )
+    }
+
+    private fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        a1: Double,
+        a2: Double,
         measure: Measure<Double, Double>,
     ) {
-        val br = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a1),
+            y = point.y + length * kotlin.math.sin(a1),
+            measure = measure,
         )
-        val brtl = pointOf(br.x, pointTopLeft.y)
-        val tlbr = pointOf(pointTopLeft.x, br.y)
-        vertexOf(start = pointTopLeft, finish = brtl, lineWidth = lineWidth, measure = measure)
-        vertexOf(start = brtl, br, lineWidth = lineWidth, measure = measure)
-        vertexOf(start = br, finish = tlbr, lineWidth = lineWidth, measure = measure)
-        vertexOf(start = tlbr, finish = pointTopLeft, lineWidth = lineWidth, measure = measure)
-        vertexOfMoved(
-            point = pointTopLeft,
-            length = lineWidth / 2,
-            angle = angleOf(pointTopLeft, brtl) - kotlin.math.PI / 2,
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a2),
+            y = point.y + length * kotlin.math.sin(a2),
             measure = measure,
         )
     }
 
     fun vertexOfMoved(
-        pointTopLeft: Point,
-        size: Size,
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
+        lineWidth: Double,
+        measure: Measure<Double, Double>,
+    ) {
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = tr,
+            a1 = pi34,
+            a2 = -pi14,
+            length = lw12s2,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = br,
+            a1 = -pi34,
+            a2 = pi14,
+            length = lw12s2,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = bl,
+            a1 = -pi14,
+            a2 = pi34,
+            length = lw12s2,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+            measure = measure,
+        )
+    }
+
+    private fun vertexOfMoved(
+        point: Point,
+        length: Double,
+        a1: Double,
+        a2: Double,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a1),
+            y = point.y + length * kotlin.math.sin(a1),
+            offset = offset,
+            measure = measure,
+        )
+        vertexOf(
+            x = point.x + length * kotlin.math.cos(a2),
+            y = point.y + length * kotlin.math.sin(a2),
+            offset = offset,
+            measure = measure,
+        )
+    }
+
+    fun vertexOfMoved(
+        tl: Point,
+        tr: Point,
+        br: Point,
+        bl: Point,
         lineWidth: Double,
         offset: Offset,
         measure: Measure<Double, Double>,
     ) {
-        val br = pointTopLeft.plus(
-            dX = size.width,
-            dY = size.height,
-        )
-        val brtl = pointOf(br.x, pointTopLeft.y)
-        val tlbr = pointOf(pointTopLeft.x, br.y)
-        vertexOf(start = pointTopLeft, finish = brtl, lineWidth = lineWidth, offset = offset, measure = measure)
-        vertexOf(start = brtl, br, lineWidth = lineWidth, offset = offset, measure = measure)
-        vertexOf(start = br, finish = tlbr, lineWidth = lineWidth, offset = offset, measure = measure)
-        vertexOf(start = tlbr, finish = pointTopLeft, lineWidth = lineWidth, offset = offset, measure = measure)
+        // todo math
+        val pi12 = kotlin.math.PI / 2
+        val pi14 = kotlin.math.PI / 4
+        val pi34 = pi12 + pi14
+        val lw12 = lineWidth / 2
+        val lw12s2 = lw12 * kotlin.math.sqrt(2.0)
         vertexOfMoved(
-            point = pointTopLeft,
-            length = lineWidth / 2,
-            angle = angleOf(pointTopLeft, brtl) - kotlin.math.PI / 2,
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
+            offset = offset,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = tr,
+            a1 = pi34,
+            a2 = -pi14,
+            length = lw12s2,
+            offset = offset,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = br,
+            a1 = -pi34,
+            a2 = pi14,
+            length = lw12s2,
+            offset = offset,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = bl,
+            a1 = -pi14,
+            a2 = pi34,
+            length = lw12s2,
+            offset = offset,
+            measure = measure,
+        )
+        vertexOfMoved(
+            point = tl,
+            a1 = pi14,
+            a2 = -pi34,
+            length = lw12s2,
             offset = offset,
             measure = measure,
         )

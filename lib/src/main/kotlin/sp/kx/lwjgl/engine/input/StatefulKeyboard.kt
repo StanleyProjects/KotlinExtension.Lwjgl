@@ -1,13 +1,17 @@
 package sp.kx.lwjgl.engine.input
 
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import java.util.EnumSet
+import java.util.EnumMap
+import kotlin.time.Duration
 
 internal class StatefulKeyboard : Keyboard {
-    // todo Boolean -> Duration
-    val states: MutableSet<KeyboardButton> = EnumSet.noneOf(KeyboardButton::class.java)
+    val buttons: MutableMap<KeyboardButton, Duration> = EnumMap(KeyboardButton::class.java)
 
     override fun isPressed(button: KeyboardButton): Boolean {
-        return states.contains(button)
+        return buttons.containsKey(button)
+    }
+
+    override fun whenPressed(button: KeyboardButton): Duration? {
+        return buttons[button]
     }
 }
