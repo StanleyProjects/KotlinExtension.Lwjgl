@@ -83,6 +83,24 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
             KeyboardButton.Control -> "LC"
             KeyboardButton.Alt -> "LA"
             KeyboardButton.Super -> "LS"
+            KeyboardButton.Number0 -> "0"
+            KeyboardButton.Number1 -> "1"
+            KeyboardButton.Number2 -> "2"
+            KeyboardButton.Number3 -> "3"
+            KeyboardButton.Number4 -> "4"
+            KeyboardButton.Number5 -> "5"
+            KeyboardButton.Number6 -> "6"
+            KeyboardButton.Number7 -> "7"
+            KeyboardButton.Number8 -> "8"
+            KeyboardButton.Number9 -> "9"
+            KeyboardButton.Minus -> "-"
+            KeyboardButton.Equal -> "="
+            KeyboardButton.Backspace -> "<x"
+            KeyboardButton.Enter -> "Ent"
+            KeyboardButton.Left -> "<-"
+            KeyboardButton.Right -> "->"
+            KeyboardButton.Down -> "\\/"
+            KeyboardButton.Up -> "/\\"
             else -> button.name
         }
     }
@@ -93,7 +111,7 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
     ) {
         listOf(
             KeyboardButton.Escape,
-            null, // todo
+            null, // todo tilda
             KeyboardButton.Tab,
             null, // todo caps lock
             KeyboardButton.Shift,
@@ -104,6 +122,48 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
                 pointTopLeft = pointOf(
                     x = 1.0,
                     y = 1.0 + 1.0 * index,
+                ),
+                height = 1.0,
+                width = 2.0,
+                button = button,
+            )
+        }
+        listOf(
+            KeyboardButton.Number1,
+            KeyboardButton.Number2,
+            KeyboardButton.Number3,
+            KeyboardButton.Number4,
+            KeyboardButton.Number5,
+            KeyboardButton.Number6,
+            KeyboardButton.Number7,
+            KeyboardButton.Number8,
+            KeyboardButton.Number9,
+            KeyboardButton.Number0,
+            KeyboardButton.Minus,
+            KeyboardButton.Equal,
+        ).forEachIndexed { index, button ->
+            drawButton(
+                canvas = canvas,
+                fontInfo = fontInfo,
+                pointTopLeft = pointOf(
+                    x = 2.0 + index,
+                    y = 2.0,
+                ),
+                height = 1.0,
+                width = 1.0,
+                button = button,
+            )
+        }
+        listOf(
+            KeyboardButton.Backspace,
+            KeyboardButton.Enter,
+        ).forEachIndexed { index, button ->
+            drawButton(
+                canvas = canvas,
+                fontInfo = fontInfo,
+                pointTopLeft = pointOf(
+                    x = 14.0,
+                    y = 2.0 + index,
                 ),
                 height = 1.0,
                 width = 2.0,
@@ -131,11 +191,39 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
             canvas = canvas,
             fontInfo = fontInfo,
             pointTopLeft = pointOf(
+                x = 13.0 + 1,
+                y = 5.0,
+            ),
+            height = 1.0,
+            width = 1.0,
+            button = KeyboardButton.Up,
+        )
+        listOf(
+            KeyboardButton.Left,
+            KeyboardButton.Down,
+            KeyboardButton.Right,
+        ).forEachIndexed { index, button ->
+            drawButton(
+                canvas = canvas,
+                fontInfo = fontInfo,
+                pointTopLeft = pointOf(
+                    x = 13.0 + index,
+                    y = 6.0,
+                ),
+                height = 1.0,
+                width = 1.0,
+                button = button,
+            )
+        }
+        drawButton(
+            canvas = canvas,
+            fontInfo = fontInfo,
+            pointTopLeft = pointOf(
                 x = 4.0,
                 y = 6.0,
             ),
             height = 1.0,
-            width = 6.0,
+            width = 7.0,
             button = KeyboardButton.Space,
         )
         listOf(
@@ -157,22 +245,6 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
                     width = 1.0,
                     button = button,
                 )
-//                canvas.texts.draw(
-//                    info = fontInfo,
-//                    color = if (isPressed) Color.Yellow else Color.Green,
-//                    pointTopLeft = pointTopLeft,
-//                    text = button.name,
-//                    measure = measure,
-//                )
-//                if (isPressed) {
-//                    canvas.polygons.drawRectangle(
-//                        color = Color.Yellow,
-//                        pointTopLeft = pointOf(width * dX - width * 0.25, width * dY),
-//                        size = sizeOf(width = width, height = width),
-//                        lineWidth = 0.1,
-//                        measure = measure,
-//                    )
-//                }
             }
         }
     }

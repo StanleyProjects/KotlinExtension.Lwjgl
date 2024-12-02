@@ -57,7 +57,20 @@ fun Int.toKeyboardButtonOrNull(): KeyboardButton? {
         GLFW.GLFW_KEY_LEFT_ALT -> KeyboardButton.Alt
         GLFW.GLFW_KEY_LEFT_SUPER -> KeyboardButton.Super
         //
-        // todo plus
+        GLFW.GLFW_KEY_EQUAL -> KeyboardButton.Equal
+        GLFW.GLFW_KEY_MINUS -> KeyboardButton.Minus
+        GLFW.GLFW_KEY_BACKSPACE -> KeyboardButton.Backspace
+        //
+        GLFW.GLFW_KEY_0 -> KeyboardButton.Number0
+        GLFW.GLFW_KEY_1 -> KeyboardButton.Number1
+        GLFW.GLFW_KEY_2 -> KeyboardButton.Number2
+        GLFW.GLFW_KEY_3 -> KeyboardButton.Number3
+        GLFW.GLFW_KEY_4 -> KeyboardButton.Number4
+        GLFW.GLFW_KEY_5 -> KeyboardButton.Number5
+        GLFW.GLFW_KEY_6 -> KeyboardButton.Number6
+        GLFW.GLFW_KEY_7 -> KeyboardButton.Number7
+        GLFW.GLFW_KEY_8 -> KeyboardButton.Number8
+        GLFW.GLFW_KEY_9 -> KeyboardButton.Number9
         //
         else -> null
     }
