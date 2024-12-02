@@ -30,9 +30,9 @@ internal class Interactions(
 
     private fun onPressWalking(button: KeyboardButton) {
         when (button) {
-            KeyboardButton.RIGHT -> holder.switchCurrent()
+            KeyboardButton.Right -> holder.switchCurrent()
             KeyboardButton.F -> onInteraction()
-            KeyboardButton.TAB -> {
+            KeyboardButton.Tab -> {
                 env.state = Environment.State.Inventory(index = 0)
             }
             else -> Unit
@@ -41,7 +41,7 @@ internal class Interactions(
 
     private fun onPressInventory(state: Environment.State.Inventory, button: KeyboardButton) {
         when (button) {
-            KeyboardButton.TAB, KeyboardButton.ESCAPE -> {
+            KeyboardButton.Tab, KeyboardButton.Escape -> {
                 env.state = Environment.State.Walking
             }
             else -> Unit
@@ -69,7 +69,7 @@ internal class Interactions(
 
     private fun onPressSwap(state: Environment.State.Swap, button: KeyboardButton) {
         when (button) {
-            KeyboardButton.ESCAPE -> {
+            KeyboardButton.Escape -> {
                 env.state = Environment.State.Walking
             }
             else -> Unit

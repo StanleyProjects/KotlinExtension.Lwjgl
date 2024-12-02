@@ -60,7 +60,7 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
                     }
                     return
                 }
-                KeyboardButton.ESCAPE -> {
+                KeyboardButton.Escape -> {
                     if (env.state == Environment.State.Walking) {
                         if (isPressed) shouldEngineStopUnit = Unit
                         return

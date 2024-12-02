@@ -13,14 +13,15 @@ fun Int.toPressedOrNull(): Boolean? {
 
 fun Int.toKeyboardButtonOrNull(): KeyboardButton? {
     return when (this) {
-        GLFW.GLFW_KEY_ENTER -> KeyboardButton.ENTER
-        GLFW.GLFW_KEY_ESCAPE -> KeyboardButton.ESCAPE
-        GLFW.GLFW_KEY_TAB -> KeyboardButton.TAB
+        GLFW.GLFW_KEY_ENTER -> KeyboardButton.Enter
+        GLFW.GLFW_KEY_ESCAPE -> KeyboardButton.Escape
+        GLFW.GLFW_KEY_TAB -> KeyboardButton.Tab
+        GLFW.GLFW_KEY_SPACE -> KeyboardButton.Space
         //
-        GLFW.GLFW_KEY_UP -> KeyboardButton.UP
-        GLFW.GLFW_KEY_DOWN -> KeyboardButton.DOWN
-        GLFW.GLFW_KEY_LEFT -> KeyboardButton.LEFT
-        GLFW.GLFW_KEY_RIGHT -> KeyboardButton.RIGHT
+        GLFW.GLFW_KEY_UP -> KeyboardButton.Up
+        GLFW.GLFW_KEY_DOWN -> KeyboardButton.Down
+        GLFW.GLFW_KEY_LEFT -> KeyboardButton.Left
+        GLFW.GLFW_KEY_RIGHT -> KeyboardButton.Right
         //
         GLFW.GLFW_KEY_Q -> KeyboardButton.Q
         GLFW.GLFW_KEY_W -> KeyboardButton.W
@@ -51,41 +52,13 @@ fun Int.toKeyboardButtonOrNull(): KeyboardButton? {
         GLFW.GLFW_KEY_N -> KeyboardButton.N
         GLFW.GLFW_KEY_M -> KeyboardButton.M
         //
+        GLFW.GLFW_KEY_LEFT_SHIFT -> KeyboardButton.Shift
+        GLFW.GLFW_KEY_LEFT_CONTROL -> KeyboardButton.Control
+        GLFW.GLFW_KEY_LEFT_ALT -> KeyboardButton.Alt
+        GLFW.GLFW_KEY_LEFT_SUPER -> KeyboardButton.Super
+        //
+        // todo plus
+        //
         else -> null
     }
 }
-
-/*
-fun Key.toInt(): Int {
-    return when (this) {
-        Key.ESCAPE -> GLFW.GLFW_KEY_ESCAPE
-        //
-        Key.Q -> GLFW.GLFW_KEY_Q
-        Key.W -> GLFW.GLFW_KEY_W
-        Key.E -> GLFW.GLFW_KEY_E
-        Key.R -> GLFW.GLFW_KEY_R
-        Key.T -> GLFW.GLFW_KEY_T
-        Key.Y -> GLFW.GLFW_KEY_Y
-        Key.U -> GLFW.GLFW_KEY_U
-        Key.I -> GLFW.GLFW_KEY_I
-        Key.O -> GLFW.GLFW_KEY_O
-        Key.P -> GLFW.GLFW_KEY_P
-        Key.A -> GLFW.GLFW_KEY_A
-        Key.S -> GLFW.GLFW_KEY_S
-        Key.D -> GLFW.GLFW_KEY_D
-        Key.F -> GLFW.GLFW_KEY_F
-        Key.G -> GLFW.GLFW_KEY_G
-        Key.H -> GLFW.GLFW_KEY_H
-        Key.J -> GLFW.GLFW_KEY_J
-        Key.K -> GLFW.GLFW_KEY_K
-        Key.L -> GLFW.GLFW_KEY_L
-        Key.Z -> GLFW.GLFW_KEY_Z
-        Key.X -> GLFW.GLFW_KEY_X
-        Key.C -> GLFW.GLFW_KEY_C
-        Key.V -> GLFW.GLFW_KEY_V
-        Key.B -> GLFW.GLFW_KEY_B
-        Key.N -> GLFW.GLFW_KEY_N
-        Key.M -> GLFW.GLFW_KEY_M
-    }
-}
-*/

@@ -39,7 +39,7 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
             if (isPressed) return
             when (button) {
-                KeyboardButton.ESCAPE -> {
+                KeyboardButton.Escape -> {
                     shouldEngineStopUnit = Unit
                 }
                 KeyboardButton.P -> {
@@ -52,16 +52,16 @@ internal class PolygonsEngineLogics(private val engine: Engine) : EngineLogics {
                         measure.magnitude -= 8
                     }
                 }
-                KeyboardButton.DOWN, KeyboardButton.S -> {
+                KeyboardButton.Down, KeyboardButton.S -> {
                     camera.dY -= 2.0
                 }
-                KeyboardButton.UP, KeyboardButton.W -> {
+                KeyboardButton.Up, KeyboardButton.W -> {
                     camera.dY += 2.0
                 }
-                KeyboardButton.RIGHT, KeyboardButton.D -> {
+                KeyboardButton.Right, KeyboardButton.D -> {
                     camera.dX -= 2.0
                 }
-                KeyboardButton.LEFT, KeyboardButton.A -> {
+                KeyboardButton.Left, KeyboardButton.A -> {
                     camera.dX += 2.0
                 }
                 else -> {
