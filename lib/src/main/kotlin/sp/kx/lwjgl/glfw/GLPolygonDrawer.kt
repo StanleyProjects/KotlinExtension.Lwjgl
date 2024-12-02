@@ -11,7 +11,6 @@ import sp.kx.math.angleOf
 import sp.kx.math.copy
 import sp.kx.math.measure.Measure
 import sp.kx.math.plus
-import sp.kx.math.pointOf
 
 internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(color: Color, pointTopLeft: Point, size: Size) {
@@ -183,13 +182,13 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.vertexOfMoved(
             point = bl,
             length = lw12s2,
-            angle = - pi14,
+            angle = -pi14,
         )
         // #4
         GLUtil.vertexOfMoved(
             point = br,
             length = lw12s2,
-            angle = - pi34,
+            angle = -pi34,
         )
     }
 
@@ -262,14 +261,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.vertexOfMoved(
             point = bl,
             length = lw12s2,
-            angle = - pi14,
+            angle = -pi14,
             offset = offset,
         )
         // #4
         GLUtil.vertexOfMoved(
             point = br,
             length = lw12s2,
-            angle = - pi34,
+            angle = -pi34,
             offset = offset,
         )
     }
@@ -346,14 +345,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.vertexOfMoved(
             point = bl,
             length = lw12s2,
-            angle = - pi14,
+            angle = -pi14,
             measure = measure,
         )
         // #4
         GLUtil.vertexOfMoved(
             point = br,
             length = lw12s2,
-            angle = - pi34,
+            angle = -pi34,
             measure = measure,
         )
     }
@@ -433,7 +432,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.vertexOfMoved(
             point = bl,
             length = lw12s2,
-            angle = - pi14,
+            angle = -pi14,
             offset = offset,
             measure = measure,
         )
@@ -441,7 +440,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.vertexOfMoved(
             point = br,
             length = lw12s2,
-            angle = - pi34,
+            angle = -pi34,
             offset = offset,
             measure = measure,
         )
@@ -822,7 +821,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         lineWidth: Double,
-        offset: Offset
+        offset: Offset,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
@@ -852,7 +851,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         lineWidth: Double,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
@@ -883,7 +882,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         edgeCount: Int,
         lineWidth: Double,
         offset: Offset,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
@@ -915,7 +914,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         pointCenter: Point,
         radius: Double,
         edgeCount: Int,
-        lineWidth: Double
+        lineWidth: Double,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
@@ -955,7 +954,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         lineWidth: Double,
-        offset: Offset
+        offset: Offset,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)
@@ -998,7 +997,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         lineWidth: Double,
-        measure: Measure<Double, Double>
+        measure: Measure<Double, Double>,
     ) {
         if (edgeCount < 3) TODO()
         GL11.glLineWidth(1f)

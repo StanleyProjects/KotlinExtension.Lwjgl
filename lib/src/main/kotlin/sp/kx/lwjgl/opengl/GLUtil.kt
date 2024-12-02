@@ -5,7 +5,6 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.Size
-import sp.kx.math.angleOf
 import sp.kx.math.measure.Measure
 
 object GLUtil {
@@ -183,74 +182,6 @@ object GLUtil {
         vertexOf(point.x + length * kotlin.math.cos(angle), point.y + length * kotlin.math.sin(angle))
     }
 
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
-    }
-
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double, offset: Offset) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
-    }
-
-    private fun vertexOf(start: Point, finish: Point, lineWidth: Double, measure: Measure<Double, Double>) {
-        val angle = angleOf(start, finish)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-        vertexOfMoved(finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
-    }
-
-    private fun vertexOf(
-        start: Point,
-        finish: Point,
-        angle: Double = angleOf(start, finish),
-        lw12: Double,
-        lw12s2: Double,
-        offset: Offset,
-        measure: Measure<Double, Double>,
-    ) {
-        // todo PI math
-        // #1
-        vertexOfMoved(
-            point = start,
-            length = lw12,
-            angle = angle - kotlin.math.PI / 2,
-            offset = offset,
-            measure = measure,
-        )
-        // #2
-        vertexOfMoved(
-            point = start,
-            length = lw12s2,
-            angle = angle + kotlin.math.PI / 4,
-            offset = offset,
-            measure = measure,
-        )
-        // #3
-        vertexOfMoved(
-            point = finish,
-            length = lw12,
-            angle = angle - kotlin.math.PI / 2,
-            offset = offset,
-            measure = measure,
-        )
-        // #4
-        vertexOfMoved(
-            point = finish,
-            length = lw12s2,
-            angle = angle + kotlin.math.PI / 2 + kotlin.math.PI / 4,
-            offset = offset,
-            measure = measure,
-        )
-    }
-
     private fun vertexOfMoved(
         point: Point,
         length: Double,
@@ -283,31 +214,31 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
         )
         vertexOfMoved(
             point = tr,
             a1 = pi34,
-            a2 = - pi14,
+            a2 = -pi14,
             length = lw12s2,
         )
         vertexOfMoved(
             point = br,
-            a1 = - pi34,
+            a1 = -pi34,
             a2 = pi14,
             length = lw12s2,
         )
         vertexOfMoved(
             point = bl,
-            a1 = - pi14,
+            a1 = -pi14,
             a2 = pi34,
             length = lw12s2,
         )
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
         )
     }
@@ -348,27 +279,27 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             offset = offset,
         )
         vertexOfMoved(
             point = tr,
             a1 = pi34,
-            a2 = - pi14,
+            a2 = -pi14,
             length = lw12s2,
             offset = offset,
         )
         vertexOfMoved(
             point = br,
-            a1 = - pi34,
+            a1 = -pi34,
             a2 = pi14,
             length = lw12s2,
             offset = offset,
         )
         vertexOfMoved(
             point = bl,
-            a1 = - pi14,
+            a1 = -pi14,
             a2 = pi34,
             length = lw12s2,
             offset = offset,
@@ -376,7 +307,7 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             offset = offset,
         )
@@ -418,27 +349,27 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             measure = measure,
         )
         vertexOfMoved(
             point = tr,
             a1 = pi34,
-            a2 = - pi14,
+            a2 = -pi14,
             length = lw12s2,
             measure = measure,
         )
         vertexOfMoved(
             point = br,
-            a1 = - pi34,
+            a1 = -pi34,
             a2 = pi14,
             length = lw12s2,
             measure = measure,
         )
         vertexOfMoved(
             point = bl,
-            a1 = - pi14,
+            a1 = -pi14,
             a2 = pi34,
             length = lw12s2,
             measure = measure,
@@ -446,7 +377,7 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             measure = measure,
         )
@@ -492,7 +423,7 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             offset = offset,
             measure = measure,
@@ -500,14 +431,14 @@ object GLUtil {
         vertexOfMoved(
             point = tr,
             a1 = pi34,
-            a2 = - pi14,
+            a2 = -pi14,
             length = lw12s2,
             offset = offset,
             measure = measure,
         )
         vertexOfMoved(
             point = br,
-            a1 = - pi34,
+            a1 = -pi34,
             a2 = pi14,
             length = lw12s2,
             offset = offset,
@@ -515,7 +446,7 @@ object GLUtil {
         )
         vertexOfMoved(
             point = bl,
-            a1 = - pi14,
+            a1 = -pi14,
             a2 = pi34,
             length = lw12s2,
             offset = offset,
@@ -524,7 +455,7 @@ object GLUtil {
         vertexOfMoved(
             point = tl,
             a1 = pi14,
-            a2 = - pi34,
+            a2 = -pi34,
             length = lw12s2,
             offset = offset,
             measure = measure,
