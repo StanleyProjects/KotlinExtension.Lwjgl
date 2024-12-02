@@ -6,7 +6,13 @@ import sp.kx.math.measure.MutableDurationInterval
 import kotlin.time.Duration
 
 internal class MutableEngineProperty(
-    override var launched: Duration = Duration.ZERO,
-    override val time: MutableDurationInterval = MutableDurationInterval(a = Duration.ZERO, b = Duration.ZERO),
     override var pictureSize: Size,
-) : EngineProperty
+) : EngineProperty {
+    override var launched = Duration.ZERO
+        set(value) {
+            time.a = value
+            field = value
+        }
+
+    override val time = MutableDurationInterval(a = Duration.ZERO, b = Duration.ZERO)
+}

@@ -9,11 +9,15 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.copy
 import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.input.KeyboardButton
+import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.copy
+import sp.kx.math.ct
+import sp.kx.math.measure.diff
 import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
+import sp.kx.math.measure.speedOf
 import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
@@ -250,7 +254,7 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
     }
 
     private fun onRenderGrid(canvas: Canvas) {
-        val max = 16
+        val max = 24
         val color = Color.Green.copy(alpha = 0.5f)
         val fontInfo = FontInfoUtil.getFontInfo(height = 0.75, measure = measure)
         (1..max).forEach { number ->
@@ -283,21 +287,59 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         }
     }
 
+    private val f1 = MutablePoint(2.0, 10.0)
+    private val f2 = MutablePoint(8.0, 11.0)
+    private val f3 = MutablePoint(2.0, 12.0)
+    private fun onRenderFoo(canvas: Canvas) {
+        val s1 = speedOf(1.0)
+        f1.x += s1.length(engine.property.time.diff())
+        if (f1.x > 8.0) f1.x -= 6.0
+        canvas.polygons.drawCircle(
+            color = Color.Red,
+            pointCenter = f1,
+            radius = 0.5,
+            edgeCount = 4,
+            measure = measure,
+        )
+        val s2 = speedOf(2.0)
+        f2.x -= s2.length(engine.property.time.diff())
+        if (f2.x < 2.0) f2.x += 6.0
+        canvas.polygons.drawCircle(
+            color = Color.Yellow,
+            pointCenter = f2,
+            radius = 0.5,
+            edgeCount = 4,
+            measure = measure,
+        )
+        val s3 = speedOf(3.0)
+        val l3 = s3.length(engine.property.time.diff())
+        f3.move(length = l3, angle = kotlin.math.PI / 8)
+        if (f3.x > 8.0) f3.set(x = 2.0, y = 12.0)
+        canvas.polygons.drawCircle(
+            color = Color.Blue,
+            pointCenter = f3,
+            radius = 0.5,
+            edgeCount = 4,
+            measure = measure,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
         val fontInfo = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
         val fps = engine.property.time.frequency()
-//        canvas.texts.draw(
-//            info = fontInfo,
-//            pointTopLeft = Point.Center,
-//            color = Color.Green,
-//            text = String.format("%.2f", fps),
-//            measure = measure,
-//        )
+        canvas.texts.draw(
+            info = fontInfo,
+            pointTopLeft = Point.Center,
+            color = Color.Green,
+            text = String.format("%6.2f", fps),
+            measure = measure,
+        )
 //        onRenderGrid(canvas = canvas)
         onRenderKeyboard(
             canvas = canvas,
             fontInfo = fontInfo,
         )
+        onRenderFoo(canvas = canvas)
     }
 
     override fun shouldEngineStop(): Boolean {
