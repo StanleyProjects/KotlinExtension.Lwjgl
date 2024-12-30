@@ -15,6 +15,7 @@ fun main() {
 		title = "Texts",
 		supplier = ::TextsEngineLogics,
 		size = sizeOf(640, 480),
-		defaultFontName = "JetBrainsMono.ttf",
+//		defaultFontName = "JetBrainsMono.ttf",
+		defaultFontName = "OpenSans.ttf",
 	)
 }

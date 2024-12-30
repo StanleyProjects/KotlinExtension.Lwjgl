@@ -54,6 +54,7 @@ internal class FTTextDrawer(
                 println("$Tag: atlas:u/e: ${atlas.upe}")
                 println("$Tag: atlas:fontHeight: $fontHeight")
                 println("$Tag: atlas:atlasHeight: $atlasHeight")
+                println("$Tag: atlas:scale($fontHeight): ${fontHeight / (atlas.ascender - atlas.descender)}")
                 // todo
                 FT_Done_Face(ftFace).ftChecked()
                 FT_Done_FreeType(lib.get(0)).ftChecked()
@@ -151,7 +152,6 @@ internal class FTTextDrawer(
             val ascender: Int = (metrics.ascender() shr 6).toInt()
             val descender: Int = (metrics.descender() shr 6).toInt()
             val glyphs = mutableMapOf<Int, FTGlyph>()
-            val buffers = mutableMapOf<Int, ByteBuffer>()
             var width = 0
             var height = 0
             val padding = 4
@@ -161,7 +161,7 @@ internal class FTTextDrawer(
                 val bitmap = glyph.bitmap()
                 val pitch = bitmap.pitch()
                 val rows = bitmap.rows()
-                buffers[code] = bitmap.buffer(pitch * rows) ?: continue
+                if (bitmap.buffer(pitch * rows) == null) continue
                 height = kotlin.math.max(height, rows)
                 val advance: Int = (glyph.advance().x() shr 6).toInt()
                 glyphs[code] = FTGlyph(
@@ -179,7 +179,9 @@ internal class FTTextDrawer(
                 height = height,
             )
             for ((code, glyph) in glyphs) {
-                val buffer = buffers[code] ?: TODO("FTTextDrawer:getAtlas: no bitmap($code:${code.toChar()})!")
+                FT_Load_Char(ftFace, code.toLong(), FreeType.FT_LOAD_RENDER).ftChecked()
+                val bitmap = ftFace.glyph()?.bitmap() ?: TODO("FTTextDrawer:getAtlas: no bitmap($code:${code.toChar()})!")
+                val buffer = bitmap.buffer(glyph.width * glyph.height) ?: TODO("FTTextDrawer:getAtlas: no buffer($code:${code.toChar()})!")
                 GL11.glTexSubImage2D(
                     GL11.GL_TEXTURE_2D,
                     0,
@@ -192,7 +194,7 @@ internal class FTTextDrawer(
                     buffer,
                 )
             }
-            FT_Load_Char(ftFace, ' '.code.toLong(), FreeType.FT_LOAD_RENDER).ftChecked()
+            FT_Load_Char(ftFace, 32, FreeType.FT_LOAD_RENDER).ftChecked()
             val space = ftFace.glyph()?.advance()?.x()?.shr(6)?.toInt() ?: (atlasHeight / 2)
             return FTAtlas(
                 id = id,

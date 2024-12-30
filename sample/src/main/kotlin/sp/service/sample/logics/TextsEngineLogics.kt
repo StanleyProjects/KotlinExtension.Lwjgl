@@ -7,6 +7,7 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.Point
+import sp.service.sample.TrueTypeRenders
 
 internal class TextsEngineLogics(
     private val engine: Engine,
@@ -21,17 +22,19 @@ internal class TextsEngineLogics(
             }
         }
     }
+    private val r1 = TrueTypeRenders(engine = engine)
 
     override fun shouldEngineStop(): Boolean {
         return ::ses.isInitialized
     }
 
     override fun onRender(canvas: Canvas) {
-        canvas.texts.draw(
-            color = Color.Green,
-            fontHeight = 48.0,
-            text = "Hello world!",
-            pointTopLeft = Point.Center,
-        )
+//        canvas.texts.draw(
+//            color = Color.Green,
+//            fontHeight = 48.0,
+//            text = "Hello world!",
+//            pointTopLeft = Point.Center,
+//        )
+        r1.onRenderTexts(canvas = canvas)
     }
 }

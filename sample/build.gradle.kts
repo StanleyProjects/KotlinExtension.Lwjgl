@@ -42,6 +42,7 @@ dependencies {
     implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
     val classifier = LwjglUtil.requireNativesName()
     LwjglUtil.modules.forEach { name ->
+        implementation(group = group, name = name) // todo
         runtimeOnly(group = group, name = name, classifier = classifier)
     }
 }
