@@ -5,7 +5,6 @@ import sp.kx.lwjgl.engine.progress
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.copy
-import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.Offset
 import sp.kx.math.Point
@@ -22,10 +21,8 @@ import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.vectorOf
 import sp.service.sample.entity.Crate
-import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import sp.service.sample.entity.Player
-import sp.service.sample.util.FontInfoUtil
 import kotlin.time.Duration
 
 internal class Renders(
@@ -40,7 +37,7 @@ internal class Renders(
         measure: Measure<Double, Double>,
     ) {
         val size = sizeOf(1.0, 0.75)
-        val info = FontInfoUtil.getFontInfo(height = 0.75, measure = measure)
+        val fontHeight = 0.75
         for (index in items.indices) {
             val item = items[index]
             if (item.owner != null) continue
@@ -52,14 +49,14 @@ internal class Renders(
                 measure = measure,
             )
             val text = "i${index % 10}"
-            val textWidth = engine.fontAgent.getTextWidth(info, text)
+            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
             canvas.texts.draw(
                 color = Color.Black,
-                info = info,
+                fontHeight = fontHeight,
                 pointTopLeft = item.point,
-                offset = offset + offsetOf(dX = measure.units(textWidth) / 2, dY = measure.units(info.height.toDouble()) / 2) * -1.0,
-                measure = measure,
                 text = text,
+                offset = offset + offsetOf(dX = textWidth / 2, dY = fontHeight / 2) * -1.0,
+                measure = measure,
             )
         }
     }
@@ -115,7 +112,7 @@ internal class Renders(
         canvas: Canvas,
         size: Size,
         items: List<Item>,
-        info: FontInfo,
+        fontHeight: Double,
         selected: Int?,
         title: String,
         offset: Offset,
@@ -131,7 +128,7 @@ internal class Renders(
         )
         if (title.isNotBlank()) {
             canvas.texts.draw(
-                info = info,
+                fontHeight = fontHeight,
                 pointTopLeft = Point.Center + offset + offsetOf(1, -1),
                 measure = measure,
                 color = if (selected == null) Color.Green else Color.Yellow,
@@ -140,7 +137,7 @@ internal class Renders(
         }
         if (items.isEmpty()) {
             canvas.texts.draw(
-                info = info,
+                fontHeight = fontHeight,
                 pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5),
                 measure = measure,
                 color = Color.Green.copy(alpha = 0.5f),
@@ -155,8 +152,8 @@ internal class Renders(
             val text = "#${env.items.indexOf(item)} ${item.id.toString().substring(0, 4)}"
             val prefix = if (isSelected) "> " else "  "
             canvas.texts.draw(
-                info = info,
-                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5) + Offset.Empty.copy(dY = index * measure.units(info.height.toDouble())),
+                fontHeight = fontHeight,
+                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5) + Offset.Empty.copy(dY = index * fontHeight),
                 measure = measure,
                 color = color,
                 text = prefix + text, // todo
@@ -183,10 +180,9 @@ internal class Renders(
             offset = offset + offsetOf(dX = 1.0, dY = -1.5),
             measure = measure,
         )
-        val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
         canvas.texts.draw(
             color = color,
-            info = info,
+            fontHeight = 1.0,
             pointTopLeft = point,
             offset = offset + offsetOf(dX = 1.25, dY = -1.5),
             measure = measure,
@@ -226,10 +222,9 @@ internal class Renders(
             offset = offset + offsetOf(dX = 1.0, dY = -1.5),
             measure = measure,
         )
-        val info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure)
         canvas.texts.draw(
             color = color,
-            info = info,
+            fontHeight = 1.0,
             pointTopLeft = point,
             offset = offset + offsetOf(dX = 1.25, dY = -1.5),
             measure = measure,
@@ -283,7 +278,7 @@ internal class Renders(
             canvas = canvas,
             size = size,
             items = env.items.filter { it.owner == state.src },
-            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
+            fontHeight = 1.0,
             selected = state.index.takeIf { state.side },
             title = "",
             offset = offsetOf(2, 2),
@@ -293,7 +288,7 @@ internal class Renders(
             canvas = canvas,
             size = size,
             items = env.items.filter { it.owner == state.dst },
-            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
+            fontHeight = 1.0,
             selected = state.index.takeIf { !state.side },
             title = state.dst.toString().substring(0, 4),
             offset = offsetOf(2.0 + size.width + 2.0, 2.0),
@@ -310,7 +305,7 @@ internal class Renders(
             canvas = canvas,
             size = sizeOf(8, 8),
             items = env.items.filter { it.owner == env.player.id },
-            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
+            fontHeight = 1.0,
             selected = state.index,
             title = "",
             offset = offsetOf(2, 2),
@@ -325,7 +320,7 @@ internal class Renders(
         measure: Measure<Double, Double>,
     ) {
         val size = sizeOf(1.0, 1.0)
-        val info = FontInfoUtil.getFontInfo(height = 0.75, measure = measure)
+        val fontHeight = 0.75
         for (index in crates.indices) {
             val crate = crates[index]
             canvas.polygons.drawRectangle(
@@ -337,12 +332,12 @@ internal class Renders(
                 lineWidth = 0.1,
             )
             val text = "c${index % 10}"
-            val textWidth = engine.fontAgent.getTextWidth(info, text)
+            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
             canvas.texts.draw(
                 color = Color.Yellow,
-                info = info,
+                fontHeight = fontHeight,
                 pointTopLeft = crate.point,
-                offset = offset + offsetOf(dX = measure.units(textWidth) / 2, dY = measure.units(info.height.toDouble()) / 2) * -1.0,
+                offset = offset + offsetOf(dX = textWidth / 2, dY = fontHeight / 2) * -1.0,
                 measure = measure,
                 text = text,
             )

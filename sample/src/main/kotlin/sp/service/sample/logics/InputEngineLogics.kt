@@ -47,15 +47,17 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         text: String = getText(button = button),
     ) {
         val isPressed = engine.input.keyboard.isPressed(button)
-        val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text)
+//        val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+        val textWidth = fontHeight * 2
         canvas.texts.draw(
             color = if (isPressed) Color.Yellow else Color.Green,
-            fontHeight = measure.transform(fontHeight),
+            fontHeight = fontHeight,
             pointTopLeft = pointOf(
                 x = pointTopLeft.x + width / 2 - textWidth / 2,
                 y = pointTopLeft.y + height / 2 - fontHeight / 2,
-            ) + measure,
+            ),
             text = text,
+            measure = measure,
         )
         if (isPressed) {
             canvas.polygons.drawRectangle(
@@ -317,11 +319,12 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         val fps = engine.property.time.frequency()
         canvas.texts.draw(
             color = Color.Green,
-            fontHeight = measure.transform(1.0),
+            fontHeight = 1.0,
             text = String.format("%6.2f", fps),
-            pointTopLeft = Point.Center + measure,
+            pointTopLeft = Point.Center,
+            measure = measure,
         )
-        onRenderKeyboard(canvas = canvas, fontHeight = 1.0)
+        onRenderKeyboard(canvas = canvas, fontHeight = 2.0)
         onRenderFoo(canvas = canvas)
     }
 

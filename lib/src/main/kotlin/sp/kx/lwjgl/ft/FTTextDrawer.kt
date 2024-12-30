@@ -30,6 +30,7 @@ internal class FTTextDrawer(
                 .allocateDirect(fontBytes.size)
                 .put(fontBytes)
                 .flip()
+            println("$Tag: atlas: $fontName") // todo
             buffer to mutableMapOf()
         }
     }
@@ -45,6 +46,15 @@ internal class FTTextDrawer(
                 FT_New_Memory_Face(lib.get(0), buffer, faceIndex, pointer).ftChecked()
                 val ftFace = FT_Face.create(pointer.get(0))
                 val atlas = getAtlas(ftFace = ftFace, atlasHeight = atlasHeight)
+                // todo
+                println("$Tag: atlas:id: ${atlas.id}")
+                println("$Tag: atlas:width: ${atlas.width}")
+                println("$Tag: atlas:height: ${atlas.height}")
+                println("$Tag: atlas:glyphs: ${atlas.glyphs.size}")
+                println("$Tag: atlas:u/e: ${atlas.upe}")
+                println("$Tag: atlas:fontHeight: $fontHeight")
+                println("$Tag: atlas:atlasHeight: $atlasHeight")
+                // todo
                 FT_Done_Face(ftFace).ftChecked()
                 FT_Done_FreeType(lib.get(0)).ftChecked()
                 atlas
@@ -56,8 +66,9 @@ internal class FTTextDrawer(
         color: Color,
         fontName: String,
         fontHeight: Double,
-        pointTopLeft: Point,
         text: CharSequence,
+        x: Double,
+        y: Double,
     ) {
         val (buffer, atlases) = getAtlases(fontName = fontName)
         val atlas = getAtlas(
@@ -69,8 +80,8 @@ internal class FTTextDrawer(
             color = color,
             atlas = atlas,
             scale = fontHeight / (atlas.ascender - atlas.descender),
-            x = pointTopLeft.x,
-            y = pointTopLeft.y,
+            x = x,
+            y = y,
             text = text,
         )
     }
@@ -90,6 +101,8 @@ internal class FTTextDrawer(
     }
 
     companion object {
+        private const val Tag = "[FT|TextDrawer]"
+
         private fun Int.ftChecked() {
             if (this == FreeType.FT_Err_Ok) return
             error("FT:error: $this!")
