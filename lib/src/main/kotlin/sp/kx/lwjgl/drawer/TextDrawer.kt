@@ -100,11 +100,14 @@ abstract class TextDrawer(
         fontHeight: Double,
         text: CharSequence,
         measure: Measure<Double, Double>,
+        reversed: Boolean = true,
     ): Double {
-        return getTextWidth(
+        val width = getTextWidth(
             fontName = fontName,
             fontHeight = measure.transform(fontHeight),
             text = text,
         )
+        if (reversed) return measure.units(width)
+        return width
     }
 }

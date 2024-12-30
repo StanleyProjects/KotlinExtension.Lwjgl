@@ -112,7 +112,7 @@ internal class FTTextDrawer(
         private fun getAtlasHeight(fontHeight: Double): Int {
             val power = kotlin.math.log2(fontHeight)
             val top = kotlin.math.min(8, kotlin.math.ceil(power).toInt())
-            return 1 shl kotlin.math.max(1, top)
+            return 1 shl kotlin.math.max(3, top)
         }
 
         private fun getTexture(

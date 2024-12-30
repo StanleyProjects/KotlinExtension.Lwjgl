@@ -47,8 +47,7 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         text: String = getText(button = button),
     ) {
         val isPressed = engine.input.keyboard.isPressed(button)
-//        val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
-        val textWidth = fontHeight * 2
+        val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
         canvas.texts.draw(
             color = if (isPressed) Color.Yellow else Color.Green,
             fontHeight = fontHeight,
@@ -324,7 +323,7 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
             pointTopLeft = Point.Center,
             measure = measure,
         )
-        onRenderKeyboard(canvas = canvas, fontHeight = 2.0)
+        onRenderKeyboard(canvas = canvas, fontHeight = 1.0)
         onRenderFoo(canvas = canvas)
     }
 
