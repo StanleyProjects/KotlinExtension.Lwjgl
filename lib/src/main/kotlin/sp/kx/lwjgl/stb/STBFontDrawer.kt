@@ -9,6 +9,7 @@ import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.use
 
+@Deprecated(message = "replace with sp.kx.lwjgl.drawer.TextDrawer")
 internal class STBFontDrawer(private val storage: STBFontStorage) : FontDrawer {
     companion object {
         private fun STBTTAlignedQuad.draw() {

@@ -7,12 +7,15 @@ import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
+import sp.kx.lwjgl.drawer.PolygonDrawer
+import sp.kx.lwjgl.drawer.TextDrawer
+import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.PolygonDrawer
-import sp.kx.lwjgl.entity.TextDrawer
-import sp.kx.lwjgl.entity.VectorDrawer
 import sp.kx.lwjgl.entity.font.FontDrawer
+import sp.kx.lwjgl.ft.FTTextDrawer
+import sp.kx.lwjgl.gl.GLPolygonDrawer
+import sp.kx.lwjgl.gl.GLVectorDrawer
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
 import sp.kx.math.Point
@@ -59,10 +62,10 @@ object WindowUtil {
         return windowId
     }
 
-    private class WindowCanvas(fontDrawer: FontDrawer) : Canvas {
+    private class WindowCanvas(defaultFontName: String) : Canvas {
         override val vectors: VectorDrawer = GLVectorDrawer
         override val polygons: PolygonDrawer = GLPolygonDrawer
-        override val texts: TextDrawer = GLTextDrawer(fontDrawer = fontDrawer)
+        override val texts: TextDrawer = FTTextDrawer(defaultFontName = defaultFontName)
 
         override fun drawPoint(color: Color, point: Point) {
             GLUtil.colorOf(color)
@@ -107,13 +110,13 @@ object WindowUtil {
 
     private fun loopWindow(
         windowId: Long,
-        fontDrawer: FontDrawer,
+        defaultFontName: String,
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
     ) {
         GLUtil.clearColor(Color.Black)
-        val canvas = WindowCanvas(fontDrawer)
+        val canvas = WindowCanvas(defaultFontName = defaultFontName)
         onPreLoop(windowId)
         while (!GLFW.glfwWindowShouldClose(windowId)) {
             onPreRender(windowId)
@@ -133,7 +136,7 @@ object WindowUtil {
     fun loopWindow(
         title: String,
         size: Size? = null,
-        fontDrawer: FontDrawer,
+        defaultFontName: String,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
         onPreLoop: (Long) -> Unit,
@@ -151,7 +154,7 @@ object WindowUtil {
             monitorIdSupplier = monitorIdSupplier,
         )
         GLFW.glfwShowWindow(windowId)
-        loopWindow(windowId, fontDrawer, onPreLoop, onPostLoop, onRender)
+        loopWindow(windowId = windowId, defaultFontName = defaultFontName, onPreLoop, onPostLoop, onRender)
         destroyWindow(windowId)
     }
 }

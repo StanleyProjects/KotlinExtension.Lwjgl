@@ -6,7 +6,8 @@ object LwjglUtil {
         "lwjgl",
         "lwjgl-glfw",
         "lwjgl-opengl",
-        "lwjgl-stb",
+        "lwjgl-stb", // todo deprecated
+        "lwjgl-freetype",
     )
 
     fun requireNativesName(): String {

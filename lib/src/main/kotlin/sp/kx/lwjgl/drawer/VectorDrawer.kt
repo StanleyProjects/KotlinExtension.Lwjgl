@@ -1,5 +1,6 @@
-package sp.kx.lwjgl.entity
+package sp.kx.lwjgl.drawer
 
+import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Offset
 import sp.kx.math.Vector
 import sp.kx.math.measure.Measure
@@ -66,3 +67,4 @@ interface VectorDrawer {
         lineWidth: Double,
     )
 }
+

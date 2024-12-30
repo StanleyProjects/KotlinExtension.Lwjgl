@@ -15,6 +15,7 @@ import sp.kx.lwjgl.util.toArray
 import sp.kx.lwjgl.util.toByteBuffer
 import java.io.InputStream
 
+@Deprecated(message = "replace with sp.kx.lwjgl.drawer.TextDrawer")
 internal class STBFontStorage {
     private val map = mutableMapOf<String, STBFontInfo>()
     val agent: FontAgent = STBFontAgent(this)

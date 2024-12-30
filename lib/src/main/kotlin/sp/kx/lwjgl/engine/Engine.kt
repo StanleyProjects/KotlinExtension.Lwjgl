@@ -18,7 +18,6 @@ import sp.kx.math.sizeOf
 sealed interface Engine {
     val input: EngineInputState
     val property: EngineProperty
-    val fontAgent: FontAgent
 
     companion object {
         fun run(
@@ -26,16 +25,15 @@ sealed interface Engine {
             title: String = "Engine",
             size: Size? = null,
             times: Times = SystemTimes,
+            defaultFontName: String,
         ) {
             // todo run once
             // todo logger
             // todo hide mouse
             val keyboard = StatefulKeyboard()
-            val fontStorage = STBFontStorage()
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
                 property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
-                fontAgent = fontStorage.agent,
             )
             val logics = supplier(engine)
             WindowUtil.loopWindow(
@@ -44,13 +42,13 @@ sealed interface Engine {
                 onWindowCloseCallback = {
                     // todo
                 },
-                fontDrawer = fontStorage.drawer,
+                defaultFontName = defaultFontName,
                 onPreLoop = { windowId: Long ->
                     engine.property.launched = times.now()
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-                        println("on -> keyboard callback: $key $scancode $action") // todo
+                        println("Engine: on -> keyboard callback: $key $scancode $action") // todo
                         val button = key.toKeyboardButtonOrNull() ?: return
                         val isPressed = action.toPressedOrNull() ?: return
                         if (isPressed) {
