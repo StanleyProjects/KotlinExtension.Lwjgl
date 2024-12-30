@@ -4,6 +4,7 @@ import sp.kx.lwjgl.entity.font.FontInfo
 import sp.kx.math.measure.Measure
 import java.io.InputStream
 
+@Deprecated(message = "replace with sp.kx.lwjgl.drawer.TextDrawer")
 object FontInfoUtil {
     private val map = mutableMapOf<String, FontInfo>()
 

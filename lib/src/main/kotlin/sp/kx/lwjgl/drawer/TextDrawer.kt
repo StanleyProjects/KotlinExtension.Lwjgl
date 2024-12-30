@@ -13,4 +13,10 @@ abstract class TextDrawer(
         pointTopLeft: Point,
         text: CharSequence,
     )
+
+    abstract fun getTextWidth(
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        text: CharSequence,
+    ): Double
 }

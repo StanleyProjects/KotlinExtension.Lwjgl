@@ -75,6 +75,20 @@ internal class FTTextDrawer(
         )
     }
 
+    override fun getTextWidth(fontName: String, fontHeight: Double, text: CharSequence): Double {
+        val (buffer, atlases) = getAtlases(fontName = fontName)
+        val atlas = getAtlas(
+            buffer = buffer,
+            atlases = atlases,
+            fontHeight = fontHeight,
+        )
+        return getTextWidth(
+            atlas = atlas,
+            scale = fontHeight / (atlas.ascender - atlas.descender),
+            text = text,
+        )
+    }
+
     companion object {
         private fun Int.ftChecked() {
             if (this == FreeType.FT_Err_Ok) return
@@ -238,6 +252,23 @@ internal class FTTextDrawer(
                 i += glyph.advance * scale
             }
             GL11.glDisable(GL11.GL_TEXTURE_2D)
+        }
+
+        private fun getTextWidth(
+            atlas: FTAtlas,
+            scale: Double,
+            text: CharSequence,
+        ): Double {
+            var width = 0.0
+            for (char in text) {
+                val glyph = atlas.glyphs[char.code]
+                if (glyph == null) {
+                    if (char == ' ') width += atlas.space * scale
+                } else {
+                    width += glyph.advance * scale
+                }
+            }
+            return width
         }
     }
 }
