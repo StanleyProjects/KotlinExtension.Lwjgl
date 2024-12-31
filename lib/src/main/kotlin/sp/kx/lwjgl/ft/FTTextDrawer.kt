@@ -13,7 +13,6 @@ import org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes
 import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
-import sp.kx.math.Point
 import java.nio.ByteBuffer
 
 internal class FTTextDrawer(

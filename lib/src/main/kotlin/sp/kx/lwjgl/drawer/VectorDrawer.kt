@@ -67,4 +67,3 @@ interface VectorDrawer {
         lineWidth: Double,
     )
 }
-
