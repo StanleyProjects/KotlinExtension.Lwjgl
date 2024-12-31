@@ -4,21 +4,18 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWKeyCallback
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
-import sp.kx.lwjgl.entity.font.FontAgent
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.provider.SystemTimes
 import sp.kx.lwjgl.provider.Times
-import sp.kx.lwjgl.stb.STBFontStorage
 import sp.kx.math.Size
 import sp.kx.math.sizeOf
 
 sealed interface Engine {
     val input: EngineInputState
     val property: EngineProperty
-    val fontAgent: FontAgent
 
     companion object {
         fun run(
@@ -26,16 +23,15 @@ sealed interface Engine {
             title: String = "Engine",
             size: Size? = null,
             times: Times = SystemTimes,
+            defaultFontName: String,
         ) {
             // todo run once
             // todo logger
             // todo hide mouse
             val keyboard = StatefulKeyboard()
-            val fontStorage = STBFontStorage()
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
                 property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
-                fontAgent = fontStorage.agent,
             )
             val logics = supplier(engine)
             WindowUtil.loopWindow(
@@ -44,13 +40,13 @@ sealed interface Engine {
                 onWindowCloseCallback = {
                     // todo
                 },
-                fontDrawer = fontStorage.drawer,
-                onPreLoop = { windowId: Long ->
+                defaultFontName = defaultFontName,
+                onPreLoop = { _: Long ->
                     engine.property.launched = times.now()
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-                        println("on -> keyboard callback: $key $scancode $action") // todo
+                        println("Engine: on -> keyboard callback: $key $scancode $action") // todo
                         val button = key.toKeyboardButtonOrNull() ?: return
                         val isPressed = action.toPressedOrNull() ?: return
                         if (isPressed) {

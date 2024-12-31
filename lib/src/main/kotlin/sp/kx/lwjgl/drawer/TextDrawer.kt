@@ -1,0 +1,113 @@
+package sp.kx.lwjgl.drawer
+
+import sp.kx.lwjgl.entity.Color
+import sp.kx.math.Offset
+import sp.kx.math.Point
+import sp.kx.math.measure.Measure
+
+abstract class TextDrawer(
+    private val defaultFontName: String,
+) {
+    abstract fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        text: CharSequence,
+        x: Double,
+        y: Double,
+    )
+
+    fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        pointTopLeft: Point,
+        text: CharSequence,
+    ) {
+        draw(
+            color = color,
+            fontName = fontName,
+            fontHeight = fontHeight,
+            text = text,
+            x = pointTopLeft.x,
+            y = pointTopLeft.y,
+        )
+    }
+
+    fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        pointTopLeft: Point,
+        text: CharSequence,
+        offset: Offset,
+    ) {
+        draw(
+            color = color,
+            fontName = fontName,
+            fontHeight = fontHeight,
+            text = text,
+            x = pointTopLeft.x + offset.dX,
+            y = pointTopLeft.y + offset.dY,
+        )
+    }
+
+    fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        pointTopLeft: Point,
+        text: CharSequence,
+        measure: Measure<Double, Double>,
+    ) {
+        draw(
+            color = color,
+            fontName = fontName,
+            fontHeight = measure.transform(fontHeight),
+            text = text,
+            x = measure.transform(pointTopLeft.x),
+            y = measure.transform(pointTopLeft.y),
+        )
+    }
+
+    fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        pointTopLeft: Point,
+        text: CharSequence,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        draw(
+            color = color,
+            fontName = fontName,
+            fontHeight = measure.transform(fontHeight),
+            text = text,
+            x = measure.transform(pointTopLeft.x + offset.dX),
+            y = measure.transform(pointTopLeft.y + offset.dY),
+        )
+    }
+
+    abstract fun getTextWidth(
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        text: CharSequence,
+    ): Double
+
+    fun getTextWidth(
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        text: CharSequence,
+        measure: Measure<Double, Double>,
+        reversed: Boolean = true,
+    ): Double {
+        val width = getTextWidth(
+            fontName = fontName,
+            fontHeight = measure.transform(fontHeight),
+            text = text,
+        )
+        if (reversed) return measure.units(width)
+        return width
+    }
+}

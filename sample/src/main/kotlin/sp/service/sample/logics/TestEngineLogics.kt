@@ -5,7 +5,6 @@ import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
-import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
@@ -13,17 +12,15 @@ import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angleOf
-import sp.kx.math.ct
 import sp.kx.math.distanceOf
 import sp.kx.math.getShortestDistance
 import sp.kx.math.getShortestPoint
 import sp.kx.math.isEmpty
 import sp.kx.math.lt
+import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.MutableSpeed
-import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.diff
-import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
 import sp.kx.math.moved
 import sp.kx.math.plus
@@ -38,7 +35,6 @@ import sp.service.sample.entity.Item
 import sp.service.sample.entity.MutableMoving
 import sp.service.sample.entity.MutableTurning
 import sp.service.sample.entity.Player
-import sp.service.sample.util.FontInfoUtil
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong

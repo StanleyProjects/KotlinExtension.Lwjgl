@@ -1,5 +1,8 @@
 package sp.kx.lwjgl.entity
 
+import sp.kx.lwjgl.drawer.PolygonDrawer
+import sp.kx.lwjgl.drawer.TextDrawer
+import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.math.Point
 
 interface Canvas {

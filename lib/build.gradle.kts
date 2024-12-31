@@ -18,7 +18,7 @@ import sp.gx.core.resolve
 import sp.gx.core.task
 import java.util.Locale
 
-version = "0.3.5"
+version = "0.4.0"
 
 val maven = Maven.Artifact(
     group = "com.github.kepocnhh",
@@ -53,10 +53,8 @@ val compileKotlinTask = tasks.getByName<KotlinCompile>("compileKotlin") {
 
 dependencies {
     implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
-    val group = LwjglUtil.group
-    implementation(platform("$group:lwjgl-bom:${Version.lwjgl}"))
     LwjglUtil.modules.forEach { name ->
-        implementation(group = group, name = name)
+        implementation(group = LwjglUtil.group, name = name, version = Version.lwjgl)
     }
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.jupiter}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.jupiter}")
