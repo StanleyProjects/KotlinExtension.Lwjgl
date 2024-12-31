@@ -6,7 +6,6 @@ object LwjglUtil {
         "lwjgl",
         "lwjgl-glfw",
         "lwjgl-opengl",
-        "lwjgl-stb", // todo deprecated
         "lwjgl-freetype",
     )
 

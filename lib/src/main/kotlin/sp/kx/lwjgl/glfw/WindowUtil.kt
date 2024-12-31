@@ -12,7 +12,6 @@ import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
-import sp.kx.lwjgl.entity.font.FontDrawer
 import sp.kx.lwjgl.ft.FTTextDrawer
 import sp.kx.lwjgl.gl.GLPolygonDrawer
 import sp.kx.lwjgl.gl.GLVectorDrawer

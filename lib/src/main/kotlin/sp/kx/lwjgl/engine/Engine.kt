@@ -4,14 +4,12 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWKeyCallback
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
-import sp.kx.lwjgl.entity.font.FontAgent
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.provider.SystemTimes
 import sp.kx.lwjgl.provider.Times
-import sp.kx.lwjgl.stb.STBFontStorage
 import sp.kx.math.Size
 import sp.kx.math.sizeOf
 
@@ -43,7 +41,7 @@ sealed interface Engine {
                     // todo
                 },
                 defaultFontName = defaultFontName,
-                onPreLoop = { windowId: Long ->
+                onPreLoop = { _: Long ->
                     engine.property.launched = times.now()
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
