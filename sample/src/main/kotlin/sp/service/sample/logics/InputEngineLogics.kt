@@ -20,16 +20,14 @@ import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 
-class InputEngineLogics(private val engine: Engine) : EngineLogics {
-    private lateinit var shouldEngineStopUnit: Unit
+internal class InputEngineLogics(private val engine: Engine) : EngineLogics {
+    private lateinit var ses: Unit
 
     override val inputCallback = object : EngineInputCallback {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
             when (button) {
                 KeyboardButton.Escape -> {
-                    if (!isPressed) {
-                        shouldEngineStopUnit = Unit
-                    }
+                    if (!isPressed) ses = Unit
                 }
                 else -> {
                     println("[InputEngineLogic]: on button: $button $isPressed")
@@ -253,27 +251,33 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         val max = 24
         val color = Color.Green.copy(alpha = 0.5f)
         (1..max).forEach { number ->
+            val n = number.toDouble()
+            val m = max.toDouble()
+            val text = "$number"
+            val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
             canvas.texts.draw(
                 color = color,
-                fontHeight = measure.transform(fontHeight),
-                pointTopLeft = pointOf(x = number, y = 0) * measure,
-                text = "$number",
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = n + 0.5 - textWidth / 2, y = 0.0),
+                text = text,
+                measure = measure,
             )
             canvas.texts.draw(
                 color = color,
-                fontHeight = measure.transform(fontHeight),
-                pointTopLeft = pointOf(x = 0, y = number) * measure,
-                text = "$number",
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 0.5 - textWidth / 2, y = n),
+                text = text,
+                measure = measure,
             )
             canvas.vectors.draw(
                 color = color,
-                vector = pointOf(x = 0, y = number) + pointOf(x = max, y = number),
+                vector = pointOf(x = 0.0, y = n) + pointOf(x = m, y = n),
                 lineWidth = 0.1,
                 measure = measure,
             )
             canvas.vectors.draw(
                 color = color,
-                vector = pointOf(x = number, y = 0) + pointOf(x = number, y = max),
+                vector = pointOf(x = n, y = 0.0) + pointOf(x = n, y = m),
                 lineWidth = 0.1,
                 measure = measure,
             )
@@ -326,11 +330,12 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
             pointTopLeft = Point.Center,
             measure = measure,
         )
+        onRenderGrid(canvas = canvas)
         onRenderKeyboard(canvas = canvas, fontHeight = 1.0)
         onRenderFoo(canvas = canvas)
     }
 
     override fun shouldEngineStop(): Boolean {
-        return ::shouldEngineStopUnit.isInitialized
+        return ::ses.isInitialized
     }
 }
