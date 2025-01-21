@@ -52,7 +52,7 @@ internal class Renders(
                 measure = measure,
             )
             val text = "i${index % 10}"
-            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight * measure, text = text) / measure
+            val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
             canvas.texts.draw(
                 color = Color.Black,
                 fontHeight = fontHeight,
@@ -335,7 +335,7 @@ internal class Renders(
                 lineWidth = 0.1,
             )
             val text = "c${index % 10}"
-            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+            val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
             canvas.texts.draw(
                 color = Color.Yellow,
                 fontHeight = fontHeight,
