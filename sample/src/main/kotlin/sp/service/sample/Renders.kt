@@ -12,6 +12,7 @@ import sp.kx.math.Size
 import sp.kx.math.Vector
 import sp.kx.math.center
 import sp.kx.math.centerPoint
+import sp.kx.math.copy
 import sp.kx.math.div
 import sp.kx.math.measure.Measure
 import sp.kx.math.minus
@@ -171,14 +172,14 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
         crate: Crate,
-        current: Boolean,
+        isCurrent: Boolean,
     ) {
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
         val point = crate.point
-        val color = if (current) Color.Green else Color.Green.copy(alpha = 0.5f)
+        val color = if (isCurrent) Color.Green else Color.Green.copy(alpha = 0.5f)
         canvas.polygons.drawRectangle(
             borderColor = color,
-            fillColor = Color.Green.copy(alpha = if (isPressed && current) 0.5f else 0f),
+            fillColor = Color.Green.copy(alpha = if (isPressed && isCurrent) 0.5f else 0f),
             pointTopLeft = point,
             size = sizeOf(1.0, 1.0),
             lineWidth = 0.1,
@@ -204,36 +205,44 @@ internal class Renders(
     ) {
         val point = item.point
         val color = if (time != null) Color.Green else Color.Green.copy(alpha = 0.5f)
+        val size = sizeOf(1.0, 1.0) // todo Size.Reference
+        val dX = 1.0
+        val dY = -1.5
         if (time != null) {
             canvas.polygons.drawRectangle(
                 color = Color.Green.copy(alpha = 0.75f),
-                pointTopLeft = point,
-                size = sizeOf(
+                pointTopLeft = point.plus(dX = dX, dY = dY),
+                size = size.copy(
                     width = 1.0 * engine.progress(
                         button = KeyboardButton.F,
                         min = time,
                     ),
-                    height = 1.0,
                 ),
-                offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+                offset = offset,
                 measure = measure,
             )
         }
         canvas.polygons.drawRectangle(
             color = color,
-            pointTopLeft = point,
-            size = sizeOf(1.0, 1.0),
+            pointTopLeft = point.plus(dX = dX, dY = dY),
+            size = size,
             lineWidth = 0.1,
-            offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+            offset = offset,
             measure = measure,
         )
+        val fontHeight = 1.0
+        val text = "F"
+        val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
         canvas.texts.draw(
             color = color,
-            fontHeight = 1.0,
-            pointTopLeft = point,
-            offset = offset + offsetOf(dX = 1.25, dY = -1.5),
+            fontHeight = fontHeight,
+            pointTopLeft = point.plus(dX = dX, dY = dY),
+            text = text,
+            offset = offset + offsetOf(
+                dX = size.width / 2 - textWidth / 2,
+                dY = size.height / 2 - fontHeight / 2,
+            ),
             measure = measure,
-            text = "F",
         )
     }
 
@@ -265,7 +274,7 @@ internal class Renders(
                             offset = offset,
                             measure = measure,
                             crate = crate,
-                            current = interactive.current(type = type, id = id),
+                            isCurrent = interactive.isCurrent(type = type, id = id),
                         )
                     }
                 }

@@ -11,7 +11,7 @@ interface Times {
          * *---------*
          *      <--t->
          */
-        fun passed(start: Duration, finish: Duration, target: Duration): Boolean {
+        fun isPassed(start: Duration, finish: Duration, target: Duration): Boolean {
             return finish - start >= target
         }
 
@@ -20,7 +20,7 @@ interface Times {
          * *----*----*
          *      <--t->
          */
-        fun passed(start: Duration, min: Duration, finish: Duration, target: Duration): Boolean {
+        fun isPassed(start: Duration, min: Duration, finish: Duration, target: Duration): Boolean {
             return finish - start.coerceAtLeast(min) >= target
         }
 

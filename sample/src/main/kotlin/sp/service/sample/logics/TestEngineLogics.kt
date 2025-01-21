@@ -96,7 +96,7 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
         }
         val anyCloser = nearest.reaches(target = target, minDistance = minDistance, points = 8)
         val conflictPoints = points.filter { point ->
-            distanceOf(point, target).lt(other = minDistance, points = 12)
+            distanceOf(point, target).lt(other = minDistance, points = 8)
         }
         if (!anyCloser && conflictPoints.isEmpty()) return target
         val correctedPoints = nearest.map { vector ->

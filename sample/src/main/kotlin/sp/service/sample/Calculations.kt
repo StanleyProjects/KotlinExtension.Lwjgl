@@ -1,16 +1,14 @@
 package sp.service.sample
 
 import sp.kx.lwjgl.engine.Engine
-import sp.kx.lwjgl.engine.passed
+import sp.kx.lwjgl.engine.isPassed
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.lwjgl.provider.Times
 import sp.service.sample.entity.Crate
 import sp.service.sample.entity.Entities
 import sp.service.sample.entity.Interactive
 import sp.service.sample.entity.Item
 import java.util.UUID
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 internal class Calculations(
     private val engine: Engine,
@@ -38,8 +36,8 @@ internal class Calculations(
     private fun onInteractiveItem(id: UUID, time: Duration) {
         val item = env.items.firstOrNull { it.id == id } ?: TODO()
         // todo current ?
-        val passed = engine.passed(KeyboardButton.F, time)
-        if (passed) {
+        val isPassed = engine.isPassed(KeyboardButton.F, time)
+        if (isPassed) {
             item.owner = env.player.id
         }
     }
