@@ -16,6 +16,7 @@ import sp.kx.math.measure.speedOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
+import sp.kx.math.times
 
 class InputEngineLogics(private val engine: Engine) : EngineLogics {
     private lateinit var shouldEngineStopUnit: Unit
@@ -253,13 +254,13 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
             canvas.texts.draw(
                 color = color,
                 fontHeight = measure.transform(fontHeight),
-                pointTopLeft = pointOf(x = number, y = 0) + measure,
+                pointTopLeft = pointOf(x = number, y = 0) * measure,
                 text = "$number",
             )
             canvas.texts.draw(
                 color = color,
                 fontHeight = measure.transform(fontHeight),
-                pointTopLeft = pointOf(x = 0, y = number) + measure,
+                pointTopLeft = pointOf(x = 0, y = number) * measure,
                 text = "$number",
             )
             canvas.vectors.draw(

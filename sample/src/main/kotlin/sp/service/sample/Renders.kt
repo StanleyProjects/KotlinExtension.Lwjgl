@@ -13,6 +13,7 @@ import sp.kx.math.Vector
 import sp.kx.math.center
 import sp.kx.math.centerPoint
 import sp.kx.math.copy
+import sp.kx.math.div
 import sp.kx.math.measure.Measure
 import sp.kx.math.minus
 import sp.kx.math.offsetOf
@@ -345,8 +346,8 @@ internal class Renders(
     }
 
     fun onRender(canvas: Canvas, measure: Measure<Double, Double>) {
-        val centerPoint = engine.property.pictureSize.centerPoint() - measure
-        val centerOffset = engine.property.pictureSize.center() - measure
+        val centerPoint = engine.property.pictureSize.centerPoint() / measure
+        val centerOffset = engine.property.pictureSize.center() / measure
         val point = env.player.moving.point
         val offset = centerPoint - point
         //
