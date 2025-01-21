@@ -29,6 +29,7 @@ import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
+import sp.kx.math.reaches
 import sp.service.sample.Calculations
 import sp.service.sample.Environment
 import sp.service.sample.Interactions
@@ -91,9 +92,9 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
     ): Point? {
         val targetDistance = distanceOf(player.moving.point, target)
         val nearest = vectors.filter { vector ->
-            vector.closerThan(point = player.moving.point, minDistance = targetDistance + minDistance)
+            vector.reaches(target = player.moving.point, minDistance = targetDistance + minDistance, points = 8)
         }
-        val anyCloser = nearest.closerThan(point = target, minDistance = minDistance)
+        val anyCloser = nearest.reaches(target = target, minDistance = minDistance, points = 8)
         val conflictPoints = points.filter { point ->
             distanceOf(point, target).lt(other = minDistance, points = 12)
         }
@@ -112,8 +113,8 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
             )
         }
         val allowedPoints = correctedPoints.filter { point ->
-            !nearest.closerThan(point = point, minDistance = minDistance) &&
-                    points.none { distanceOf(it, point).lt(other = minDistance, points = 12) }
+            !nearest.reaches(target = point, minDistance = minDistance, points = 8) &&
+                    points.none { distanceOf(it, point).lt(other = minDistance, points = 8) }
         }
         if (allowedPoints.isEmpty()) {
             return null // todo
@@ -267,19 +268,6 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
                 list += get(index - 1) + get(index)
             }
             return list
-        }
-
-        @Deprecated(message = "sp.kx.math.closerThan")
-        private fun Vector.closerThan(point: Point, minDistance: Double): Boolean {
-            return getShortestDistance(point).lt(other = minDistance, points = 12)
-        }
-
-        @Deprecated(message = "sp.kx.math.closerThan")
-        private fun Iterable<Vector>.closerThan(point: Point, minDistance: Double): Boolean {
-            for (vector in this) {
-                if (vector.closerThan(point = point, minDistance = minDistance)) return true
-            }
-            return false
         }
     }
 }

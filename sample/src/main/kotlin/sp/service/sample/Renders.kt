@@ -12,14 +12,12 @@ import sp.kx.math.Size
 import sp.kx.math.Vector
 import sp.kx.math.center
 import sp.kx.math.centerPoint
-import sp.kx.math.copy
 import sp.kx.math.div
 import sp.kx.math.measure.Measure
-import sp.kx.math.measure.div
-import sp.kx.math.measure.times
 import sp.kx.math.minus
 import sp.kx.math.offsetOf
 import sp.kx.math.plus
+import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.vectorOf
@@ -48,7 +46,7 @@ internal class Renders(
                 color = Color.Green,
                 pointTopLeft = item.point,
                 size = size,
-                offset = offset + size.center() * -1.0,
+                offset = offset.plus(size = size, multiplier = -0.5),
                 measure = measure,
             )
             val text = "i${index % 10}"
@@ -123,28 +121,31 @@ internal class Renders(
     ) {
         canvas.polygons.drawRectangle(
             borderColor = Color.Green,
-            fillColor = Color.Black.copy(alpha = 0.75f),
-            pointTopLeft = Point.Center + offset,
+            fillColor = Color.Black.copy(alpha = 0.9f),
+            pointTopLeft = Point.Center,
             size = size,
             lineWidth = 0.1,
             measure = measure,
+            offset = offset,
         )
         if (title.isNotBlank()) {
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(1, -1),
-                measure = measure,
                 color = if (selected == null) Color.Green else Color.Yellow,
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 1.0, y = -1.0),
                 text = title,
+                offset = offset,
+                measure = measure,
             )
         }
         if (items.isEmpty()) {
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5),
-                measure = measure,
                 color = Color.Green.copy(alpha = 0.5f),
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 0.75, y = 0.5),
                 text = "no items",
+                offset = offset,
+                measure = measure,
             )
             return
         }
@@ -155,11 +156,12 @@ internal class Renders(
             val text = "#${env.items.indexOf(item)} ${item.id.toString().substring(0, 4)}"
             val prefix = if (isSelected) "> " else "  "
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5) + Offset.Empty.copy(dY = index * fontHeight),
-                measure = measure,
                 color = color,
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 0.75, y = 0.5 + index * fontHeight),
                 text = prefix + text, // todo
+                offset = offset,
+                measure = measure,
             )
         }
     }
@@ -330,7 +332,7 @@ internal class Renders(
                 color = Color.Yellow,
                 pointTopLeft = crate.point,
                 size = size,
-                offset = offset + size.center() * -1.0,
+                offset = offset.plus(size = size, multiplier = -0.5),
                 measure = measure,
                 lineWidth = 0.1,
             )
