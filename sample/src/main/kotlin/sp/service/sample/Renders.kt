@@ -15,6 +15,8 @@ import sp.kx.math.centerPoint
 import sp.kx.math.copy
 import sp.kx.math.div
 import sp.kx.math.measure.Measure
+import sp.kx.math.measure.div
+import sp.kx.math.measure.times
 import sp.kx.math.minus
 import sp.kx.math.offsetOf
 import sp.kx.math.plus
@@ -50,7 +52,7 @@ internal class Renders(
                 measure = measure,
             )
             val text = "i${index % 10}"
-            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight * measure, text = text) / measure
             canvas.texts.draw(
                 color = Color.Black,
                 fontHeight = fontHeight,

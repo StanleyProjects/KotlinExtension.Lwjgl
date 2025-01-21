@@ -10,9 +10,11 @@ import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutablePoint
 import sp.kx.math.Point
 import sp.kx.math.measure.diff
+import sp.kx.math.measure.div
 import sp.kx.math.measure.frequency
 import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
+import sp.kx.math.measure.times
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
@@ -48,7 +50,7 @@ class InputEngineLogics(private val engine: Engine) : EngineLogics {
         text: String = getText(button = button),
     ) {
         val isPressed = engine.input.keyboard.isPressed(button)
-        val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+        val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
         canvas.texts.draw(
             color = if (isPressed) Color.Yellow else Color.Green,
             fontHeight = fontHeight,
