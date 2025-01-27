@@ -13,10 +13,12 @@ import sp.kx.math.Vector
 import sp.kx.math.center
 import sp.kx.math.centerPoint
 import sp.kx.math.copy
+import sp.kx.math.div
 import sp.kx.math.measure.Measure
 import sp.kx.math.minus
 import sp.kx.math.offsetOf
 import sp.kx.math.plus
+import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.vectorOf
@@ -45,11 +47,11 @@ internal class Renders(
                 color = Color.Green,
                 pointTopLeft = item.point,
                 size = size,
-                offset = offset + size.center() * -1.0,
+                offset = offset.plus(size = size, multiplier = -0.5),
                 measure = measure,
             )
             val text = "i${index % 10}"
-            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+            val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
             canvas.texts.draw(
                 color = Color.Black,
                 fontHeight = fontHeight,
@@ -120,28 +122,31 @@ internal class Renders(
     ) {
         canvas.polygons.drawRectangle(
             borderColor = Color.Green,
-            fillColor = Color.Black.copy(alpha = 0.75f),
-            pointTopLeft = Point.Center + offset,
+            fillColor = Color.Black.copy(alpha = 0.9f),
+            pointTopLeft = Point.Center,
             size = size,
             lineWidth = 0.1,
             measure = measure,
+            offset = offset,
         )
         if (title.isNotBlank()) {
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(1, -1),
-                measure = measure,
                 color = if (selected == null) Color.Green else Color.Yellow,
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 1.0, y = -1.0),
                 text = title,
+                offset = offset,
+                measure = measure,
             )
         }
         if (items.isEmpty()) {
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5),
-                measure = measure,
                 color = Color.Green.copy(alpha = 0.5f),
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 0.75, y = 0.5),
                 text = "no items",
+                offset = offset,
+                measure = measure,
             )
             return
         }
@@ -152,11 +157,12 @@ internal class Renders(
             val text = "#${env.items.indexOf(item)} ${item.id.toString().substring(0, 4)}"
             val prefix = if (isSelected) "> " else "  "
             canvas.texts.draw(
-                fontHeight = fontHeight,
-                pointTopLeft = Point.Center + offset + offsetOf(0.75, 0.5) + Offset.Empty.copy(dY = index * fontHeight),
-                measure = measure,
                 color = color,
+                fontHeight = fontHeight,
+                pointTopLeft = pointOf(x = 0.75, y = 0.5 + index * fontHeight),
                 text = prefix + text, // todo
+                offset = offset,
+                measure = measure,
             )
         }
     }
@@ -166,14 +172,14 @@ internal class Renders(
         offset: Offset,
         measure: Measure<Double, Double>,
         crate: Crate,
-        current: Boolean,
+        isCurrent: Boolean,
     ) {
         val isPressed = engine.input.keyboard.isPressed(KeyboardButton.F)
         val point = crate.point
-        val color = if (current) Color.Green else Color.Green.copy(alpha = 0.5f)
+        val color = if (isCurrent) Color.Green else Color.Green.copy(alpha = 0.5f)
         canvas.polygons.drawRectangle(
             borderColor = color,
-            fillColor = Color.Green.copy(alpha = if (isPressed && current) 0.5f else 0f),
+            fillColor = Color.Green.copy(alpha = if (isPressed && isCurrent) 0.5f else 0f),
             pointTopLeft = point,
             size = sizeOf(1.0, 1.0),
             lineWidth = 0.1,
@@ -199,36 +205,46 @@ internal class Renders(
     ) {
         val point = item.point
         val color = if (time != null) Color.Green else Color.Green.copy(alpha = 0.5f)
+        val size = sizeOf(1.0, 1.0) // todo Size.Reference
+        val dX = 1.0
+        val dY = -1.5
         if (time != null) {
             canvas.polygons.drawRectangle(
                 color = Color.Green.copy(alpha = 0.75f),
-                pointTopLeft = point,
-                size = sizeOf(
+                pointTopLeft = point.plus(dX = dX, dY = dY),
+                size = size.copy(
                     width = 1.0 * engine.progress(
                         button = KeyboardButton.F,
                         min = time,
                     ),
-                    height = 1.0,
                 ),
-                offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+                offset = offset,
                 measure = measure,
             )
         }
         canvas.polygons.drawRectangle(
             color = color,
-            pointTopLeft = point,
-            size = sizeOf(1.0, 1.0),
+            pointTopLeft = point.plus(dX = dX, dY = dY),
+            size = size,
             lineWidth = 0.1,
-            offset = offset + offsetOf(dX = 1.0, dY = -1.5),
+            offset = offset,
             measure = measure,
         )
+        val fontHeight = 1.0
+        val text = "F"
+        val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
         canvas.texts.draw(
             color = color,
-            fontHeight = 1.0,
-            pointTopLeft = point,
-            offset = offset + offsetOf(dX = 1.25, dY = -1.5),
+            fontHeight = fontHeight,
+            pointTopLeft = point.plus(dX = dX, dY = dY),
+            text = text,
+            offset = offset.plus(
+                size = size,
+                dX = - textWidth,
+                dY = - fontHeight,
+                multiplier = 0.5,
+            ),
             measure = measure,
-            text = "F",
         )
     }
 
@@ -260,7 +276,7 @@ internal class Renders(
                             offset = offset,
                             measure = measure,
                             crate = crate,
-                            current = interactive.current(type = type, id = id),
+                            isCurrent = interactive.isCurrent(type = type, id = id),
                         )
                     }
                 }
@@ -327,12 +343,12 @@ internal class Renders(
                 color = Color.Yellow,
                 pointTopLeft = crate.point,
                 size = size,
-                offset = offset + size.center() * -1.0,
+                offset = offset.plus(size = size, multiplier = -0.5),
                 measure = measure,
                 lineWidth = 0.1,
             )
             val text = "c${index % 10}"
-            val textWidth = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)
+            val textWidth = canvas.texts.getTextUnits(fontHeight, text, measure)
             canvas.texts.draw(
                 color = Color.Yellow,
                 fontHeight = fontHeight,
@@ -345,8 +361,8 @@ internal class Renders(
     }
 
     fun onRender(canvas: Canvas, measure: Measure<Double, Double>) {
-        val centerPoint = engine.property.pictureSize.centerPoint() - measure
-        val centerOffset = engine.property.pictureSize.center() - measure
+        val centerPoint = engine.property.pictureSize.centerPoint() / measure
+        val centerOffset = engine.property.pictureSize.center() / measure
         val point = env.player.moving.point
         val offset = centerPoint - point
         //

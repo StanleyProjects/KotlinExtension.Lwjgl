@@ -90,24 +90,35 @@ abstract class TextDrawer(
     }
 
     abstract fun getTextWidth(
-        fontName: String = defaultFontName,
         fontHeight: Double,
         text: CharSequence,
+        fontName: String = defaultFontName,
     ): Double
 
     fun getTextWidth(
-        fontName: String = defaultFontName,
         fontHeight: Double,
         text: CharSequence,
         measure: Measure<Double, Double>,
-        reversed: Boolean = true,
+        fontName: String = defaultFontName,
+    ): Double {
+        return getTextWidth(
+            fontName = fontName,
+            fontHeight = measure.transform(fontHeight),
+            text = text,
+        )
+    }
+
+    fun getTextUnits(
+        fontHeight: Double,
+        text: CharSequence,
+        measure: Measure<Double, Double>,
+        fontName: String = defaultFontName,
     ): Double {
         val width = getTextWidth(
             fontName = fontName,
             fontHeight = measure.transform(fontHeight),
             text = text,
         )
-        if (reversed) return measure.units(width)
-        return width
+        return measure.units(width)
     }
 }

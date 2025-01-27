@@ -18,14 +18,14 @@ interface Color {
 }
 
 fun Color.copy(alpha: Byte): Color {
-    var values = blue.toLong().and(0xff)
-    values = values.or(green.toLong().and(0xff).shl(8))
-    values = values.or(red.toLong().and(0xff).shl(16))
-    values = values.or(alpha.toLong().and(0xff).shl(24))
+    val values = blue.toLong().and(0xff)
+        .or(green.toLong().and(0xff).shl(8))
+        .or(red.toLong().and(0xff).shl(16))
+        .or(alpha.toLong().and(0xff).shl(24))
     return colorOf(values = values)
 }
 
 fun Color.copy(alpha: Float): Color {
     if (alpha < 0 || alpha > 1) TODO()
-    return copy(alpha = Byte.MAX_VALUE.toInt().and(0xff).times(alpha).toInt().toByte())
+    return copy(alpha = 0xff.times(alpha).toInt().toByte())
 }

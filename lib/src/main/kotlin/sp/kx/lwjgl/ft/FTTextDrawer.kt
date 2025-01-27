@@ -86,7 +86,11 @@ internal class FTTextDrawer(
         )
     }
 
-    override fun getTextWidth(fontName: String, fontHeight: Double, text: CharSequence): Double {
+    override fun getTextWidth(
+        fontHeight: Double,
+        text: CharSequence,
+        fontName: String,
+    ): Double {
         val (buffer, atlases) = getAtlases(fontName = fontName)
         val atlas = getAtlas(
             buffer = buffer,

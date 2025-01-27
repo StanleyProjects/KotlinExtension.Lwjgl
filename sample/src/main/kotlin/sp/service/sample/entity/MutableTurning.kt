@@ -18,7 +18,7 @@ internal class MutableTurning(
     fun turn(radians: Double, timeDiff: Duration) {
         direction.expected = radians
         val dirDiff = direction.diff()
-        if (dirDiff.absoluteValue.eq(0.0, points = 4)) return
+        if (dirDiff.absoluteValue.eq(0.0, points = 8)) return
         val alpha = speed.length(timeDiff)
         if (alpha > dirDiff.absoluteValue) {
             direction.commit()

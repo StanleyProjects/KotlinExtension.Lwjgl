@@ -8,14 +8,14 @@ import sp.service.sample.logics.TextsEngineLogics
 
 fun main() {
 	Engine.run(
-		title = "Input",
-		supplier = ::InputEngineLogics,
-//		title = "Test",
-//		supplier = ::TestEngineLogics,
+//		title = "Input",
+//		supplier = ::InputEngineLogics,
+		title = "Test",
+		supplier = ::TestEngineLogics,
 //		title = "Texts",
 //		supplier = ::TextsEngineLogics,
 		size = sizeOf(640, 480),
-//		defaultFontName = "JetBrainsMono.ttf",
-		defaultFontName = "OpenSans.ttf",
+		defaultFontName = "JetBrainsMono.ttf",
+//		defaultFontName = "OpenSans.ttf",
 	)
 }

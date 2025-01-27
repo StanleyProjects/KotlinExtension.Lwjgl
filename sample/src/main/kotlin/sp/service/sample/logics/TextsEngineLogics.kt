@@ -8,8 +8,9 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.Point
 import sp.kx.math.measure.MutableDoubleMeasure
+import sp.kx.math.measure.div
+import sp.kx.math.measure.times
 import sp.kx.math.offsetOf
-import sp.kx.math.pointOf
 import sp.kx.math.sizeOf
 
 internal class TextsEngineLogics(
@@ -66,10 +67,11 @@ internal class TextsEngineLogics(
             offset = offset,
             measure = measure,
         )
+        val width = canvas.texts.getTextUnits(fontHeight = fontHeight, text = text, measure = measure)
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
             pointTopLeft = pointTopLeft,
-            size = sizeOf(height = fontHeight, width = canvas.texts.getTextWidth(fontHeight = fontHeight, text = text, measure = measure)),
+            size = sizeOf(height = fontHeight, width = width),
             lineWidth = 0.05,
             offset = offset,
             measure = measure,

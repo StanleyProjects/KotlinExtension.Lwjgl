@@ -3,7 +3,7 @@ object Version {
     const val kotlin = "1.9.25"
     const val ktlint = "0.50.0"
     const val lwjgl = "3.3.4"
-    const val math = "0.7.4u-SNAPSHOT"
+    const val math = "0.8.1-SNAPSHOT"
     const val jupiter = "5.10.2"
     const val jacoco = "0.8.12"
 

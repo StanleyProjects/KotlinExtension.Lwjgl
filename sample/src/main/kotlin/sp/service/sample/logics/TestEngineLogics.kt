@@ -5,6 +5,7 @@ import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
+import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
@@ -21,11 +22,14 @@ import sp.kx.math.measure.MutableDeviation
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.MutableSpeed
 import sp.kx.math.measure.diff
+import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
 import sp.kx.math.moved
+import sp.kx.math.offsetOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
 import sp.kx.math.radians
+import sp.kx.math.reaches
 import sp.service.sample.Calculations
 import sp.service.sample.Environment
 import sp.service.sample.Interactions
@@ -40,7 +44,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
-    private lateinit var shouldEngineStopUnit: Unit
+    private lateinit var ses: Unit
     private val env = getEnvironment()
     private val calculations = Calculations(engine = engine, env = env)
     private val renders = Renders(engine = engine, env = env, holder = calculations.getHolder())
@@ -49,30 +53,25 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
 
     override val inputCallback = object : EngineInputCallback {
         override fun onKeyboardButton(button: KeyboardButton, isPressed: Boolean) {
-            when (button) {
-                KeyboardButton.P -> {
-                    if (isPressed) when (measure.magnitude) {
-                        16.0 -> measure.magnitude = 24.0
-                        24.0 -> measure.magnitude = 32.0
-                        32.0 -> measure.magnitude = 40.0
-                        40.0 -> measure.magnitude = 16.0
-                    }
-                    return
-                }
-                KeyboardButton.Escape -> {
-                    if (env.state == Environment.State.Walking) {
-                        if (isPressed) shouldEngineStopUnit = Unit
-                        return
-                    }
-                }
-                else -> Unit
+            if (!isPressed) return
+            if (button == KeyboardButton.Escape && env.state == Environment.State.Walking) {
+                ses = Unit
+                return
             }
-            if (isPressed) interactions.onPress(button)
+            when (button) {
+                KeyboardButton.Minus -> {
+                    if (measure.magnitude > 16.0) measure.magnitude -= 8.0
+                }
+                KeyboardButton.Equal -> {
+                    if (measure.magnitude < 64.0) measure.magnitude += 8.0
+                }
+                else -> interactions.onPress(button)
+            }
         }
     }
 
     override fun shouldEngineStop(): Boolean {
-        return ::shouldEngineStopUnit.isInitialized
+        return ::ses.isInitialized
     }
 
     private fun getCorrectedPoint(
@@ -93,11 +92,11 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
     ): Point? {
         val targetDistance = distanceOf(player.moving.point, target)
         val nearest = vectors.filter { vector ->
-            vector.closerThan(point = player.moving.point, minDistance = targetDistance + minDistance)
+            vector.reaches(target = player.moving.point, minDistance = targetDistance + minDistance, points = 8)
         }
-        val anyCloser = nearest.closerThan(point = target, minDistance = minDistance)
+        val anyCloser = nearest.reaches(target = target, minDistance = minDistance, points = 8)
         val conflictPoints = points.filter { point ->
-            distanceOf(point, target).lt(other = minDistance, points = 12)
+            distanceOf(point, target).lt(other = minDistance, points = 8)
         }
         if (!anyCloser && conflictPoints.isEmpty()) return target
         val correctedPoints = nearest.map { vector ->
@@ -114,8 +113,8 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
             )
         }
         val allowedPoints = correctedPoints.filter { point ->
-            !nearest.closerThan(point = point, minDistance = minDistance) &&
-                    points.none { distanceOf(it, point).lt(other = minDistance, points = 12) }
+            !nearest.reaches(target = point, minDistance = minDistance, points = 8) &&
+                    points.none { distanceOf(it, point).lt(other = minDistance, points = 8) }
         }
         if (allowedPoints.isEmpty()) {
             return null // todo
@@ -158,19 +157,24 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
     }
 
     override fun onRender(canvas: Canvas) {
-//        canvas.texts.draw(
-//            info = FontInfoUtil.getFontInfo(height = 1.0, measure = measure),
-//            pointTopLeft = Point.Center,
-//            color = Color.Green,
-//            text = String.format("%6.2f", engine.property.time.frequency()),
-//            measure = measure,
-//        )
-        //
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = 24.0,
+            text = String.format("%6.2f", engine.property.time.frequency()),
+            pointTopLeft = Point.Center,
+        )
         if (env.state == Environment.State.Walking) {
             movePlayer()
         }
         calculations.onRender()
         renders.onRender(canvas = canvas, measure = measure)
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = 24.0,
+            text = String.format("%2.2f", measure.magnitude),
+            pointTopLeft = Point.Center,
+            offset = offsetOf(dX = 0.0, engine.property.pictureSize.height - 24.0),
+        )
     }
 
     companion object {
@@ -264,19 +268,6 @@ internal class TestEngineLogics(private val engine: Engine) : EngineLogics {
                 list += get(index - 1) + get(index)
             }
             return list
-        }
-
-        @Deprecated(message = "sp.kx.math.closerThan")
-        private fun Vector.closerThan(point: Point, minDistance: Double): Boolean {
-            return getShortestDistance(point).lt(other = minDistance, points = 12)
-        }
-
-        @Deprecated(message = "sp.kx.math.closerThan")
-        private fun Iterable<Vector>.closerThan(point: Point, minDistance: Double): Boolean {
-            for (vector in this) {
-                if (vector.closerThan(point = point, minDistance = minDistance)) return true
-            }
-            return false
         }
     }
 }

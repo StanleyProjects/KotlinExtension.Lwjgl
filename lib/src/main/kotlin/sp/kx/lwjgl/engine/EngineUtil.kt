@@ -5,12 +5,12 @@ import sp.kx.lwjgl.provider.Times
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-fun Engine.passed(
+fun Engine.isPassed(
     button: KeyboardButton,
     min: Duration,
     target: Duration = 1.seconds,
 ): Boolean {
-    return Times.passed(
+    return Times.isPassed(
         start = input.keyboard.whenPressed(button = button) ?: return false,
         min = min,
         finish = property.time.b,

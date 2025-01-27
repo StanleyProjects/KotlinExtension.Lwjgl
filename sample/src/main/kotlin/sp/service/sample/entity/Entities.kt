@@ -15,7 +15,7 @@ internal object Entities {
         for (item in items) {
             if (item.owner != null) continue
             val distance = distanceOf(item.point, target)
-            if (distance.gt(other = maxDistance, points = 12)) continue
+            if (distance.gt(other = maxDistance, points = 8)) continue
             if (nearest == null || nearest.second > distance) {
                 nearest = item to distance
             }
@@ -29,7 +29,7 @@ internal object Entities {
         maxDistance: Double,
     ): List<Item> {
         return items.filter {
-            it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 12)
+            it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 8)
         }
     }
 
@@ -40,7 +40,7 @@ internal object Entities {
     ): Set<UUID> {
         val result = mutableSetOf<UUID>()
         for (it in items) {
-            if (it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 12)) {
+            if (it.owner == null && !distanceOf(it.point, target).gt(other = maxDistance, points = 8)) {
                 result.add(it.id)
             }
         }
@@ -55,7 +55,7 @@ internal object Entities {
         var nearest: Pair<Crate, Double>? = null
         for (crate in crates) {
             val distance = distanceOf(crate.point, target)
-            if (distance.gt(other = maxDistance, points = 12)) continue
+            if (distance.gt(other = maxDistance, points = 8)) continue
             if (nearest == null || nearest.second > distance) {
                 nearest = crate to distance
             }
@@ -69,7 +69,7 @@ internal object Entities {
         maxDistance: Double,
     ): List<Crate> {
         return crates.filter {
-            !distanceOf(it.point, target).gt(other = maxDistance, points = 12)
+            !distanceOf(it.point, target).gt(other = maxDistance, points = 8)
         }
     }
 
@@ -80,7 +80,7 @@ internal object Entities {
     ): Set<UUID> {
         val result = mutableSetOf<UUID>()
         for (it in crates) {
-            if (!distanceOf(it.point, target).gt(other = maxDistance, points = 12)) {
+            if (!distanceOf(it.point, target).gt(other = maxDistance, points = 8)) {
                 result.add(it.id)
             }
         }
