@@ -238,9 +238,11 @@ internal class Renders(
             fontHeight = fontHeight,
             pointTopLeft = point.plus(dX = dX, dY = dY),
             text = text,
-            offset = offset + offsetOf(
-                dX = size.width / 2 - textWidth / 2,
-                dY = size.height / 2 - fontHeight / 2,
+            offset = offset.plus(
+                size = size,
+                dX = - textWidth,
+                dY = - fontHeight,
+                multiplier = 0.5,
             ),
             measure = measure,
         )
