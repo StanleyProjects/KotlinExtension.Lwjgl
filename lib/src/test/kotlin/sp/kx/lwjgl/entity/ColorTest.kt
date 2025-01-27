@@ -49,8 +49,14 @@ internal class ColorTest {
     }
 
     @Test
-    fun copyTest() {
+    fun copyByteTest() {
         val color = colorOf(0x01020304)
+        color.copy(alpha = 0x00).assert(
+            alpha = 0x00,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
         color.copy(alpha = 0x11).assert(
             alpha = 0x11,
             red = 0x02,
@@ -59,6 +65,47 @@ internal class ColorTest {
         )
         color.copy(alpha = 0x12).assert(
             alpha = 0x12,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 0xff.toByte()).assert(
+            alpha = 0xff,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+    }
+
+    @Test
+    fun copyFloatTest() {
+        val color = colorOf(0x01020304)
+        color.copy(alpha = 0f).assert(
+            alpha = 0x00,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 0.5f).assert(
+            alpha = 0x7f,
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 0.5f).assert(
+            alpha = Byte.MAX_VALUE.toInt(),
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 1f).assert(
+            alpha = (-1).and(0xff),
+            red = 0x02,
+            green = 0x03,
+            blue = 0x04,
+        )
+        color.copy(alpha = 1f).assert(
+            alpha = 0xff,
             red = 0x02,
             green = 0x03,
             blue = 0x04,
