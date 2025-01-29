@@ -13,7 +13,7 @@ fun main() {
 //		title = "Test", supplier = ::TestEngineLogics,
 //		title = "Texts", supplier = ::TextsEngineLogics,
 		title = "Cells", supplier = ::CellsEngineLogics,
-		size = sizeOf(640, 480),
+//		size = sizeOf(640, 480),
 		defaultFontName = "JetBrainsMono.ttf",
 //		defaultFontName = "OpenSans.ttf",
 	)
