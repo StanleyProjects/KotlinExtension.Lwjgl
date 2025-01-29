@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI
+import org.lwjgl.glfw.GLFWWindowSizeCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.drawer.PolygonDrawer
@@ -29,6 +30,7 @@ object WindowUtil {
         size: Size?,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
+        onWindowResizeCallback: GLFWWindowSizeCallbackI,
     ): Long {
         GLFWErrorCallback.createPrint(errorPrintStream).set()
         check(GLFW.glfwInit()) { "Unable to initialize GLFW!" }
@@ -65,6 +67,7 @@ object WindowUtil {
         GLFW.glfwSwapInterval(1)
         GLFW.glfwSetKeyCallback(windowId, onKeyCallback)
         GLFW.glfwSetWindowCloseCallback(windowId, onWindowCloseCallback)
+        GLFW.glfwSetWindowSizeCallback(windowId, onWindowResizeCallback)
         return windowId
     }
 
@@ -145,6 +148,7 @@ object WindowUtil {
         defaultFontName: String,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
+        onWindowResizeCallback: GLFWWindowSizeCallbackI,
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
@@ -155,6 +159,7 @@ object WindowUtil {
             errorPrintStream = errorPrintStream,
             onKeyCallback = onKeyCallback,
             onWindowCloseCallback = onWindowCloseCallback,
+            onWindowResizeCallback = onWindowResizeCallback,
             size = size,
             title = title,
             monitorIdSupplier = monitorIdSupplier,

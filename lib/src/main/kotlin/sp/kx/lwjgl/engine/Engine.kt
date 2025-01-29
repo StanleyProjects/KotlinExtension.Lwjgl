@@ -31,18 +31,25 @@ sealed interface Engine {
             val keyboard = StatefulKeyboard()
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
-                property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
+                property = MutableEngineProperty(pictureSize = size ?: Size.Undefined),
             )
-            val logics = supplier(engine)
+            var logics: EngineLogics = EmptyEngineLogics
             WindowUtil.loopWindow(
                 title = title,
                 size = size,
                 onWindowCloseCallback = {
                     // todo
                 },
+                onWindowResizeCallback = { _: Long, width, height ->
+                    engine.property.pictureSize = sizeOf(width = width, height = height)
+                },
                 defaultFontName = defaultFontName,
-                onPreLoop = { _: Long ->
+                onPreLoop = { windowId ->
                     engine.property.launched = times.now()
+                    engine.property.time.a = engine.property.launched
+                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
+                    logics = supplier(engine)
+                    logics.onPreLoop()
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -59,7 +66,6 @@ sealed interface Engine {
                 },
                 onRender = { windowId, canvas ->
                     engine.property.time.b = times.now()
-                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                     logics.onRender(canvas = canvas)
                     engine.property.time.a = engine.property.time.b
                     if (logics.shouldEngineStop()) {
