@@ -22,6 +22,7 @@ sealed interface Engine {
             supplier: (Engine) -> EngineLogics,
             title: String = "Engine",
             size: Size? = null,
+            refreshRate: Double? = null,
             times: Times = SystemTimes,
             defaultFontName: String,
         ) {
@@ -37,6 +38,7 @@ sealed interface Engine {
             WindowUtil.loopWindow(
                 title = title,
                 size = size,
+                refreshRate = refreshRate,
                 onWindowCloseCallback = {
                     // todo
                 },

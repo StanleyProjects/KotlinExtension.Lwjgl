@@ -124,14 +124,20 @@ object WindowUtil {
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
+        refreshRate: Double,
     ) {
         GLUtil.clearColor(Color.Black)
         val canvas = WindowCanvas(defaultFontName = defaultFontName)
         onPreLoop(windowId)
+        val timeMax = (1_000_000.0 / refreshRate).toLong()
+        var timeLast = System.nanoTime() / 1_000
         while (!GLFW.glfwWindowShouldClose(windowId)) {
+            val timeNow = System.nanoTime() / 1_000
+            if (timeNow - timeLast < timeMax) continue
             onPreRender(windowId)
             onRender(windowId, canvas)
-            onPostRender(windowId)
+            GLFW.glfwSwapBuffers(windowId)
+            timeLast = timeNow
         }
         onPostLoop()
     }
@@ -145,7 +151,8 @@ object WindowUtil {
 
     fun loopWindow(
         title: String,
-        size: Size? = null,
+        size: Size?,
+        refreshRate: Double?,
         defaultFontName: String,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
@@ -166,7 +173,16 @@ object WindowUtil {
             monitorIdSupplier = monitorIdSupplier,
         )
         GLFW.glfwShowWindow(windowId)
-        loopWindow(windowId = windowId, defaultFontName = defaultFontName, onPreLoop, onPostLoop, onRender)
+        val monitorId = monitorIdSupplier().checked { "Monitor id is null!" }
+        val videoMode = GLFW.glfwGetVideoMode(monitorId) ?: error("No video mode!")
+        loopWindow(
+            windowId = windowId,
+            defaultFontName = defaultFontName,
+            onPreLoop = onPreLoop,
+            onPostLoop = onPostLoop,
+            onRender = onRender,
+            refreshRate = refreshRate ?: videoMode.refreshRate().toDouble(),
+        )
         destroyWindow(windowId)
     }
 }

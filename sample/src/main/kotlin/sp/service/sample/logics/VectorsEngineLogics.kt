@@ -102,7 +102,6 @@ internal class VectorsEngineLogics(
     }
 
     private fun onRenderOffset(canvas: Canvas, offset: Offset) {
-        return // todo
         val ps = engine.property.pictureSize / measure
         for (it in 2..ps.width.toInt()) {
             val dX = it - offset.dX
