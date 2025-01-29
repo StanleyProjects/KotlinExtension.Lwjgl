@@ -7,6 +7,7 @@ import sp.service.sample.logics.InputEngineLogics
 import sp.service.sample.logics.PolygonsEngineLogics
 import sp.service.sample.logics.TestEngineLogics
 import sp.service.sample.logics.TextsEngineLogics
+import sp.service.sample.logics.VectorsEngineLogics
 
 fun main() {
 	Engine.run(
@@ -14,8 +15,9 @@ fun main() {
 //		title = "Test", supplier = ::TestEngineLogics,
 //		title = "Texts", supplier = ::TextsEngineLogics,
 //		title = "Cells", supplier = ::CellsEngineLogics,
-		title = "Polygons", supplier = ::PolygonsEngineLogics,
-//		size = sizeOf(640, 480),
+//		title = "Polygons", supplier = ::PolygonsEngineLogics,
+		title = "Vectors", supplier = ::VectorsEngineLogics,
+		size = sizeOf(640, 480),
 		defaultFontName = "JetBrainsMono.ttf",
 //		defaultFontName = "OpenSans.ttf",
 	)
