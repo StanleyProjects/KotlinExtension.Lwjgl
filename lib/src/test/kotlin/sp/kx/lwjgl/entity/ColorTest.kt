@@ -1,6 +1,8 @@
 package sp.kx.lwjgl.entity
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class ColorTest {
@@ -46,6 +48,11 @@ internal class ColorTest {
             green = 0x03,
             blue = 0x04,
         )
+        assertTrue(colorOf(0x00000001) === colorOf(0x00000001))
+        assertTrue(colorOf(0x00000002) === colorOf(0x00000002))
+        assertFalse(colorOf(0x00000001) === colorOf(0x00000002))
+        assertTrue(colorOf(0x00000001) === colorOf(0x00000001).copy(alpha = 0))
+        assertFalse(colorOf(0x00000001) === colorOf(0x00000001).copy(alpha = 1))
     }
 
     @Test
