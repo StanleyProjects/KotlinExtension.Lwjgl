@@ -20,6 +20,7 @@ import sp.kx.math.div
 import sp.kx.math.isEmpty
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
+import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
 import sp.kx.math.plus
 import sp.kx.math.pointOf
@@ -100,8 +101,9 @@ internal class VectorsEngineLogics(
         )
     }
 
-    private fun onRenderOffset(canvas: Canvas, offset: Offset, pictureSize: Size) {
-        for (it in 2..pictureSize.width.toInt()) {
+    private fun onRenderOffset(canvas: Canvas, offset: Offset) {
+        val ps = engine.property.pictureSize / measure
+        for (it in 2..ps.width.toInt()) {
             val dX = it - offset.dX
             val value = java.lang.Math.floor(dX).toInt()
             val x = offset.dX + value
@@ -119,10 +121,10 @@ internal class VectorsEngineLogics(
             )
             canvas.vectors.draw(
                 color = color,
-                vector = vectorOf(x, 0.0, x, pictureSize.height) * measure,
+                vector = vectorOf(x, 0.0, x, ps.height) * measure,
             )
         }
-        for (it in 2..pictureSize.height.toInt()) {
+        for (it in 2..ps.height.toInt()) {
             val dY = it - offset.dY
             val value = java.lang.Math.floor(dY).toInt()
             val y = offset.dY + value
@@ -140,7 +142,7 @@ internal class VectorsEngineLogics(
             )
             canvas.vectors.draw(
                 color = color,
-                vector = vectorOf(0.0, y, pictureSize.width, y) * measure,
+                vector = vectorOf(0.0, y, ps.width, y) * measure,
             )
         }
     }
@@ -291,6 +293,7 @@ internal class VectorsEngineLogics(
     }
 
     override fun onRender(canvas: Canvas) {
+        val fps = engine.property.time.frequency()
         onPreRender()
         onRenderVectors(canvas = canvas, dY = 2.0)
         onRenderLineWidth(canvas = canvas, dY = 6.0, lineWidth = 0.5)
@@ -301,16 +304,8 @@ internal class VectorsEngineLogics(
         onRenderLVLW(canvas = canvas, dY = 26.0, lineWidth = 0.1)
         onRenderLVLW(canvas = canvas, dY = 30.0, lineWidth = 0.05)
         val pictureSize = engine.property.pictureSize
-        onRenderOffset(canvas = canvas, offset = offset, pictureSize = pictureSize)
+        onRenderOffset(canvas = canvas, offset = offset)
         //
-        canvas.polygons.drawCircle(
-            color = Color.Red,
-            pointCenter = Point.Center,
-            radius = 0.25,
-            edgeCount = 4,
-            offset = offset,
-            measure = measure,
-        )
         canvas.polygons.drawCircle(
             color = Color.Yellow,
             pointCenter = pictureSize.div(measure).centerPoint(),
@@ -320,6 +315,12 @@ internal class VectorsEngineLogics(
         )
         //
         val fontHeight = 24.0
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = fontHeight,
+            text = String.format("%6.2f", fps),
+            pointTopLeft = pointOf(x = pictureSize.width - 128.0, y = pictureSize.height - fontHeight * 2),
+        )
         canvas.texts.draw(
             color = Color.Green,
             fontHeight = fontHeight,

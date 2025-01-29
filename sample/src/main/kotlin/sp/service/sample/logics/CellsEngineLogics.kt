@@ -20,8 +20,10 @@ import sp.kx.math.div
 import sp.kx.math.isEmpty
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
+import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
 import sp.kx.math.pointOf
+import sp.kx.math.times
 import sp.kx.math.vectorOf
 
 internal class CellsEngineLogics(
@@ -122,6 +124,7 @@ internal class CellsEngineLogics(
                 vector = vectorOf(x, 0.0, x, ps.height),
                 lineWidth = 0.05,
                 measure = measure,
+//                vector = vectorOf(x, 0.0, x, ps.height) * measure,
             )
         }
         for (it in 2..ps.height.toInt()) {
@@ -141,11 +144,13 @@ internal class CellsEngineLogics(
                 vector = vectorOf(0.0, y, ps.width, y),
                 lineWidth = 0.05,
                 measure = measure,
+//                vector = vectorOf(0.0, y, ps.width, y) * measure,
             )
         }
     }
 
     override fun onRender(canvas: Canvas) {
+        val fps = engine.property.time.frequency()
         onPreRender()
         onRenderOffset(canvas = canvas, offset = offset)
         val length = distanceOf(Point.Center, p1)
@@ -165,6 +170,12 @@ internal class CellsEngineLogics(
         val ps = engine.property.pictureSize
         //
         val fontHeight = 24.0
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = fontHeight,
+            text = String.format("%6.2f", fps),
+            pointTopLeft = pointOf(x = ps.width - 128.0, y = ps.height - fontHeight * 2),
+        )
         canvas.texts.draw(
             color = Color.Green,
             fontHeight = fontHeight,

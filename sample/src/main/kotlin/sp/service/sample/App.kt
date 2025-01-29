@@ -17,7 +17,7 @@ fun main() {
 //		title = "Cells", supplier = ::CellsEngineLogics,
 //		title = "Polygons", supplier = ::PolygonsEngineLogics,
 		title = "Vectors", supplier = ::VectorsEngineLogics,
-//		size = sizeOf(640, 480),
+		size = sizeOf(640, 480),
 		defaultFontName = "JetBrainsMono.ttf",
 //		defaultFontName = "OpenSans.ttf",
 	)
