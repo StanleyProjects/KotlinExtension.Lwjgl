@@ -59,10 +59,11 @@ internal object GLVectorDrawer : VectorDrawer {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             val angle = vector.angle()
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset)
+            val length = java.lang.Math.round(lineWidth) / 2.0
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle - kotlin.math.PI / 2, offset = offset)
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle + kotlin.math.PI / 2, offset = offset)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle - kotlin.math.PI / 2, offset = offset)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle + kotlin.math.PI / 2, offset = offset)
         }
     }
 
@@ -90,10 +91,13 @@ internal object GLVectorDrawer : VectorDrawer {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             val angle = vector.angle()
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+            val t = measure.transform(lineWidth)
+            val r = java.lang.Math.round(t)
+            val length = measure.units(r.toDouble()) / 2.0
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
         }
     }
 
@@ -104,10 +108,13 @@ internal object GLVectorDrawer : VectorDrawer {
         measure: Measure<Double, Double>,
     ) {
         val angle = vector.angle()
-        GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-        GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
-        GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
-        GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+        val t = measure.transform(lineWidth)
+        val r = java.lang.Math.round(t)
+        val length = measure.units(r.toDouble()) / 2.0
+        GLUtil.vertexOfMoved(vector.start, length = length, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.start, length = length, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle - kotlin.math.PI / 2, offset = offset, measure = measure)
+        GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle + kotlin.math.PI / 2, offset = offset, measure = measure)
     }
 
     override fun draw(
