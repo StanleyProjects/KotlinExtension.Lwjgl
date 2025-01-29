@@ -38,7 +38,14 @@ object WindowUtil {
         val windowId: Long
         if (size == null) {
             windowId = GLFWUtil.createWindow(title = title, monitorId = monitorId).checked { "Window id is null!" }
-            GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, 0, 0, GLFW.GLFW_DONT_CARE)
+            val mode = GLFW.glfwGetVideoMode(monitorId) ?: error("Video mode is null!")
+            val message = """
+                mode:width: ${mode.width()}
+                mode:height: ${mode.height()}
+                mode:refresh:rate: ${mode.refreshRate()}
+            """.trimIndent()
+            println(message) // todo
+            GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, mode.width(), mode.height(), GLFW.GLFW_DONT_CARE)
         } else {
             GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE) // todo
             GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE) // todo
