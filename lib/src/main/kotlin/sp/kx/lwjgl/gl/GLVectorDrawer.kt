@@ -5,6 +5,7 @@ import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
+import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angle
 import sp.kx.math.measure.Measure
@@ -38,10 +39,11 @@ internal object GLVectorDrawer : VectorDrawer {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             val angle = vector.angle()
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-            GLUtil.vertexOfMoved(vector.start, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle - kotlin.math.PI / 2)
-            GLUtil.vertexOfMoved(vector.finish, length = lineWidth / 2, angle = angle + kotlin.math.PI / 2)
+            val length = java.lang.Math.round(lineWidth) / 2.0
+            GLUtil.vertexOfMoved(point = vector.start, length = length, angle = angle - kotlin.math.PI / 2)
+            GLUtil.vertexOfMoved(point = vector.start, length = length, angle = angle + kotlin.math.PI / 2)
+            GLUtil.vertexOfMoved(point = vector.finish, length = length, angle = angle - kotlin.math.PI / 2)
+            GLUtil.vertexOfMoved(point = vector.finish, length = length, angle = angle + kotlin.math.PI / 2)
         }
     }
 
@@ -62,11 +64,11 @@ internal object GLVectorDrawer : VectorDrawer {
             val angle = vector.angle()
             val t = measure.transform(lineWidth)
             val r = java.lang.Math.round(t)
-            val lw = measure.units(r.toDouble())
-            GLUtil.vertexOfMoved(vector.start, length = lw / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-            GLUtil.vertexOfMoved(vector.start, length = lw / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
-            GLUtil.vertexOfMoved(vector.finish, length = lw / 2, angle = angle - kotlin.math.PI / 2, measure = measure)
-            GLUtil.vertexOfMoved(vector.finish, length = lw / 2, angle = angle + kotlin.math.PI / 2, measure = measure)
+            val length = measure.units(r.toDouble()) / 2.0
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle - kotlin.math.PI / 2, measure = measure)
+            GLUtil.vertexOfMoved(vector.start, length = length, angle = angle + kotlin.math.PI / 2, measure = measure)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle - kotlin.math.PI / 2, measure = measure)
+            GLUtil.vertexOfMoved(vector.finish, length = length, angle = angle + kotlin.math.PI / 2, measure = measure)
         }
     }
 
