@@ -13,7 +13,6 @@ import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.angleOf
-import sp.kx.math.center
 import sp.kx.math.centerPoint
 import sp.kx.math.copy
 import sp.kx.math.distanceOf
@@ -21,7 +20,6 @@ import sp.kx.math.div
 import sp.kx.math.isEmpty
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
-import sp.kx.math.measure.measureOf
 import sp.kx.math.measure.speedOf
 import sp.kx.math.pointOf
 import sp.kx.math.vectorOf
@@ -63,11 +61,8 @@ internal class CellsEngineLogics(
             }
         }
     }
-//    private val step = 5.0
     private val step = 8.0
 //    private val step = 10.0
-//    private val step = 15.0
-//    private val step = 16.0
     private val measure = MutableDoubleMeasure(step * 3)
 
     override fun shouldEngineStop(): Boolean {
@@ -125,7 +120,7 @@ internal class CellsEngineLogics(
             canvas.vectors.draw(
                 color = color,
                 vector = vectorOf(x, 0.0, x, ps.height),
-                lineWidth = 0.1,
+                lineWidth = 0.05,
                 measure = measure,
             )
         }
@@ -144,7 +139,7 @@ internal class CellsEngineLogics(
             canvas.vectors.draw(
                 color = color,
                 vector = vectorOf(0.0, y, ps.width, y),
-                lineWidth = 0.1,
+                lineWidth = 0.05,
                 measure = measure,
             )
         }
@@ -176,6 +171,14 @@ internal class CellsEngineLogics(
             text = String.format("%6.2f", measure.magnitude),
             pointTopLeft = pointOf(x = fontHeight * 2, y = ps.height - fontHeight * 2),
         )
+        //
+//        canvas.vectors.draw(
+//            color = Color.White,
+//            vector = vectorOf(2.0, 0.0, 8.0, 2.0),
+//            lineWidth = 0.1,
+//            offset = offset,
+//            measure = measure,
+//        )
         //
         canvas.polygons.drawCircle(
             color = Color.Red,

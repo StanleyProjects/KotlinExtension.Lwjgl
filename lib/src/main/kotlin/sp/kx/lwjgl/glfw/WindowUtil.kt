@@ -111,6 +111,7 @@ object WindowUtil {
         )
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glLoadIdentity()
+        GL11.glLineWidth(1f)
     }
 
     private fun onPostRender(windowId: Long) {
