@@ -53,8 +53,8 @@ val compileKotlinTask = tasks.getByName<KotlinCompile>("compileKotlin") {
 
 dependencies {
     implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
-    LwjglUtil.modules.forEach { name ->
-        implementation(group = LwjglUtil.group, name = name, version = Version.lwjgl)
+    Lwjgl.modules.forEach { name ->
+        implementation(group = Lwjgl.group, name = name, version = Version.lwjgl)
     }
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.jupiter}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.jupiter}")
