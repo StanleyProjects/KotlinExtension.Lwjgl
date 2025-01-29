@@ -6,6 +6,7 @@ import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.copy
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableOffset
@@ -20,9 +21,12 @@ import sp.kx.math.isEmpty
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
 import sp.kx.math.measure.speedOf
+import sp.kx.math.plus
 import sp.kx.math.pointOf
+import sp.kx.math.sizeOf
 import sp.kx.math.times
 import sp.kx.math.vectorOf
+import kotlin.random.Random
 
 internal class VectorsEngineLogics(
     private val engine: Engine,
@@ -49,10 +53,7 @@ internal class VectorsEngineLogics(
     }
     private val step = 8.0
     private val measure = MutableDoubleMeasure(step * 3)
-    private val offset = engine.property.let {
-        val ps = engine.property.pictureSize / measure
-        MutableOffset(ps.width / 2, ps.height / 2)
-    }
+    private val offset = MutableOffset(0.0, 0.0)
 
     private fun setMagnitude(magnitude: Double) {
         val ps = engine.property.pictureSize
@@ -75,15 +76,15 @@ internal class VectorsEngineLogics(
         val offset = MutableOffset(0.0, 0.0)
         val left = keyboard.isPressed(KeyboardButton.A)
         if (keyboard.isPressed(KeyboardButton.D)) {
-            if (!left) offset.dX = 1.0
+            if (!left) offset.dX = -1.0
         } else if (left) {
-            offset.dX = -1.0
+            offset.dX = 1.0
         }
         val top = keyboard.isPressed(KeyboardButton.W)
         if (keyboard.isPressed(KeyboardButton.S)) {
-            if (!top) offset.dY = 1.0
+            if (!top) offset.dY = -1.0
         } else if (top) {
-            offset.dY = -1.0
+            offset.dY = 1.0
         }
         return offset
     }
@@ -104,7 +105,11 @@ internal class VectorsEngineLogics(
             val dX = it - offset.dX
             val value = java.lang.Math.floor(dX).toInt()
             val x = offset.dX + value
-            val color = if (value % 2  == 0) Color.Gray else Color.Gray.copy(alpha = 0.5f)
+            val color = when {
+                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
+                value % 2 == 0 -> Color.Gray
+                else -> Color.Gray.copy(alpha = 0.5f)
+            }
             canvas.texts.draw(
                 color = color,
                 fontHeight = 0.75,
@@ -121,7 +126,11 @@ internal class VectorsEngineLogics(
             val dY = it - offset.dY
             val value = java.lang.Math.floor(dY).toInt()
             val y = offset.dY + value
-            val color = if (value % 2  == 0) Color.Gray else Color.Gray.copy(alpha = 0.5f)
+            val color = when {
+                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
+                value % 2 == 0 -> Color.Gray.copy(alpha = 0.75f)
+                else -> Color.Gray.copy(alpha = 0.5f)
+            }
             canvas.texts.draw(
                 color = color,
                 fontHeight = 0.75,
@@ -136,8 +145,161 @@ internal class VectorsEngineLogics(
         }
     }
 
+    private fun onRenderVectors(canvas: Canvas, dY: Double) {
+        var color = (dY * 10).toInt()
+        val padding = 2.0
+        val width = 4.0
+        var index = 0
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ).plus(offset).times(measure),
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ) * measure,
+            offset = offset * measure,
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ) + offset,
+            measure = measure,
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ),
+            offset = offset,
+            measure = measure,
+        )
+    }
+
+    private fun onRenderLineWidth(canvas: Canvas, dY: Double, lineWidth: Double) {
+        var color = (dY * 10).toInt()
+        val padding = 2.0
+        val width = 4.0
+        var index = 0
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ).plus(offset).times(measure),
+            lineWidth = measure.transform(lineWidth),
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ) * measure,
+            offset = offset * measure,
+            lineWidth = measure.transform(lineWidth),
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ) + offset,
+            measure = measure,
+            lineWidth = lineWidth,
+        )
+        index++
+        canvas.vectors.draw(
+            color = colors[color++],
+            vector = vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            ),
+            offset = offset,
+            measure = measure,
+            lineWidth = lineWidth,
+        )
+    }
+
+    private fun onRenderListVectors(canvas: Canvas, dY: Double) {
+        var color = (dY * 10).toInt()
+        val padding = 2.0
+        val width = 4.0
+        val vectors = (0 until 4).map { index ->
+            vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            )
+        }
+        canvas.vectors.draw(
+            color = colors[color++],
+            vectors = vectors,
+            offset = offset,
+            measure = measure,
+        )
+    }
+
+    private fun onRenderLVLW(canvas: Canvas, dY: Double, lineWidth: Double) {
+        var color = (dY * 10).toInt()
+        val padding = 2.0
+        val width = 4.0
+        val vectors = (0 until 4).map { index ->
+            vectorOf(
+                startX = width * index + padding + padding * index,
+                startY = dY,
+                finishX = width + width * index + padding + padding * index,
+                finishY = dY + 2.0,
+            )
+        }
+        canvas.vectors.draw(
+            color = colors[color++],
+            vectors = vectors,
+            offset = offset,
+            measure = measure,
+            lineWidth = lineWidth,
+        )
+    }
+
     override fun onRender(canvas: Canvas) {
         onPreRender()
+        onRenderVectors(canvas = canvas, dY = 2.0)
+        onRenderLineWidth(canvas = canvas, dY = 6.0, lineWidth = 0.5)
+        onRenderLineWidth(canvas = canvas, dY = 10.0, lineWidth = 0.1)
+        onRenderLineWidth(canvas = canvas, dY = 14.0, lineWidth = 0.05)
+        onRenderListVectors(canvas = canvas, dY = 18.0)
+        onRenderLVLW(canvas = canvas, dY = 22.0, lineWidth = 0.5)
+        onRenderLVLW(canvas = canvas, dY = 26.0, lineWidth = 0.1)
+        onRenderLVLW(canvas = canvas, dY = 30.0, lineWidth = 0.05)
         val pictureSize = engine.property.pictureSize
         onRenderOffset(canvas = canvas, offset = offset, pictureSize = pictureSize)
         //
@@ -164,5 +326,11 @@ internal class VectorsEngineLogics(
             text = String.format("%6.2f", measure.magnitude),
             pointTopLeft = pointOf(x = fontHeight * 2, y = pictureSize.height - fontHeight * 2),
         )
+    }
+
+    companion object {
+        private val colors = (0 until 512).map {
+            colorOf(0xff000000L + Random.nextLong(16777215)).copy(alpha = 0.85f)
+        }
     }
 }
