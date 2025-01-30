@@ -23,6 +23,7 @@ sealed interface Engine {
             title: String = "Engine",
             size: Size? = null,
             refreshRate: Double? = null,
+            monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
             times: Times = SystemTimes,
             defaultFontName: String,
         ) {
@@ -39,10 +40,13 @@ sealed interface Engine {
                 title = title,
                 size = size,
                 refreshRate = refreshRate,
+                monitorIdSupplier = monitorIdSupplier,
+                errorPrintStream = System.err,
                 onWindowCloseCallback = {
                     // todo
                 },
                 onWindowResizeCallback = { _: Long, width, height ->
+                    println("Engine: on -> window resize callback: width: $width height: $height") // todo
                     engine.property.pictureSize = sizeOf(width = width, height = height)
                 },
                 defaultFontName = defaultFontName,
@@ -55,13 +59,17 @@ sealed interface Engine {
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-                        println("Engine: on -> keyboard callback: $key $scancode $action") // todo
                         val button = key.toKeyboardButtonOrNull() ?: return
-                        val isPressed = action.toPressedOrNull() ?: return
-                        if (isPressed) {
-                            keyboard.buttons[button] = times.now()
-                        } else {
-                            keyboard.buttons.remove(button)
+                        val isPressed = when (action) {
+                            GLFW.GLFW_PRESS -> {
+                                keyboard.buttons[button] = times.now()
+                                true
+                            }
+                            GLFW.GLFW_RELEASE -> {
+                                keyboard.buttons.remove(button)
+                                false
+                            }
+                            else -> return
                         }
                         logics.inputCallback.onKeyboardButton(button, isPressed)
                     }

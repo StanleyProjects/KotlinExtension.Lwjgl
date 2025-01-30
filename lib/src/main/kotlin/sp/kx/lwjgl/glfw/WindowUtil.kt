@@ -102,6 +102,8 @@ object WindowUtil {
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         //
+        GL11.glDisable(GL11.GL_SMOOTH)
+        GL11.glDisable(GL11.GL_POINT_SMOOTH)
         GL11.glDisable(GL11.GL_LINE_SMOOTH)
 //        GL11.glEnable(GL11.GL_LINE_SMOOTH)
 //        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST)
@@ -174,8 +176,8 @@ object WindowUtil {
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
-        monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
-        errorPrintStream: PrintStream = System.err,
+        monitorIdSupplier: () -> Long,
+        errorPrintStream: PrintStream,
     ) {
         val windowId = createWindow(
             errorPrintStream = errorPrintStream,

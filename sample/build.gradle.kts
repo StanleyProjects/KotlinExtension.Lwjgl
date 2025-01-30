@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":lib"))
     val classifier = Lwjgl.requireNativesName()
     Lwjgl.modules.forEach { name ->
-        runtimeOnly(group = Lwjgl.group, name = name, classifier = classifier)
+        implementation(group = Lwjgl.group, name = name, version = Version.lwjgl)
+        runtimeOnly(group = Lwjgl.group, name = name, version = Version.lwjgl, classifier = classifier)
     }
 }

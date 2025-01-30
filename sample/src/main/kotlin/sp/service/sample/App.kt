@@ -9,6 +9,7 @@ import sp.service.sample.logics.PolygonsEngineLogics
 import sp.service.sample.logics.TestEngineLogics
 import sp.service.sample.logics.TextsEngineLogics
 import sp.service.sample.logics.VectorsEngineLogics
+import org.lwjgl.glfw.GLFW
 
 fun main() {
 	Engine.run(
@@ -19,8 +20,10 @@ fun main() {
 //		title = "Polygons", supplier = ::PolygonsEngineLogics,
 		title = "Vectors", supplier = ::VectorsEngineLogics,
 //		title = "AntiAliasing", supplier = ::AntiAliasingEngineLogics,
-		size = sizeOf(640, 480),
+//		size = sizeOf(640, 480),
 //		refreshRate = 144.0,
+//		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
+//		monitorIdSupplier = { GLFW.glfwGetMonitors()?.get(1) ?: error("No monitor!") },
 		defaultFontName = "JetBrainsMono.ttf",
 //		defaultFontName = "OpenSans.ttf",
 	)
