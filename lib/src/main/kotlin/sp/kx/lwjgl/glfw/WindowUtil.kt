@@ -40,7 +40,7 @@ object WindowUtil {
         //
         GLFW.glfwDefaultWindowHints()
         val windowId: Long
-//        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4)
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4)
 //        GL11.glEnable(GL11.GL_DEPTH_TEST)
 //        GL11.glEnable(GL13.GL_MULTISAMPLE)
         if (size == null) {
@@ -99,12 +99,22 @@ object WindowUtil {
         }
     }
 
+    private fun onPreConfigure(windowId: Long) {
+        GL11.glLineWidth(1f)
+        GL11.glEnable(GL11.GL_BLEND)
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        //
+//        GL11.glEnable(GL11.GL_LINE_SMOOTH)
+//        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST)
+//        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
+//        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
+//        GL11.glEnable(GL13.GL_DEPTH_TEST)
+//        GL11.glEnable(GL13.GL_MULTISAMPLE)
+    }
+
     private fun onPreRender(windowId: Long) {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
         GLFW.glfwPollEvents()
-
-        GL11.glEnable(GL11.GL_BLEND)
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
         val size = GLFWUtil.getWindowSize(windowId)
 
@@ -116,9 +126,6 @@ object WindowUtil {
         )
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glLoadIdentity()
-        GL11.glLineWidth(1f)
-//        GL11.glEnable(GL11.GL_LINE_SMOOTH)
-//        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST)
     }
 
     private fun onPostRender(windowId: Long) {
@@ -138,10 +145,11 @@ object WindowUtil {
         onPreLoop(windowId)
         val timeMax = (1_000_000.0 / refreshRate).toLong()
         var timeLast = System.nanoTime() / 1_000
+        onPreConfigure(windowId = windowId)
         while (!GLFW.glfwWindowShouldClose(windowId)) {
             val timeNow = System.nanoTime() / 1_000
             if (timeNow - timeLast < timeMax) continue
-            onPreRender(windowId)
+            onPreRender(windowId = windowId)
             onRender(windowId, canvas)
             GLFW.glfwSwapBuffers(windowId)
             timeLast = timeNow
