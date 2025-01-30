@@ -189,14 +189,22 @@ internal class BlendingEngineLogics(
         canvas.polygons.drawRectangle(
             color = Color.White,
             pointTopLeft = pointOf(1.0, 1.0),
-            size = sizeOf(24, 24),
+            size = sizeOf(24, 24 * 6),
             offset = offset,
             measure = measure
         )
         onRenderOffset(canvas = canvas, offset = offset)
         listOf(
             Triple(GL11.GL_SRC_ALPHA, GL11.GL_ZERO, "GL_SRC_ALPHA/GL_ZERO"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_ONE, "GL_SRC_ALPHA/GL_ONE"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_SRC_COLOR, "GL_SRC_ALPHA/GL_SRC_COLOR"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_COLOR, "GL_SRC_ALPHA/GL_ONE_MINUS_SRC_COLOR"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_DST_COLOR, "GL_SRC_ALPHA/GL_DST_COLOR"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_DST_COLOR, "GL_SRC_ALPHA/GL_ONE_MINUS_DST_COLOR"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_SRC_ALPHA, "GL_SRC_ALPHA/GL_SRC_ALPHA"),
             Triple(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, "GL_SRC_ALPHA/GL_ONE_MINUS_SRC_ALPHA"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_DST_ALPHA, "GL_SRC_ALPHA/GL_DST_ALPHA"),
+            Triple(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_DST_ALPHA, "GL_SRC_ALPHA/GL_ONE_MINUS_DST_ALPHA"),
         ).forEachIndexed { index, (sfactor, dfactor, title) ->
             onRenderPolygons(canvas = canvas, dY = 2.0 + 8.0 * index, sfactor = sfactor, dfactor = dfactor, title = title)
         }
