@@ -107,7 +107,8 @@ internal class CellsEngineLogics(
 
     private fun onRenderOffset(canvas: Canvas, offset: Offset) {
         val ps = engine.property.pictureSize / measure
-        val color = Color.Gray
+//        val color = Color.Gray
+        val color = Color.Gray.copy(0.5f)
         for (it in 2..ps.width.toInt()) {
             val dX = it - offset.dX
             val value = java.lang.Math.floor(dX).toInt()

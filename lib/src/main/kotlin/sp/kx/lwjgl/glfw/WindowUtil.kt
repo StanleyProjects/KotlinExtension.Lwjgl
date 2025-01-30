@@ -40,9 +40,7 @@ object WindowUtil {
         //
         GLFW.glfwDefaultWindowHints()
         val windowId: Long
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4)
-//        GL11.glEnable(GL11.GL_DEPTH_TEST)
-//        GL11.glEnable(GL13.GL_MULTISAMPLE)
+//        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4)
         if (size == null) {
             windowId = GLFWUtil.createWindow(title = title, monitorId = monitorId).checked { "Window id is null!" }
             val mode = GLFW.glfwGetVideoMode(monitorId) ?: error("Video mode is null!")
@@ -104,11 +102,12 @@ object WindowUtil {
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         //
+        GL11.glDisable(GL11.GL_LINE_SMOOTH)
 //        GL11.glEnable(GL11.GL_LINE_SMOOTH)
 //        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST)
+        GL11.glDisable(GL11.GL_POLYGON_SMOOTH)
 //        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
 //        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
-//        GL11.glEnable(GL13.GL_DEPTH_TEST)
 //        GL11.glEnable(GL13.GL_MULTISAMPLE)
     }
 
