@@ -38,8 +38,9 @@ dependencies {
     implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
     implementation("com.github.kepocnhh:LwjglJoysticks:${Version.Lwjgl.joysticks}")
     implementation(project(":lib"))
-    val classifier = LwjglUtil.requireNativesName()
-    LwjglUtil.modules.forEach { name ->
-        runtimeOnly(group = LwjglUtil.group, name = name, classifier = classifier)
+    val classifier = Lwjgl.requireNativesName()
+    Lwjgl.modules.forEach { name ->
+        implementation(group = Lwjgl.group, name = name, version = Version.lwjgl)
+        runtimeOnly(group = Lwjgl.group, name = name, version = Version.lwjgl, classifier = classifier)
     }
 }

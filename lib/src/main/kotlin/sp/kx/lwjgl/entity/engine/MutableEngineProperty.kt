@@ -9,10 +9,5 @@ internal class MutableEngineProperty(
     override var pictureSize: Size,
 ) : EngineProperty {
     override var launched = Duration.ZERO
-        set(value) {
-            time.a = value
-            field = value
-        }
-
     override val time = MutableDurationInterval(a = Duration.ZERO, b = Duration.ZERO)
 }

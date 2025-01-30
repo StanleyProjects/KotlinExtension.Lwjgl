@@ -7,7 +7,6 @@ import sp.kx.lwjgl.entity.engine.MutableEngineProperty
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
 import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
-import sp.kx.lwjgl.glfw.toPressedOrNull
 import sp.kx.lwjgl.provider.SystemTimes
 import sp.kx.lwjgl.provider.Times
 import sp.kx.math.Size
@@ -22,6 +21,8 @@ sealed interface Engine {
             supplier: (Engine) -> EngineLogics,
             title: String = "Engine",
             size: Size? = null,
+            refreshRate: Double? = null,
+            monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
             times: Times = SystemTimes,
             defaultFontName: String,
         ) {
@@ -31,35 +32,49 @@ sealed interface Engine {
             val keyboard = StatefulKeyboard()
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
-                property = MutableEngineProperty(pictureSize = size ?: sizeOf(0, 0)),
+                property = MutableEngineProperty(pictureSize = size ?: Size.Undefined),
             )
-            val logics = supplier(engine)
+            var logics: EngineLogics = EmptyEngineLogics
             WindowUtil.loopWindow(
                 title = title,
                 size = size,
+                refreshRate = refreshRate,
+                monitorIdSupplier = monitorIdSupplier,
+                errorPrintStream = System.err,
                 onWindowCloseCallback = {
                     // todo
                 },
+                onWindowResizeCallback = { _: Long, width, height ->
+                    println("Engine: on -> window resize callback: width: $width height: $height") // todo
+                    engine.property.pictureSize = sizeOf(width = width, height = height)
+                },
                 defaultFontName = defaultFontName,
-                onPreLoop = { _: Long ->
+                onPreLoop = { windowId ->
                     engine.property.launched = times.now()
+                    engine.property.time.a = engine.property.launched
+                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
+                    logics = supplier(engine)
+                    logics.onPreLoop()
                 },
                 onKeyCallback = object : GLFWKeyCallback() {
                     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-                        println("Engine: on -> keyboard callback: $key $scancode $action") // todo
                         val button = key.toKeyboardButtonOrNull() ?: return
-                        val isPressed = action.toPressedOrNull() ?: return
-                        if (isPressed) {
-                            keyboard.buttons[button] = times.now()
-                        } else {
-                            keyboard.buttons.remove(button)
+                        val isPressed = when (action) {
+                            GLFW.GLFW_PRESS -> {
+                                keyboard.buttons[button] = times.now()
+                                true
+                            }
+                            GLFW.GLFW_RELEASE -> {
+                                keyboard.buttons.remove(button)
+                                false
+                            }
+                            else -> return
                         }
                         logics.inputCallback.onKeyboardButton(button, isPressed)
                     }
                 },
                 onRender = { windowId, canvas ->
                     engine.property.time.b = times.now()
-                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
                     logics.onRender(canvas = canvas)
                     engine.property.time.a = engine.property.time.b
                     if (logics.shouldEngineStop()) {

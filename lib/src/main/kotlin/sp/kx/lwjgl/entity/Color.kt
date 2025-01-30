@@ -16,16 +16,3 @@ interface Color {
         val Gray = colorOf(0xff888888)
     }
 }
-
-fun Color.copy(alpha: Byte): Color {
-    val values = blue.toLong().and(0xff)
-        .or(green.toLong().and(0xff).shl(8))
-        .or(red.toLong().and(0xff).shl(16))
-        .or(alpha.toLong().and(0xff).shl(24))
-    return colorOf(values = values)
-}
-
-fun Color.copy(alpha: Float): Color {
-    if (alpha < 0 || alpha > 1) TODO()
-    return copy(alpha = 0xff.times(alpha).toInt().toByte())
-}

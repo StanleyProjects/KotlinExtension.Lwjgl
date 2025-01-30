@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWWindowCloseCallbackI
+import org.lwjgl.glfw.GLFWWindowSizeCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.drawer.PolygonDrawer
@@ -29,6 +30,7 @@ object WindowUtil {
         size: Size?,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
+        onWindowResizeCallback: GLFWWindowSizeCallbackI,
     ): Long {
         GLFWErrorCallback.createPrint(errorPrintStream).set()
         check(GLFW.glfwInit()) { "Unable to initialize GLFW!" }
@@ -36,9 +38,17 @@ object WindowUtil {
         //
         GLFW.glfwDefaultWindowHints()
         val windowId: Long
+//        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4)
         if (size == null) {
             windowId = GLFWUtil.createWindow(title = title, monitorId = monitorId).checked { "Window id is null!" }
-            GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, 0, 0, GLFW.GLFW_DONT_CARE)
+            val mode = GLFW.glfwGetVideoMode(monitorId) ?: error("Video mode is null!")
+            val message = """
+                mode:width: ${mode.width()}
+                mode:height: ${mode.height()}
+                mode:refresh:rate: ${mode.refreshRate()}
+            """.trimIndent()
+            println(message) // todo
+            GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, mode.width(), mode.height(), GLFW.GLFW_DONT_CARE)
         } else {
             GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE) // todo
             GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE) // todo
@@ -58,6 +68,7 @@ object WindowUtil {
         GLFW.glfwSwapInterval(1)
         GLFW.glfwSetKeyCallback(windowId, onKeyCallback)
         GLFW.glfwSetWindowCloseCallback(windowId, onWindowCloseCallback)
+        GLFW.glfwSetWindowSizeCallback(windowId, onWindowResizeCallback)
         return windowId
     }
 
@@ -84,12 +95,25 @@ object WindowUtil {
         }
     }
 
+    private fun onPreConfigure(windowId: Long) {
+        GL11.glLineWidth(1f)
+        GL11.glEnable(GL11.GL_BLEND)
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        //
+        GL11.glDisable(GL11.GL_SMOOTH)
+        GL11.glDisable(GL11.GL_POINT_SMOOTH)
+        GL11.glDisable(GL11.GL_LINE_SMOOTH)
+//        GL11.glEnable(GL11.GL_LINE_SMOOTH)
+//        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST)
+        GL11.glDisable(GL11.GL_POLYGON_SMOOTH)
+//        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
+//        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
+//        GL11.glEnable(GL13.GL_MULTISAMPLE)
+    }
+
     private fun onPreRender(windowId: Long) {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
         GLFW.glfwPollEvents()
-
-        GL11.glEnable(GL11.GL_BLEND)
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
         val size = GLFWUtil.getWindowSize(windowId)
 
@@ -113,14 +137,21 @@ object WindowUtil {
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
+        refreshRate: Double,
     ) {
         GLUtil.clearColor(Color.Black)
         val canvas = WindowCanvas(defaultFontName = defaultFontName)
         onPreLoop(windowId)
+        val timeMax = (1_000_000.0 / refreshRate).toLong()
+        var timeLast = System.nanoTime() / 1_000
+        onPreConfigure(windowId = windowId)
         while (!GLFW.glfwWindowShouldClose(windowId)) {
-            onPreRender(windowId)
+            val timeNow = System.nanoTime() / 1_000
+            if (timeNow - timeLast < timeMax) continue
+            onPreRender(windowId = windowId)
             onRender(windowId, canvas)
-            onPostRender(windowId)
+            GLFW.glfwSwapBuffers(windowId)
+            timeLast = timeNow
         }
         onPostLoop()
     }
@@ -134,26 +165,38 @@ object WindowUtil {
 
     fun loopWindow(
         title: String,
-        size: Size? = null,
+        size: Size?,
+        refreshRate: Double?,
         defaultFontName: String,
         onKeyCallback: GLFWKeyCallback,
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
+        onWindowResizeCallback: GLFWWindowSizeCallbackI,
         onPreLoop: (Long) -> Unit,
         onPostLoop: () -> Unit,
         onRender: (Long, Canvas) -> Unit,
-        monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
-        errorPrintStream: PrintStream = System.err,
+        monitorIdSupplier: () -> Long,
+        errorPrintStream: PrintStream,
     ) {
         val windowId = createWindow(
             errorPrintStream = errorPrintStream,
             onKeyCallback = onKeyCallback,
             onWindowCloseCallback = onWindowCloseCallback,
+            onWindowResizeCallback = onWindowResizeCallback,
             size = size,
             title = title,
             monitorIdSupplier = monitorIdSupplier,
         )
         GLFW.glfwShowWindow(windowId)
-        loopWindow(windowId = windowId, defaultFontName = defaultFontName, onPreLoop, onPostLoop, onRender)
+        val monitorId = monitorIdSupplier().checked { "Monitor id is null!" }
+        val videoMode = GLFW.glfwGetVideoMode(monitorId) ?: error("No video mode!")
+        loopWindow(
+            windowId = windowId,
+            defaultFontName = defaultFontName,
+            onPreLoop = onPreLoop,
+            onPostLoop = onPostLoop,
+            onRender = onRender,
+            refreshRate = refreshRate ?: videoMode.refreshRate().toDouble(),
+        )
         destroyWindow(windowId)
     }
 }

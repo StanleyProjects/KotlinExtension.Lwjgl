@@ -6,4 +6,7 @@ interface EngineLogics {
     val inputCallback: EngineInputCallback
     fun shouldEngineStop(): Boolean
     fun onRender(canvas: Canvas)
+    fun onPreLoop() {
+        // noop
+    }
 }
