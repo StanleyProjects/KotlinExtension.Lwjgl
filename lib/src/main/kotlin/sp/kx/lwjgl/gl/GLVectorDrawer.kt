@@ -5,7 +5,6 @@ import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
-import sp.kx.math.Point
 import sp.kx.math.Vector
 import sp.kx.math.angle
 import sp.kx.math.measure.Measure

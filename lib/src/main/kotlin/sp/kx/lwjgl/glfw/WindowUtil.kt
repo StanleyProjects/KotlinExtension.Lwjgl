@@ -8,8 +8,6 @@ import org.lwjgl.glfw.GLFWWindowCloseCallbackI
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL13
-import org.lwjgl.opengl.GL15
 import sp.kx.lwjgl.drawer.PolygonDrawer
 import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.drawer.VectorDrawer
