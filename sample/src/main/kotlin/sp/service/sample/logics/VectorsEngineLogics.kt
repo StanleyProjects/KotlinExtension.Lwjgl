@@ -103,15 +103,16 @@ internal class VectorsEngineLogics(
 
     private fun onRenderOffset(canvas: Canvas, offset: Offset) {
         val ps = engine.property.pictureSize / measure
+        val color = Color.Gray
         for (it in 2..ps.width.toInt()) {
             val dX = it - offset.dX
             val value = java.lang.Math.floor(dX).toInt()
             val x = offset.dX + value
-            val color = when {
-                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
-                value % 2 == 0 -> Color.Gray
-                else -> Color.Gray.copy(alpha = 0.5f)
-            }
+//            val color = when {
+//                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
+//                value % 2 == 0 -> Color.Gray
+//                else -> Color.Gray.copy(alpha = 0.5f)
+//            }
             canvas.texts.draw(
                 color = color,
                 fontHeight = 0.75,
@@ -128,11 +129,11 @@ internal class VectorsEngineLogics(
             val dY = it - offset.dY
             val value = java.lang.Math.floor(dY).toInt()
             val y = offset.dY + value
-            val color = when {
-                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
-                value % 2 == 0 -> Color.Gray.copy(alpha = 0.75f)
-                else -> Color.Gray.copy(alpha = 0.5f)
-            }
+//            val color = when {
+//                value == 0 -> Color.Yellow.copy(alpha = 0.5f)
+//                value % 2 == 0 -> Color.Gray.copy(alpha = 0.75f)
+//                else -> Color.Gray.copy(alpha = 0.5f)
+//            }
             canvas.texts.draw(
                 color = color,
                 fontHeight = 0.75,
