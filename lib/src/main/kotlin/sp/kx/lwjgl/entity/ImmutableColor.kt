@@ -19,6 +19,10 @@ internal class ImmutableColor(
         return values.toByte()
     }
 
+    override fun toString(): String {
+        return java.lang.Long.toHexString(values)
+    }
+
     companion object {
         val bag = mutableMapOf<Long, Color>()
     }

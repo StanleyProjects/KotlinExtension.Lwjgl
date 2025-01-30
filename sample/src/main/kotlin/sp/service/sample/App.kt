@@ -3,6 +3,7 @@ package sp.service.sample
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.math.sizeOf
 import sp.service.sample.logics.AntiAliasingEngineLogics
+import sp.service.sample.logics.BlendingEngineLogics
 import sp.service.sample.logics.CellsEngineLogics
 import sp.service.sample.logics.InputEngineLogics
 import sp.service.sample.logics.PolygonsEngineLogics
@@ -18,9 +19,10 @@ fun main() {
 //		title = "Texts", supplier = ::TextsEngineLogics,
 //		title = "Cells", supplier = ::CellsEngineLogics,
 //		title = "Polygons", supplier = ::PolygonsEngineLogics,
-		title = "Vectors", supplier = ::VectorsEngineLogics,
+//		title = "Vectors", supplier = ::VectorsEngineLogics,
 //		title = "AntiAliasing", supplier = ::AntiAliasingEngineLogics,
-//		size = sizeOf(640, 480),
+		title = "Blending", supplier = ::BlendingEngineLogics,
+		size = sizeOf(640, 480),
 //		refreshRate = 144.0,
 //		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
 //		monitorIdSupplier = { GLFW.glfwGetMonitors()?.get(1) ?: error("No monitor!") },
