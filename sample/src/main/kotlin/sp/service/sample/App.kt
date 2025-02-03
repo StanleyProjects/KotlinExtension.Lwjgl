@@ -9,6 +9,7 @@ import sp.service.sample.logics.InputEngineLogics
 import sp.service.sample.logics.PolygonsEngineLogics
 import sp.service.sample.logics.TestEngineLogics
 import sp.service.sample.logics.TextsEngineLogics
+import sp.service.sample.logics.TranslateLogics
 import sp.service.sample.logics.VectorsEngineLogics
 import org.lwjgl.glfw.GLFW
 
@@ -19,9 +20,10 @@ fun main() {
 //		title = "Texts", supplier = ::TextsEngineLogics,
 //		title = "Cells", supplier = ::CellsEngineLogics,
 //		title = "Polygons", supplier = ::PolygonsEngineLogics,
-		title = "Vectors", supplier = ::VectorsEngineLogics,
+//		title = "Vectors", supplier = ::VectorsEngineLogics,
 //		title = "AntiAliasing", supplier = ::AntiAliasingEngineLogics,
 //		title = "Blending", supplier = ::BlendingEngineLogics,
+		title = "Translate", supplier = ::TranslateLogics,
 		size = sizeOf(640, 480),
 //		refreshRate = 144.0,
 //		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
