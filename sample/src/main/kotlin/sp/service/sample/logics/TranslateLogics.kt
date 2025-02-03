@@ -9,18 +9,24 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.copy
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableOffset
+import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.Point
 import sp.kx.math.angleOf
+import sp.kx.math.centerPoint
 import sp.kx.math.copy
+import sp.kx.math.distanceOf
 import sp.kx.math.div
 import sp.kx.math.isEmpty
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
 import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
+import sp.kx.math.moved
 import sp.kx.math.pointOf
 import sp.kx.math.vectorOf
+import sp.service.sample.angleOf
+import sp.service.sample.distanceOf
 
 internal class TranslateLogics(
     private val engine: Engine,
@@ -54,6 +60,8 @@ internal class TranslateLogics(
         MutableOffset(ps.width / 2, ps.height / 2)
     }
     private var debug = true
+    private val p1 = MutablePoint(4.0, 0.0)
+    private val p2 = MutablePoint(0.0, 6.0)
 
     override fun shouldEngineStop(): Boolean {
         return ::ses.isInitialized
@@ -90,17 +98,20 @@ internal class TranslateLogics(
     }
 
     private fun onPreRender() {
+        val diff = engine.property.time.diff()
         val moved = getOffset(keyboard = engine.input.keyboard)
         if (moved.isEmpty()) {
             // todo
         } else {
-            val length = speedOf(8.0).length(engine.property.time.diff())
+            val length = speedOf(8.0).length(diff)
             val angle = angleOf(moved)
             this.offset.add(
                 dX = length * kotlin.math.cos(angle),
                 dY = length * kotlin.math.sin(angle),
             )
         }
+        p1.set(Point.Center.moved(length = distanceOf(p1), angle = angleOf(p1) + speedOf(1.0).length(diff)))
+        p2.set(Point.Center.moved(length = distanceOf(p2), angle = angleOf(p2) - speedOf(1.5).length(diff)))
     }
 
     private fun onRenderOffset(canvas: Canvas, offset: Offset) {
@@ -162,12 +173,43 @@ internal class TranslateLogics(
 
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
+        val ps = engine.property.pictureSize
+        val psu = ps / measure
         onPreRender()
         if (debug) onRenderOffset(canvas = canvas, offset = offset)
         //
-        // todo
+        canvas.polygons.drawCircle(
+            color = Color.Red,
+            pointCenter = Point.Center,
+            radius = 0.25,
+            edgeCount = 4,
+            offset = offset,
+            measure = measure,
+        )
+        canvas.polygons.drawCircle(
+            color = Color.Yellow,
+            pointCenter = psu.centerPoint(),
+            radius = 0.25,
+            edgeCount = 4,
+            measure = measure,
+        )
+        canvas.polygons.drawCircle(
+            color = Color.Green,
+            pointCenter = p1,
+            radius = 0.25,
+            edgeCount = 4,
+            offset = offset,
+            measure = measure,
+        )
+        canvas.polygons.drawCircle(
+            color = Color.Blue,
+            pointCenter = p2,
+            radius = 0.25,
+            edgeCount = 4,
+            offset = offset,
+            measure = measure,
+        )
         //
-        val ps = engine.property.pictureSize
         val fontHeight = 24.0
         canvas.texts.draw(
             color = Color.Green,
