@@ -111,52 +111,16 @@ object WindowUtil {
 //        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
 //        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
 //        GL11.glEnable(GL13.GL_MULTISAMPLE)
-        //
-//        GL11.glMatrixMode(GL11.GL_PROJECTION)
-//        GL11.glLoadIdentity()
-//        stackPush().use { stack ->
-//            val widthBuffer = stack.mallocInt(1)
-//            val heightBuffer = stack.mallocInt(1)
-//            GLFW.glfwGetWindowSize(windowId, widthBuffer, heightBuffer)
-//            GL11.glOrtho(
-//                0.0,
-//                widthBuffer[0].toDouble(),
-//                heightBuffer[0].toDouble(),
-//                0.0,
-//                0.0,
-//                0.0,
-//            )
-//        }
-//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-//        GL11.glLoadIdentity()
-    }
-
-    private fun onPreRender(windowId: Long) {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
-        GLFW.glfwPollEvents()
-        //
-//        val size = GLFWUtil.getWindowSize(windowId)
-//        GL11.glMatrixMode(GL11.GL_PROJECTION)
-//        GL11.glLoadIdentity()
-//        GLUtil.ortho(
-//            right = size.width,
-//            bottom = size.height,
-//        )
-//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-//        GL11.glLoadIdentity()
-    }
-
-    private fun onPostRender(windowId: Long) {
-        GLFW.glfwSwapBuffers(windowId)
     }
 
     private fun loopWindow(
         windowId: Long,
         defaultFontName: String,
-        onPreLoop: (Long) -> Unit,
-        onPostLoop: () -> Unit,
-        onRender: (Long, Canvas) -> Unit,
         refreshRate: Double,
+        onPreLoop: (Long) -> Unit,
+        onPreRender: (Long) -> Unit,
+        onRender: (Long, Canvas) -> Unit,
+        onPostLoop: () -> Unit,
     ) {
         GLUtil.clearColor(Color.Black)
         val canvas = WindowCanvas(defaultFontName = defaultFontName)
@@ -167,7 +131,9 @@ object WindowUtil {
         while (!GLFW.glfwWindowShouldClose(windowId)) {
             val timeNow = System.nanoTime() / 1_000
             if (timeNow - timeLast < timeMax) continue
-            onPreRender(windowId = windowId)
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
+            GLFW.glfwPollEvents()
+            onPreRender(windowId)
             onRender(windowId, canvas)
             GLFW.glfwSwapBuffers(windowId)
             timeLast = timeNow
@@ -191,8 +157,9 @@ object WindowUtil {
         onWindowCloseCallback: GLFWWindowCloseCallbackI,
         onWindowResizeCallback: GLFWWindowSizeCallbackI,
         onPreLoop: (Long) -> Unit,
-        onPostLoop: () -> Unit,
+        onPreRender: (Long) -> Unit,
         onRender: (Long, Canvas) -> Unit,
+        onPostLoop: () -> Unit,
         monitorIdSupplier: () -> Long,
         errorPrintStream: PrintStream,
     ) {
@@ -211,10 +178,11 @@ object WindowUtil {
         loopWindow(
             windowId = windowId,
             defaultFontName = defaultFontName,
-            onPreLoop = onPreLoop,
-            onPostLoop = onPostLoop,
-            onRender = onRender,
             refreshRate = refreshRate ?: videoMode.refreshRate().toDouble(),
+            onPreLoop = onPreLoop,
+            onPreRender = onPreRender,
+            onRender = onRender,
+            onPostLoop = onPostLoop,
         )
         destroyWindow(windowId)
     }

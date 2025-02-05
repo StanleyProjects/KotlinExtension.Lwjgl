@@ -260,17 +260,19 @@ internal class TranslateLogics(
         )
         */
         //
-        val matrix = ortho(
-            left = 0.0,
-            top = 0.0,
-            right = ps.width,
-            bottom = ps.height,
-            zNear = 0.0,
-            zFar = 1.0,
-        )
-        load(matrix = matrix, dst = ui)
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glLoadMatrixd(ui)
+//        val matrix = ortho(
+//            left = 0.0,
+//            top = 0.0,
+//            right = ps.width,
+//            bottom = ps.height,
+//            zNear = 0.0,
+//            zFar = 1.0,
+//        )
+//        load(matrix = matrix, dst = ui)
+//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+//        GL11.glLoadMatrixd(ui)
+//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+//        GL11.glLoadMatrixd(engine.property.ortho)
         val fontHeight = 24.0
         canvas.texts.draw(
             color = Color.Green,
