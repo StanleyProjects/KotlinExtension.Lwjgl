@@ -199,10 +199,58 @@ internal class TranslateLogics(
             .put(15, matrix.m33)
     }
 
+    private fun scale(matrix: MutableMatrix, dX: Double, dY: Double, dZ: Double = 1.0) {
+        matrix.m00 *= dX
+        matrix.m01 *= dX
+        matrix.m02 *= dX
+        matrix.m03 *= dX
+        matrix.m10 *= dY
+        matrix.m11 *= dY
+        matrix.m12 *= dY
+        matrix.m13 *= dY
+        matrix.m20 *= dZ
+        matrix.m21 *= dZ
+        matrix.m22 *= dZ
+        matrix.m23 *= dZ
+    }
+
+    private fun scale(matrix: MutableMatrix, value: Double) {
+        scale(
+            matrix = matrix,
+            dX = value,
+            dY = value,
+            dZ = value,
+        )
+    }
+
+    private fun scale(matrix: MutableMatrix, measure: Measure<Double, Double>) {
+        matrix.m00 *= measure
+        matrix.m01 *= measure
+        matrix.m02 *= measure
+        matrix.m03 *= measure
+        matrix.m10 *= measure
+        matrix.m11 *= measure
+        matrix.m12 *= measure
+        matrix.m13 *= measure
+        matrix.m20 *= measure
+        matrix.m21 *= measure
+        matrix.m22 *= measure
+        matrix.m23 *= measure
+    }
+
     private fun translate(matrix: MutableMatrix, dX: Double, dY: Double, dZ: Double = 0.0) {
         matrix.m30 = Math.fma(matrix.m00, dX, Math.fma(matrix.m10, dY, Math.fma(matrix.m20, dZ, matrix.m30)))
         matrix.m31 = Math.fma(matrix.m01, dX, Math.fma(matrix.m11, dY, Math.fma(matrix.m21, dZ, matrix.m31)))
         matrix.m32 = Math.fma(matrix.m02, dX, Math.fma(matrix.m12, dY, Math.fma(matrix.m22, dZ, matrix.m32)))
+    }
+
+    private fun translate(matrix: MutableMatrix, offset: Offset, dZ: Double = 0.0) {
+        translate(
+            matrix = matrix,
+            dX = offset.dX,
+            dY = offset.dY,
+            dZ = dZ,
+        )
     }
 
     private fun translate(matrix: MutableMatrix, dX: Double, dY: Double, dZ: Double = 0.0, measure: Measure<Double, Double>) {
@@ -288,28 +336,40 @@ internal class TranslateLogics(
         //
         identity(matrix = matrix)
         ortho(matrix = matrix, size = ps)
+//        translate(matrix = matrix, offset = offset)
         translate(matrix = matrix, offset = offset, measure = measure)
+        scale(matrix = matrix, measure = measure)
         onMatrix(matrix = matrix) {
+//            GLUtil.colorOf(Color.Green.copy(alpha = 0.5f))
+//            GLUtil.transaction(GL11.GL_LINES) {
+//                GL11.glVertex3d(0.0, 0.0, 0.0)
+//                GL11.glVertex3d(0.0, 0.0, 100.0)
+//            }
+//            GLUtil.colorOf(Color.Blue.copy(alpha = 0.5f))
+//            GLUtil.transaction(GL11.GL_LINES) {
+//                GL11.glVertex3d(0.0, 0.0, 0.0)
+//                GL11.glVertex3d(0.0, 0.0, -100.0)
+//            }
             canvas.polygons.drawCircle(
                 color = Color.Red,
                 pointCenter = Point.Center,
                 radius = 0.25,
                 edgeCount = 4,
-                measure = measure,
+//                measure = measure,
             )
             canvas.polygons.drawCircle(
                 color = Color.Green,
                 pointCenter = p1,
                 radius = 0.25,
                 edgeCount = 4,
-                measure = measure,
+//                measure = measure,
             )
             canvas.polygons.drawCircle(
                 color = Color.Blue,
                 pointCenter = p2,
                 radius = 0.25,
                 edgeCount = 4,
-                measure = measure,
+//                measure = measure,
             )
         }
         canvas.polygons.drawCircle(
