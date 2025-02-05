@@ -16,11 +16,13 @@ import sp.kx.math.MutableOffset
 import sp.kx.math.MutablePoint
 import sp.kx.math.Offset
 import sp.kx.math.Point
+import sp.kx.math.Size
 import sp.kx.math.angleOf
 import sp.kx.math.centerPoint
 import sp.kx.math.copy
 import sp.kx.math.div
 import sp.kx.math.isEmpty
+import sp.kx.math.measure.Measure
 import sp.kx.math.measure.MutableDoubleMeasure
 import sp.kx.math.measure.diff
 import sp.kx.math.measure.frequency
@@ -198,36 +200,26 @@ internal class TranslateLogics(
     }
 
     private fun translate(matrix: MutableMatrix, dX: Double, dY: Double, dZ: Double = 0.0) {
-//        matrix.m30 = dX
-//        matrix.m31 = dY
-//        matrix.m32 = dZ
-//        matrix.m03 = dX
-//        matrix.m13 = dY
-//        matrix.m23 = dZ
-          matrix.m30 = Math.fma(matrix.m00, dX, Math.fma(matrix.m10, dY, Math.fma(matrix.m20, dZ, matrix.m30)))
-          matrix.m31 = Math.fma(matrix.m01, dX, Math.fma(matrix.m11, dY, Math.fma(matrix.m21, dZ, matrix.m31)))
-          matrix.m32 = Math.fma(matrix.m02, dX, Math.fma(matrix.m12, dY, Math.fma(matrix.m22, dZ, matrix.m32)))
+        matrix.m30 = Math.fma(matrix.m00, dX, Math.fma(matrix.m10, dY, Math.fma(matrix.m20, dZ, matrix.m30)))
+        matrix.m31 = Math.fma(matrix.m01, dX, Math.fma(matrix.m11, dY, Math.fma(matrix.m21, dZ, matrix.m31)))
+        matrix.m32 = Math.fma(matrix.m02, dX, Math.fma(matrix.m12, dY, Math.fma(matrix.m22, dZ, matrix.m32)))
     }
 
-    private fun scale(matrix: MutableMatrix, value: Double) {
-        matrix.m00 = value
-        matrix.m11 = value
-        matrix.m22 = value
-    }
-
-    private fun mul(matrix: MutableMatrix, point: Point): Point {
-        return pointOf(
-            x = point.x * matrix.m00,
-            y = point.y * matrix.m11,
+    private fun translate(matrix: MutableMatrix, dX: Double, dY: Double, dZ: Double = 0.0, measure: Measure<Double, Double>) {
+        translate(
+            matrix = matrix,
+            dX = measure.transform(dX),
+            dY = measure.transform(dY),
+            dZ = measure.transform(dZ),
         )
     }
 
-    private fun translate(matrix: MutableMatrix, point: Point): Point {
-        return pointOf(
-            x = point.x + matrix.m30,
-            y = point.y + matrix.m31,
-//            x = point.x + matrix.m03,
-//            y = point.y + matrix.m13,
+    private fun translate(matrix: MutableMatrix, offset: Offset, dZ: Double = 0.0, measure: Measure<Double, Double>) {
+        translate(
+            matrix = matrix,
+            dX = measure.transform(offset.dX),
+            dY = measure.transform(offset.dY),
+            dZ = measure.transform(dZ),
         )
     }
 
@@ -244,6 +236,49 @@ internal class TranslateLogics(
         matrix.m32 = -1.0
     }
 
+    fun ortho(
+        matrix: MutableMatrix,
+        size: Size,
+    ) {
+        matrix.m00 = 2.0 / size.width
+        matrix.m11 = -2.0 / size.height
+        matrix.m22 = -2.0
+        matrix.m30 = -1.0
+        matrix.m31 = 1.0
+        matrix.m32 = -1.0
+    }
+
+    fun identity(matrix: MutableMatrix) {
+        matrix.m00 = 1.0
+        matrix.m01 = 0.0
+        matrix.m02 = 0.0
+        matrix.m03 = 0.0
+        matrix.m10 = 0.0
+        matrix.m11 = 1.0
+        matrix.m12 = 0.0
+        matrix.m13 = 0.0
+        matrix.m20 = 0.0
+        matrix.m21 = 0.0
+        matrix.m22 = 1.0
+        matrix.m23 = 0.0
+        matrix.m30 = 0.0
+        matrix.m31 = 0.0
+        matrix.m32 = 0.0
+        matrix.m33 = 1.0
+    }
+
+    private val matrix = MutableMatrix()
+    private val buffer = BufferUtils.createDoubleBuffer(16)
+
+    private fun onMatrix(matrix: Matrix, block: () -> Unit) {
+        GL11.glPushMatrix()
+        load(buffer = buffer, matrix = matrix)
+        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        GL11.glLoadMatrixd(buffer)
+        block()
+        GL11.glPopMatrix()
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
@@ -251,53 +286,32 @@ internal class TranslateLogics(
         onPreRender()
         if (debug) onRenderOffset(canvas = canvas, offset = offset)
         //
-//        MemoryStack.stackPush().use { stack ->
-//            val buffer = stack.mallocDouble(16)
-//            val matrix = MutableMatrix()
-//            translate(matrix = matrix, dX = offset.dY, dY = offset.dY)
-//            load(buffer = buffer, matrix = matrix)
-//            GL11.glMatrixMode(GL11.GL_MODELVIEW)
-//            GL11.glLoadMatrixd(buffer)
-//        }
-        val buffer = BufferUtils.createDoubleBuffer(16)
-        val matrix = MutableMatrix()
-        ortho(
-            matrix = matrix,
-            width = ps.width,
-            height = ps.height,
-        )
-//        scale(matrix = matrix, value = 1.0)
-//        translate(matrix = matrix, dX = offset.dX, dY = offset.dY)
-        translate(matrix = matrix, dX = offset.dX * measure, dY = offset.dY * measure)
-        load(buffer = buffer, matrix = matrix)
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glLoadMatrixd(buffer)
-        canvas.polygons.drawCircle(
-            color = Color.Red,
-            pointCenter = Point.Center,
-            radius = 0.25,
-            edgeCount = 4,
-//            offset = offset,
-            measure = measure,
-        )
-        canvas.polygons.drawCircle(
-            color = Color.Green,
-            pointCenter = p1,
-            radius = 0.25,
-            edgeCount = 4,
-//            offset = offset,
-            measure = measure,
-        )
-        canvas.polygons.drawCircle(
-            color = Color.Blue,
-            pointCenter = p2,
-            radius = 0.25,
-            edgeCount = 4,
-//            offset = offset,
-            measure = measure,
-        )
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glLoadMatrixd(engine.property.ortho)
+        identity(matrix = matrix)
+        ortho(matrix = matrix, size = ps)
+        translate(matrix = matrix, offset = offset, measure = measure)
+        onMatrix(matrix = matrix) {
+            canvas.polygons.drawCircle(
+                color = Color.Red,
+                pointCenter = Point.Center,
+                radius = 0.25,
+                edgeCount = 4,
+                measure = measure,
+            )
+            canvas.polygons.drawCircle(
+                color = Color.Green,
+                pointCenter = p1,
+                radius = 0.25,
+                edgeCount = 4,
+                measure = measure,
+            )
+            canvas.polygons.drawCircle(
+                color = Color.Blue,
+                pointCenter = p2,
+                radius = 0.25,
+                edgeCount = 4,
+                measure = measure,
+            )
+        }
         canvas.polygons.drawCircle(
             color = Color.Yellow,
             pointCenter = psu.centerPoint(),
@@ -318,8 +332,6 @@ internal class TranslateLogics(
             String.format("m: %6.2f", measure.magnitude),
             String.format("o: %+6.2f %+6.2f", offset.dX, offset.dY),
             String.format("c: $p"),
-            String.format("m: ${mul(matrix, p)}"),
-            String.format("t: ${translate(matrix, p)}"),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
