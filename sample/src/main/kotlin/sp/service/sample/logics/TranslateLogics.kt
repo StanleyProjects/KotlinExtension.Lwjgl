@@ -30,6 +30,8 @@ import sp.kx.math.measure.speedOf
 import sp.kx.math.measure.times
 import sp.kx.math.moved
 import sp.kx.math.pointOf
+import sp.kx.math.radians
+import sp.kx.math.sizeOf
 import sp.kx.math.vectorOf
 import sp.service.sample.Matrix
 import sp.service.sample.MutableMatrix
@@ -106,6 +108,11 @@ internal class TranslateLogics(
         return offset
     }
 
+//    private var rX = 0.0
+    private var rX = kotlin.math.PI / 4
+//    private var rY = 0.0
+    private var rY = kotlin.math.PI / 4
+    private var rZ = 0.0
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         val moved = getOffset(keyboard = engine.input.keyboard)
@@ -121,6 +128,15 @@ internal class TranslateLogics(
         }
         p1.set(Point.Center.moved(length = distanceOf(p1), angle = angleOf(p1) + speedOf(1.0).length(diff)))
         p2.set(Point.Center.moved(length = distanceOf(p2), angle = angleOf(p2) - speedOf(1.5).length(diff)))
+        if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
+            rX = (rX + speedOf(0.5).length(diff)).radians()
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
+            rX = (rX - speedOf(0.5).length(diff)).radians()
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+            rY = (rY + speedOf(0.5).length(diff)).radians()
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+            rY = (rY - speedOf(0.5).length(diff)).radians()
+        }
     }
 
     private fun onRenderOffset(canvas: Canvas, offset: Offset) {
@@ -315,6 +331,38 @@ internal class TranslateLogics(
         matrix.m33 = 1.0
     }
 
+    private fun rotateX(matrix: MutableMatrix, value: Double) {
+        matrix.m11 *= java.lang.Math.cos(value)
+        matrix.m12 *= -java.lang.Math.sin(value)
+        matrix.m21 *= java.lang.Math.sin(value)
+        matrix.m22 *= java.lang.Math.cos(value)
+    }
+
+    private fun rotateY(matrix: MutableMatrix, value: Double) {
+        matrix.m00 *= java.lang.Math.cos(value)
+        matrix.m02 *= java.lang.Math.sin(value)
+        matrix.m20 *= -java.lang.Math.sin(value)
+        matrix.m22 *= java.lang.Math.cos(value)
+    }
+
+    private fun rotateZ(matrix: MutableMatrix, value: Double) {
+        matrix.m00 *= java.lang.Math.cos(value)
+        matrix.m01 *= -java.lang.Math.sin(value)
+        matrix.m10 *= java.lang.Math.sin(value)
+        matrix.m11 *= java.lang.Math.cos(value)
+    }
+
+    private fun perspective(matrix: MutableMatrix, f: Double, aspect: Double) {
+        val zNear = 0.1
+        val zFar = 100.0
+        val h = java.lang.Math.tan(f * 0.5)
+        matrix.m00 = (1.0 / (h * aspect))
+        matrix.m11 = (1.0 / h)
+        matrix.m22 = ((zFar + zNear) / (zNear - zFar))
+        matrix.m32 = ((zFar + zFar) * zNear / (zNear - zFar));
+        matrix.m23 = -1.0
+    }
+
     private val matrix = MutableMatrix()
     private val buffer = BufferUtils.createDoubleBuffer(16)
 
@@ -336,20 +384,29 @@ internal class TranslateLogics(
         //
         identity(matrix = matrix)
         ortho(matrix = matrix, size = ps)
-//        translate(matrix = matrix, offset = offset)
         translate(matrix = matrix, offset = offset, measure = measure)
         scale(matrix = matrix, measure = measure)
+//        perspective(matrix = matrix, f = java.lang.Math.PI / 2, aspect = ps.width / ps.height)
+//        rotateX(matrix = matrix, value = rX)
+//        rotateY(matrix = matrix, value = rY)
+//        rotateZ(matrix = matrix, value = rZ)
         onMatrix(matrix = matrix) {
-//            GLUtil.colorOf(Color.Green.copy(alpha = 0.5f))
-//            GLUtil.transaction(GL11.GL_LINES) {
-//                GL11.glVertex3d(0.0, 0.0, 0.0)
-//                GL11.glVertex3d(0.0, 0.0, 100.0)
-//            }
-//            GLUtil.colorOf(Color.Blue.copy(alpha = 0.5f))
-//            GLUtil.transaction(GL11.GL_LINES) {
-//                GL11.glVertex3d(0.0, 0.0, 0.0)
-//                GL11.glVertex3d(0.0, 0.0, -100.0)
-//            }
+            GLUtil.colorOf(Color.Green.copy(alpha = 0.5f))
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex3d(0.0, 0.0, 0.0)
+                GL11.glVertex3d(0.0, 0.0, 10.0)
+            }
+            GLUtil.colorOf(Color.Blue.copy(alpha = 0.5f))
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex3d(0.0, 0.0, 0.0)
+                GL11.glVertex3d(0.0, 0.0, -10.0)
+            }
+            canvas.polygons.drawRectangle(
+                color = Color.White,
+                size = sizeOf(12.0, 12.0),
+                pointTopLeft = pointOf(-6.0, -6.0),
+                lineWidth = 0.2,
+            )
             canvas.polygons.drawCircle(
                 color = Color.Red,
                 pointCenter = Point.Center,
@@ -371,7 +428,21 @@ internal class TranslateLogics(
                 edgeCount = 4,
 //                measure = measure,
             )
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = 1.0,
+                text = "test",
+                pointTopLeft = pointOf(x = -4, y = -2),
+            )
         }
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = 1.0,
+            text = "test",
+            pointTopLeft = pointOf(x = 4, y = -2),
+            offset = offset,
+            measure = measure,
+        )
         canvas.polygons.drawCircle(
             color = Color.Yellow,
             pointCenter = psu.centerPoint(),
@@ -392,6 +463,7 @@ internal class TranslateLogics(
             String.format("m: %6.2f", measure.magnitude),
             String.format("o: %+6.2f %+6.2f", offset.dX, offset.dY),
             String.format("c: $p"),
+            String.format("r: %+6.2f %+6.2f", rX, rY),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
