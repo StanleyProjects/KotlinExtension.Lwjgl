@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFWWindowCloseCallbackI
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
+import org.lwjgl.system.MemoryStack.stackPush
 import sp.kx.lwjgl.drawer.PolygonDrawer
 import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.drawer.VectorDrawer
@@ -51,7 +52,8 @@ object WindowUtil {
             GLFW.glfwSetWindowMonitor(windowId, monitorId, 0, 0, mode.width(), mode.height(), GLFW.GLFW_DONT_CARE)
         } else {
             GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE) // todo
-            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE) // todo
+//            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE) // todo
+            GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE) // todo
             windowId = GLFWUtil.createWindow(title = title, size = size).checked { "Window id is null!" }
             val monitorSize = GLFWUtil.getMonitorSize(monitorId)
             val xPosition = (monitorSize.width - size.width) / 2
@@ -109,22 +111,39 @@ object WindowUtil {
 //        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
 //        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
 //        GL11.glEnable(GL13.GL_MULTISAMPLE)
+        //
+//        GL11.glMatrixMode(GL11.GL_PROJECTION)
+//        GL11.glLoadIdentity()
+//        stackPush().use { stack ->
+//            val widthBuffer = stack.mallocInt(1)
+//            val heightBuffer = stack.mallocInt(1)
+//            GLFW.glfwGetWindowSize(windowId, widthBuffer, heightBuffer)
+//            GL11.glOrtho(
+//                0.0,
+//                widthBuffer[0].toDouble(),
+//                heightBuffer[0].toDouble(),
+//                0.0,
+//                0.0,
+//                0.0,
+//            )
+//        }
+//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+//        GL11.glLoadIdentity()
     }
 
     private fun onPreRender(windowId: Long) {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
         GLFW.glfwPollEvents()
-
-        val size = GLFWUtil.getWindowSize(windowId)
-
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glLoadIdentity()
-        GLUtil.ortho(
-            right = size.width,
-            bottom = size.height,
-        )
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glLoadIdentity()
+        //
+//        val size = GLFWUtil.getWindowSize(windowId)
+//        GL11.glMatrixMode(GL11.GL_PROJECTION)
+//        GL11.glLoadIdentity()
+//        GLUtil.ortho(
+//            right = size.width,
+//            bottom = size.height,
+//        )
+//        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+//        GL11.glLoadIdentity()
     }
 
     private fun onPostRender(windowId: Long) {

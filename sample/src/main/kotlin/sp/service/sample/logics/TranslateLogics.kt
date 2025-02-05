@@ -1,5 +1,7 @@
 package sp.service.sample.logics
 
+import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.GL11
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogics
@@ -25,8 +27,10 @@ import sp.kx.math.measure.speedOf
 import sp.kx.math.moved
 import sp.kx.math.pointOf
 import sp.kx.math.vectorOf
+import sp.service.sample.Matrix
 import sp.service.sample.angleOf
 import sp.service.sample.distanceOf
+import java.nio.DoubleBuffer
 
 internal class TranslateLogics(
     private val engine: Engine,
@@ -171,11 +175,56 @@ internal class TranslateLogics(
         )
     }
 
+
+    private val ui = BufferUtils.createDoubleBuffer(16)
+
+    private fun ortho(
+        left: Double,
+        top: Double,
+        right: Double,
+        bottom: Double,
+        zNear: Double,
+        zFar: Double,
+    ): Matrix {
+        val m00 = 2.0 / (right - left)
+        val m11 = 2.0 / (top - bottom)
+        val m22 = 2.0 / (zNear - zFar)
+        val m30 = (right + left) / (left - right)
+        val m31 = (top + bottom) / (bottom - top)
+        val m32 = (zFar + zNear) / (zNear - zFar)
+        return Matrix(
+            m00 = m00, m01 = 0.0, m02 = 0.0, m03 = 0.0,
+            m10 = 0.0, m11 = m11, m12 = 0.0, m13 = 0.0,
+            m20 = 0.0, m21 = 0.0, m22 = m22, m23 = 0.0,
+            m30 = m30, m31 = m31, m32 = m32, m33 = 1.0,
+        )
+    }
+
+    private fun load(matrix: Matrix, dst: DoubleBuffer) {
+        dst.put(0,  matrix.m00)
+            .put(1,  matrix.m01)
+            .put(2,  matrix.m02)
+            .put(3,  matrix.m03)
+            .put(4,  matrix.m10)
+            .put(5,  matrix.m11)
+            .put(6,  matrix.m12)
+            .put(7,  matrix.m13)
+            .put(8,  matrix.m20)
+            .put(9,  matrix.m21)
+            .put(10, matrix.m22)
+            .put(11, matrix.m23)
+            .put(12, matrix.m30)
+            .put(13, matrix.m31)
+            .put(14, matrix.m32)
+            .put(15, matrix.m33)
+    }
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
         val psu = ps / measure
         onPreRender()
+        /*
         if (debug) onRenderOffset(canvas = canvas, offset = offset)
         //
         canvas.polygons.drawCircle(
@@ -209,7 +258,19 @@ internal class TranslateLogics(
             offset = offset,
             measure = measure,
         )
+        */
         //
+        val matrix = ortho(
+            left = 0.0,
+            top = 0.0,
+            right = ps.width,
+            bottom = ps.height,
+            zNear = 0.0,
+            zFar = 1.0,
+        )
+        load(matrix = matrix, dst = ui)
+        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        GL11.glLoadMatrixd(ui)
         val fontHeight = 24.0
         canvas.texts.draw(
             color = Color.Green,
