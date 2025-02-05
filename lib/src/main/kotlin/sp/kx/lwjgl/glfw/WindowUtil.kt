@@ -122,7 +122,7 @@ object WindowUtil {
         onRender: (Long, Canvas) -> Unit,
         onPostLoop: () -> Unit,
     ) {
-        GLUtil.clearColor(Color.Black)
+        GL11.glClearColor(0f, 0f, 0f, 1f)
         val canvas = WindowCanvas(defaultFontName = defaultFontName)
         onPreLoop(windowId)
         val timeMax = (1_000_000.0 / refreshRate).toLong()
