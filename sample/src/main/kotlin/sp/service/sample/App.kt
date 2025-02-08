@@ -12,6 +12,7 @@ import sp.service.sample.logics.TextsEngineLogics
 import sp.service.sample.logics.TranslateLogics
 import sp.service.sample.logics.VectorsEngineLogics
 import org.lwjgl.glfw.GLFW
+import sp.service.sample.logics.AffineLogics
 
 fun main() {
 	Engine.run(
@@ -23,7 +24,8 @@ fun main() {
 //		title = "Vectors", supplier = ::VectorsEngineLogics,
 //		title = "AntiAliasing", supplier = ::AntiAliasingEngineLogics,
 //		title = "Blending", supplier = ::BlendingEngineLogics,
-		title = "Translate", supplier = ::TranslateLogics,
+//		title = "Translate", supplier = ::TranslateLogics,
+		title = "Affine", supplier = ::AffineLogics,
 		size = sizeOf(640, 480),
 //		refreshRate = 144.0,
 //		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
