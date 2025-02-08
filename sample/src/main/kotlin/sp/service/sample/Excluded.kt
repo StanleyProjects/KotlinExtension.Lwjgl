@@ -1,8 +1,10 @@
 package sp.service.sample
 
+import org.lwjgl.opengl.GL11
 import sp.kx.math.Point
 import sp.kx.math.angleOf
 import sp.kx.math.distanceOf
+import java.nio.DoubleBuffer
 
 @Deprecated("sp.kx.math.distanceOf") // todo hypot
 internal fun distanceOf(point: Point): Double {
@@ -49,4 +51,123 @@ internal class MutableMatrix(
         m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0,
         m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
     )
+}
+
+@Deprecated("sp.kx.math.identity")
+internal fun MutableMatrix.identity() {
+    m00 = 1.0; m01 = 0.0; m02 = 0.0; m03 = 0.0
+    m10 = 0.0; m11 = 1.0; m12 = 0.0; m13 = 0.0
+    m20 = 0.0; m21 = 0.0; m22 = 1.0; m23 = 0.0
+    m30 = 0.0; m31 = 0.0; m32 = 0.0; m33 = 1.0
+}
+
+@Deprecated("sp.kx.math.set")
+internal fun MutableMatrix.set(other: Matrix) {
+    m00 = other.m00; m01 = other.m01; m02 = other.m02; m03 = other.m03
+    m10 = other.m10; m11 = other.m11; m12 = other.m12; m13 = other.m13
+    m20 = other.m20; m21 = other.m21; m22 = other.m22; m23 = other.m23
+    m30 = other.m30; m31 = other.m31; m32 = other.m32; m33 = other.m33
+}
+
+//@Deprecated("sp.kx.math.ortho")
+//internal fun MutableMatrix.ortho(width: Double, height: Double) {
+//    m00 = 2.0 / width
+//    m11 = -2.0 / height
+//    m22 = -2.0
+//    m30 = -1.0
+//    m31 = 1.0
+//    m32 = -1.0
+//}
+
+@Deprecated("sp.kx.math.ortho")
+internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double) {
+    val rm00 = 2.0 / (r - l)
+    val rm11 = 2.0 / (t - b)
+    val rm22 = 2.0
+    val rm30 = (l + r) / (l - r)
+    val rm31 = (t + b) / (b - t)
+    val rm32 = 1.0
+    m30 = m00 * rm30 + m10 * rm31 + m20 * rm32 + m30
+    m31 = m01 * rm30 + m11 * rm31 + m21 * rm32 + m31
+    m32 = m02 * rm30 + m12 * rm31 + m22 * rm32 + m32
+    m33 = m03 * rm30 + m13 * rm31 + m23 * rm32 + m33
+    m00 = m00 * rm00
+    m01 = m01 * rm00
+    m02 = m02 * rm00
+    m03 = m03 * rm00
+    m10 = m10 * rm11
+    m11 = m11 * rm11
+    m12 = m12 * rm11
+    m13 = m13 * rm11
+    m20 = m20 * rm22
+    m21 = m21 * rm22
+    m22 = m22 * rm22
+    m23 = m23 * rm22
+}
+
+@Deprecated("sp.kx.math.ortho")
+internal fun MutableMatrix.ortho(r: Double, b: Double) {
+    val rm00 = 2.0 / r
+    val rm11 = -2.0 / b
+    val rm22 = 2.0
+    m30 += m10 - m00 + m20
+    m31 += m11 - m01 + m21
+    m32 += m12 - m02 + m22
+    m33 += m13 - m03 + m23
+    m00 *= rm00
+    m01 *= rm00
+    m02 *= rm00
+    m03 *= rm00
+    m10 *= rm11
+    m11 *= rm11
+    m12 *= rm11
+    m13 *= rm11
+    m20 *= rm22
+    m21 *= rm22
+    m22 *= rm22
+    m23 *= rm22
+}
+
+@Deprecated("sp.kx.math.rotateX")
+internal fun MutableMatrix.rotateX(value: Double) {
+    m11 *= java.lang.Math.cos(value)
+    m12 *= -java.lang.Math.sin(value)
+    m21 *= java.lang.Math.sin(value)
+    m22 *= java.lang.Math.cos(value)
+}
+
+@Deprecated("sp.kx.math.rotateY")
+internal fun MutableMatrix.rotateY(value: Double) {
+    m00 *= java.lang.Math.cos(value)
+    m02 *= -java.lang.Math.sin(value)
+    m20 *= java.lang.Math.sin(value)
+    m22 *= java.lang.Math.cos(value)
+}
+
+private fun load(buffer: DoubleBuffer, matrix: Matrix) {
+    buffer.put(0,  matrix.m00)
+        .put(1,  matrix.m01)
+        .put(2,  matrix.m02)
+        .put(3,  matrix.m03)
+        .put(4,  matrix.m10)
+        .put(5,  matrix.m11)
+        .put(6,  matrix.m12)
+        .put(7,  matrix.m13)
+        .put(8,  matrix.m20)
+        .put(9,  matrix.m21)
+        .put(10, matrix.m22)
+        .put(11, matrix.m23)
+        .put(12, matrix.m30)
+        .put(13, matrix.m31)
+        .put(14, matrix.m32)
+        .put(15, matrix.m33)
+}
+
+internal fun onMatrix(matrix: Matrix, buffer: DoubleBuffer, block: () -> Unit) {
+    GL11.glPushMatrix()
+    load(buffer = buffer, matrix = matrix)
+    GL11.glMatrixMode(GL11.GL_MODELVIEW)
+    GL11.glLoadMatrixd(buffer)
+    block()
+    GL11.glPopMatrix()
 }
