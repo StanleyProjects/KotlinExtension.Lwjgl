@@ -233,6 +233,17 @@ internal fun Point3D.copy(x: Double = this.x, y: Double = this.y, z: Double = th
     )
 }
 
+@Deprecated("sp.kx.math.rotatedY")
+internal fun Point3D.rotatedY(oX: Double, oZ: Double, radians: Double): Point3D {
+    val distance = distanceOf(aX = oX, aY = oZ, bX = x, bY = z)
+    val angle = angleOf(aX = oX, aY = oZ, bX = x, bY = z)
+    return MutablePoint3D(
+        x = oX + distance * kotlin.math.cos(angle + radians),
+        y = y,
+        z = oZ + distance * kotlin.math.sin(angle + radians),
+    )
+}
+
 @Deprecated("sp.kx.math.MutablePoint")
 internal class MutablePoint3D(
     override var x: Double,
@@ -293,10 +304,14 @@ internal class MutablePoint3D(
     }
 
     fun rotateY(point: Point3D, radians: Double) {
-        val distance = distanceOf(aX = point.x, aY = point.z, bX = x, bY = z)
-        val angle = angleOf(aX = point.x, aY = point.z, bX = x, bY = z)
-        x = point.x + distance * kotlin.math.cos(angle + radians)
-        z = point.z + distance * kotlin.math.sin(angle + radians)
+        rotateY(oX = point.x, oZ = point.z, radians = radians)
+    }
+
+    fun rotateY(oX: Double, oZ: Double, radians: Double) {
+        val distance = distanceOf(aX = oX, aY = oZ, bX = x, bY = z)
+        val angle = angleOf(aX = oX, aY = oZ, bX = x, bY = z)
+        x = oX + distance * kotlin.math.cos(angle + radians)
+        z = oZ + distance * kotlin.math.sin(angle + radians)
     }
 
     fun rotateZ(point: Point3D, radians: Double) {

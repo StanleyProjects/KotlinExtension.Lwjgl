@@ -25,6 +25,7 @@ import sp.service.sample.onMatrix
 import sp.service.sample.ortho
 import sp.service.sample.rotateX
 import sp.service.sample.rotateY
+import sp.service.sample.rotatedY
 import sp.service.sample.translate
 
 internal class MatrixLogics(
@@ -45,14 +46,14 @@ internal class MatrixLogics(
         return ::ses.isInitialized
     }
 
-    private var z = 0.0
+    private var dZ = 0.0
     private var a = 0.0
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
-            z += speedOf(1.0).length(diff)
+            dZ += speedOf(1.0).length(diff)
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
-            z -= speedOf(1.0).length(diff)
+            dZ -= speedOf(1.0).length(diff)
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
             a = (a + speedOf(1.0).length(diff)).radians()
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
@@ -166,21 +167,42 @@ internal class MatrixLogics(
         */
         matrix.identity()
         matrix.ortho(l = 0.0, t = 0.0, r = ps.width, b = ps.height, zNear = -512.0, zFar = 512.0)
-        val d = 64.0
-        val start: Point3D = MutablePoint3D(
-            x = ps.width / 2 - d,
-            y = ps.height / 2 - d,
-            z = z,
-        )
-        val finish = MutablePoint3D(
-            x = ps.width / 2 - d,
-            y = ps.height / 2 + d,
-            z = z,
-        )
-        finish.rotateX(point = start, radians = a)
-//        finish.rotateY(point = start, radians = a)
-//        finish.rotateY(point = MutablePoint3D(x = ps.width / 2, y = ps.height / 2, z = 0.0), radians = a)
-//        finish.rotateZ(point = start, radians = a)
+        val s = 64.0
+        val x0 = ps.width / 2
+        val y0 = ps.height / 2
+        val z0 = 0.0
+        val pn = (z0 + s + dZ).let { z ->
+            listOf(
+                -1 to -1,
+                1 to -1,
+                -1 to 1,
+                1 to 1,
+            ).map { (dX, dY) ->
+                MutablePoint3D(
+                    x = x0 + s * dX,
+                    y = y0 + s * dY,
+                    z = z,
+                )
+            }
+        }.map {
+            it.rotatedY(oX = x0, oZ = z0, radians = a)
+        }
+        val pf = (z0 - s + dZ).let { z ->
+            listOf(
+                -1 to -1,
+                1 to -1,
+                -1 to 1,
+                1 to 1,
+            ).map { (dX, dY) ->
+                MutablePoint3D(
+                    x = x0 + s * dX,
+                    y = y0 + s * dY,
+                    z = z,
+                )
+            }
+        }.map {
+            it.rotatedY(oX = x0, oZ = z0, radians = a)
+        }
         onMatrix(matrix, buffer) {
             GLUtil.colorOf(Color.Gray)
             drawLine(
@@ -206,11 +228,35 @@ internal class MatrixLogics(
 //                x0 = ps.width / 2 - d, y0 = ps.height / 2 + d, z0 = z,
 //                x1 = ps.width / 2 + d, y1 = ps.height / 2 + d, z1 = z,
 //            )
-            GLUtil.colorOf(Color.Red)
-            drawLine(
-                start = start,
-                finish = finish,
-            )
+            pn.let { (p1, p2, p3, p4) ->
+                canvas.texts.draw(
+                    color = Color.Green,
+                    fontHeight = 24.0,
+                    text = "near",
+                    x = p1.x,
+                    y = p1.y,
+                )
+                GLUtil.colorOf(Color.Red)
+                drawLine(p1, p2)
+                drawLine(p1, p3)
+                drawLine(p4, p2)
+                drawLine(p4, p3)
+            }
+            pf.let { (p1, p2, p3, p4) ->
+                canvas.texts.draw(
+                    color = Color.Green,
+                    fontHeight = 24.0,
+                    text = "far",
+                    x = p1.x,
+                    y = p1.y,
+                )
+                GLUtil.colorOf(Color.Blue)
+                drawLine(p1, p2)
+                drawLine(p1, p3)
+                drawLine(p4, p2)
+                drawLine(p4, p3)
+            }
+            /*
             GLUtil.colorOf(Color.Yellow)
             drawCircle(
                 point = start,
@@ -238,6 +284,7 @@ internal class MatrixLogics(
                 edgeCount = 4,
                 radius = 6.0,
             )
+            */
         }
         //
         val fontHeight = 24.0
@@ -248,9 +295,10 @@ internal class MatrixLogics(
             pointTopLeft = pointOf(x = ps.width - 128.0, y = ps.height - fontHeight * 2),
         )
         listOf(
-            String.format("f:x: %+6.2f f:y: %+6.2f f:z: %+6.2f", finish.x, finish.y, finish.z),
+            String.format("p1: x: %+6.2f y: %+6.2f z: %+6.2f", pn[0].x, pn[0].y, pn[0].z),
+//            String.format("f:x: %+6.2f f:y: %+6.2f f:z: %+6.2f", finish.x, finish.y, finish.z),
             String.format("a: %+6.2f %+6.2f", a, java.lang.Math.toDegrees(a)),
-            String.format("z: %+6.2f", z),
+            String.format("dZ: %+6.2f", dZ),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
