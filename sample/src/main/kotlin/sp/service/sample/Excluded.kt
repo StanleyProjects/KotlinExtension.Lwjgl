@@ -244,6 +244,15 @@ internal fun Point3D.rotatedY(oX: Double, oZ: Double, radians: Double): Point3D 
     )
 }
 
+@Deprecated("sp.kx.math.rotatedY")
+internal fun Point3D.translated(dX: Double, dY: Double, dZ: Double): Point3D {
+    return MutablePoint3D(
+        x = this.x + dX,
+        y = this.y + dY,
+        z = this.z + dZ,
+    )
+}
+
 @Deprecated("sp.kx.math.MutablePoint")
 internal class MutablePoint3D(
     override var x: Double,

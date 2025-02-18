@@ -28,6 +28,7 @@ sealed interface Engine {
             monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
             times: Times = SystemTimes,
             defaultFontName: String,
+            zFar: Double = 512.0,
         ) {
             // todo run once
             // todo logger
@@ -57,6 +58,7 @@ sealed interface Engine {
                         buffer = engine.property.ortho,
                         width = engine.property.pictureSize.width,
                         height = engine.property.pictureSize.height,
+                        zFar = zFar,
                     )
                 },
                 defaultFontName = defaultFontName,
@@ -69,6 +71,7 @@ sealed interface Engine {
                         buffer = engine.property.ortho,
                         width = engine.property.pictureSize.width,
                         height = engine.property.pictureSize.height,
+                        zFar = zFar,
                     )
                     logics = supplier(engine)
                     logics.onPreLoop()

@@ -27,6 +27,7 @@ import sp.service.sample.rotateX
 import sp.service.sample.rotateY
 import sp.service.sample.rotatedY
 import sp.service.sample.translate
+import sp.service.sample.translated
 
 internal class MatrixLogics(
     private val engine: Engine,
@@ -46,7 +47,7 @@ internal class MatrixLogics(
         return ::ses.isInitialized
     }
 
-    private var dZ = 0.0
+    private var dZ = -128.0
     private var a = 0.0
     private fun onPreRender() {
         val diff = engine.property.time.diff()
@@ -108,9 +109,6 @@ internal class MatrixLogics(
         )
     }
 
-    private val matrix = MutableMatrix()
-    private val buffer = BufferUtils.createDoubleBuffer(16)
-
     private fun drawCircle(x0: Double, y0: Double, z0: Double, edgeCount: Int, radius: Double) {
         GL11.glBegin(GL11.GL_POLYGON)
         for (index in 0 until edgeCount) {
@@ -165,13 +163,11 @@ internal class MatrixLogics(
             drawCube(x0 = -d, y0 = -d, z0 = -d + z, s = d * 2)
         }
         */
-        matrix.identity()
-        matrix.ortho(l = 0.0, t = 0.0, r = ps.width, b = ps.height, zNear = -512.0, zFar = 512.0)
         val s = 64.0
         val x0 = ps.width / 2
         val y0 = ps.height / 2
         val z0 = 0.0
-        val pn = (z0 + s + dZ).let { z ->
+        val pn = (z0 + s).let { z ->
             listOf(
                 -1 to -1,
                 1 to -1,
@@ -182,12 +178,11 @@ internal class MatrixLogics(
                     x = x0 + s * dX,
                     y = y0 + s * dY,
                     z = z,
-                )
+                ).rotatedY(oX = x0, oZ = z0, radians = a)
+                    .translated(dX = 0.0, dY = 0.0, dZ = dZ)
             }
-        }.map {
-            it.rotatedY(oX = x0, oZ = z0, radians = a)
         }
-        val pf = (z0 - s + dZ).let { z ->
+        val pf = (z0 - s).let { z ->
             listOf(
                 -1 to -1,
                 1 to -1,
@@ -198,93 +193,70 @@ internal class MatrixLogics(
                     x = x0 + s * dX,
                     y = y0 + s * dY,
                     z = z,
-                )
+                ).rotatedY(oX = x0, oZ = z0, radians = a)
+                    .translated(dX = 0.0, dY = 0.0, dZ = dZ)
             }
-        }.map {
-            it.rotatedY(oX = x0, oZ = z0, radians = a)
         }
-        onMatrix(matrix, buffer) {
-            GLUtil.colorOf(Color.Gray)
-            drawLine(
-                x0 = ps.width / 2, y0 = 0.0, z0 = 0.0,
-                x1 = ps.width / 2, y1 = ps.height, z1 = 0.0,
-            )
-            drawLine(
-                x0 = 0.0, y0 = ps.height / 2, z0 = 0.0,
-                x1 = ps.width, y1 = ps.height / 2, z1 = 0.0,
-            )
-            GLUtil.colorOf(Color.Green)
+        GLUtil.colorOf(Color.Gray)
+        drawLine(
+            x0 = ps.width / 2, y0 = 0.0, z0 = 0.0,
+            x1 = ps.width / 2, y1 = ps.height, z1 = 0.0,
+        )
+        drawLine(
+            x0 = 0.0, y0 = ps.height / 2, z0 = 0.0,
+            x1 = ps.width, y1 = ps.height / 2, z1 = 0.0,
+        )
+//        GLUtil.colorOf(Color.Green)
+//        drawCircle(
+//            x0 = ps.width / 2, y0 = ps.height / 2, z0 = 0.0,
+//            edgeCount = 4, radius = 6.0,
+//        )
+        /*
+        (0 until 16).forEach { index ->
+            GLUtil.colorOf(Color.Yellow)
+            val x = 48.0 * index
+            val y = y0
+            val z = 64 * index - 512.0 - 64 * 2
             drawCircle(
-                x0 = ps.width / 2, y0 = ps.height / 2, z0 = 0.0,
+                x0 = x, y0 = y, z0 = z,
                 edgeCount = 4, radius = 6.0,
             )
-//            GLUtil.colorOf(Color.Red)
-//            drawLine(
-//                x0 = ps.width / 2 - d, y0 = ps.height / 2 - d, z0 = z,
-//                x1 = ps.width / 2 + d, y1 = ps.height / 2 - d, z1 = z,
-//            )
-//            GLUtil.colorOf(Color.Yellow)
-//            drawLine(
-//                x0 = ps.width / 2 - d, y0 = ps.height / 2 + d, z0 = z,
-//                x1 = ps.width / 2 + d, y1 = ps.height / 2 + d, z1 = z,
-//            )
-            pn.let { (p1, p2, p3, p4) ->
-                canvas.texts.draw(
-                    color = Color.Green,
-                    fontHeight = 24.0,
-                    text = "near",
-                    x = p1.x,
-                    y = p1.y,
-                )
-                GLUtil.colorOf(Color.Red)
-                drawLine(p1, p2)
-                drawLine(p1, p3)
-                drawLine(p4, p2)
-                drawLine(p4, p3)
-            }
-            pf.let { (p1, p2, p3, p4) ->
-                canvas.texts.draw(
-                    color = Color.Green,
-                    fontHeight = 24.0,
-                    text = "far",
-                    x = p1.x,
-                    y = p1.y,
-                )
-                GLUtil.colorOf(Color.Blue)
-                drawLine(p1, p2)
-                drawLine(p1, p3)
-                drawLine(p4, p2)
-                drawLine(p4, p3)
-            }
-            /*
-            GLUtil.colorOf(Color.Yellow)
-            drawCircle(
-                point = start,
-                edgeCount = 4,
-                radius = 6.0,
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = 18.0,
+                text = String.format("%3.0f", z),
+                x = x,
+                y = y,
+            )
+        }
+        */
+        pn.let { (p1, p2, p3, p4) ->
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = 24.0,
+                text = "near",
+                x = p1.x,
+                y = p1.y,
+            )
+            GLUtil.colorOf(Color.Red)
+            drawLine(p1, p2)
+            drawLine(p1, p3)
+            drawLine(p4, p2)
+            drawLine(p4, p3)
+        }
+        pf.let { (p1, p2, p3, p4) ->
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = 24.0,
+                text = "far",
+                x = p1.x,
+                y = p1.y,
             )
             GLUtil.colorOf(Color.Blue)
-            drawCircle(
-                point = start.copy(x = ps.width / 2 + d),
-                edgeCount = 4,
-                radius = 6.0,
-            )
-            drawCircle(
-                point = start.copy(x = ps.width / 2 - d * 3),
-                edgeCount = 4,
-                radius = 6.0,
-            )
-            drawCircle(
-                point = start.copy(y = ps.height / 2 + d),
-                edgeCount = 4,
-                radius = 6.0,
-            )
-            drawCircle(
-                point = start.copy(y = ps.height / 2 - d * 3),
-                edgeCount = 4,
-                radius = 6.0,
-            )
-            */
+            drawLine(p1, p2)
+            drawLine(p1, p3)
+            drawLine(p4, p2)
+            drawLine(p4, p3)
         }
         //
         val fontHeight = 24.0
@@ -296,7 +268,7 @@ internal class MatrixLogics(
         )
         listOf(
             String.format("p1: x: %+6.2f y: %+6.2f z: %+6.2f", pn[0].x, pn[0].y, pn[0].z),
-//            String.format("f:x: %+6.2f f:y: %+6.2f f:z: %+6.2f", finish.x, finish.y, finish.z),
+            String.format("p2: x: %+6.2f y: %+6.2f z: %+6.2f", pn[1].x, pn[1].y, pn[1].z),
             String.format("a: %+6.2f %+6.2f", a, java.lang.Math.toDegrees(a)),
             String.format("dZ: %+6.2f", dZ),
         ).forEachIndexed { index, text ->

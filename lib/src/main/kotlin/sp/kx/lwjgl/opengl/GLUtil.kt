@@ -549,13 +549,15 @@ object GLUtil {
         buffer: DoubleBuffer,
         width: Double,
         height: Double,
+        zNear: Double = 0.0,
+        zFar: Double = 1.0,
     ) {
         val m00 = 2.0 / width
         val m11 = -2.0 / height
-        val m22 = -2.0
+        val m22 = 2.0 / (zNear - zFar)
         val m30 = -1.0
         val m31 = 1.0
-        val m32 = -1.0
+        val m32 = (zFar + zNear) / (zNear - zFar)
         buffer.put(0,  m00)
             .put(1,  0.0)
             .put(2,  0.0)
