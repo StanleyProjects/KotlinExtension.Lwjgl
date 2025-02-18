@@ -47,7 +47,7 @@ internal class MatrixLogics(
         return ::ses.isInitialized
     }
 
-    private var dZ = -128.0
+    private var dZ = -256.0
     private var a = 0.0
     private fun onPreRender() {
         val diff = engine.property.time.diff()
@@ -179,6 +179,7 @@ internal class MatrixLogics(
                     y = y0 + s * dY,
                     z = z,
                 )
+                point.rotateX(oY = y0, oZ = z0, radians = a)
                 point.rotateY(oX = x0, oZ = z0, radians = a)
                 point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
                 point
@@ -196,6 +197,7 @@ internal class MatrixLogics(
                     y = y0 + s * dY,
                     z = z,
                 )
+                point.rotateX(oY = y0, oZ = z0, radians = a)
                 point.rotateY(oX = x0, oZ = z0, radians = a)
                 point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
                 point
@@ -238,7 +240,7 @@ internal class MatrixLogics(
             canvas.texts.draw(
                 color = Color.Green,
                 fontHeight = 24.0,
-                text = "near",
+                text = "n1",
                 x = p1.x,
                 y = p1.y,
             )
@@ -252,7 +254,7 @@ internal class MatrixLogics(
             canvas.texts.draw(
                 color = Color.Green,
                 fontHeight = 24.0,
-                text = "far",
+                text = "f1",
                 x = p1.x,
                 y = p1.y,
             )
@@ -262,6 +264,8 @@ internal class MatrixLogics(
             drawLine(p4, p2)
             drawLine(p4, p3)
         }
+        GLUtil.colorOf(Color.Yellow)
+        drawLine(pn[0], pf[0])
         //
         val fontHeight = 24.0
         canvas.texts.draw(
@@ -273,6 +277,8 @@ internal class MatrixLogics(
         listOf(
             String.format("p1: x: %+6.2f y: %+6.2f z: %+6.2f", pn[0].x, pn[0].y, pn[0].z),
             String.format("p2: x: %+6.2f y: %+6.2f z: %+6.2f", pn[1].x, pn[1].y, pn[1].z),
+            String.format("p3: x: %+6.2f y: %+6.2f z: %+6.2f", pn[2].x, pn[2].y, pn[2].z),
+            String.format("p4: x: %+6.2f y: %+6.2f z: %+6.2f", pn[3].x, pn[3].y, pn[3].z),
             String.format("a: %+6.2f %+6.2f", a, java.lang.Math.toDegrees(a)),
             String.format("dZ: %+6.2f", dZ),
         ).forEachIndexed { index, text ->

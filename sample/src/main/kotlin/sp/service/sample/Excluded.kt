@@ -289,6 +289,13 @@ internal class MutablePoint3D(
         y = point.y + distance * kotlin.math.sin(angle + radians)
     }
 
+    fun rotateX(oY: Double, oZ: Double, radians: Double) {
+        val distance = distanceOf(aX = oZ, aY = oY, bX = z, bY = y)
+        val angle = angleOf(aX = oZ, aY = oY, bX = z, bY = y)
+        z = oZ + distance * kotlin.math.cos(angle + radians)
+        y = oY + distance * kotlin.math.sin(angle + radians)
+    }
+
     fun rotateYOld(point: Point3D, radians: Double) {
         x -= point.x
         y -= point.y
@@ -306,15 +313,37 @@ internal class MutablePoint3D(
         z += point.z
     }
 
-    fun rotateY(point: Point3D, radians: Double) {
-        rotateY(oX = point.x, oZ = point.z, radians = radians)
+    fun rotateY1(oX: Double, oZ: Double, radians: Double) {
+        x -= oX
+        z -= oZ
+        // [ c 0 s ] [ x ] = [ c * x + 0 * x + s * x ]   [ c * x + s * x ]
+        // [ 0 1 0 ] [ y ] = [ 0 * y + 1 * y + 0 * y ] = [ y ]
+        // [-s 0 c ] [ z ] = [-s * z + 0 * z + c * z ]   [-s * z + c * z ]
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        x = c * x + s * x
+        z = c * z - s * z
+        //
+        x += oX
+        z += oZ
     }
 
-    fun rotateY(oX: Double, oZ: Double, radians: Double) {
+    fun rotateY2(oX: Double, oZ: Double, radians: Double) {
         val distance = distanceOf(aX = oX, aY = oZ, bX = x, bY = z)
         val angle = angleOf(aX = oX, aY = oZ, bX = x, bY = z)
         x = oX + distance * kotlin.math.cos(angle + radians)
         z = oZ + distance * kotlin.math.sin(angle + radians)
+    }
+
+    fun rotateY(oX: Double, oZ: Double, radians: Double) {
+        x -= oX
+        z -= oZ
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        x = z * s + x * c
+        z = z * c - x * s
+        x += oX
+        z += oZ
     }
 
     fun rotateZ(point: Point3D, radians: Double) {
