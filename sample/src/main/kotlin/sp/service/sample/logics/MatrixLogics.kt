@@ -174,12 +174,14 @@ internal class MatrixLogics(
                 -1 to 1,
                 1 to 1,
             ).map { (dX, dY) ->
-                MutablePoint3D(
+                val point = MutablePoint3D(
                     x = x0 + s * dX,
                     y = y0 + s * dY,
                     z = z,
-                ).rotatedY(oX = x0, oZ = z0, radians = a)
-                    .translated(dX = 0.0, dY = 0.0, dZ = dZ)
+                )
+                point.rotateY(oX = x0, oZ = z0, radians = a)
+                point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
+                point
             }
         }
         val pf = (z0 - s).let { z ->
@@ -189,22 +191,24 @@ internal class MatrixLogics(
                 -1 to 1,
                 1 to 1,
             ).map { (dX, dY) ->
-                MutablePoint3D(
+                val point = MutablePoint3D(
                     x = x0 + s * dX,
                     y = y0 + s * dY,
                     z = z,
-                ).rotatedY(oX = x0, oZ = z0, radians = a)
-                    .translated(dX = 0.0, dY = 0.0, dZ = dZ)
+                )
+                point.rotateY(oX = x0, oZ = z0, radians = a)
+                point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
+                point
             }
         }
         GLUtil.colorOf(Color.Gray)
         drawLine(
-            x0 = ps.width / 2, y0 = 0.0, z0 = 0.0,
-            x1 = ps.width / 2, y1 = ps.height, z1 = 0.0,
+            x0 = x0, y0 = 0.0, z0 = 0.0,
+            x1 = x0, y1 = ps.height, z1 = 0.0,
         )
         drawLine(
-            x0 = 0.0, y0 = ps.height / 2, z0 = 0.0,
-            x1 = ps.width, y1 = ps.height / 2, z1 = 0.0,
+            x0 = 0.0, y0 = y0, z0 = 0.0,
+            x1 = ps.width, y1 = y0, z1 = 0.0,
         )
 //        GLUtil.colorOf(Color.Green)
 //        drawCircle(

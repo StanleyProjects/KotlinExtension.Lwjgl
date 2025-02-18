@@ -111,6 +111,9 @@ object WindowUtil {
 //        GL11.glEnable(GL11.GL_POLYGON_SMOOTH)
 //        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST)
 //        GL11.glEnable(GL13.GL_MULTISAMPLE)
+        //
+        GL11.glEnable(GL11.GL_DEPTH_TEST)
+        GL11.glDepthFunc(GL11.GL_LESS)
     }
 
     private fun loopWindow(

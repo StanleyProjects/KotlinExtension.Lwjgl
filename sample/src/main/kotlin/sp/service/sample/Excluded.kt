@@ -259,16 +259,10 @@ internal class MutablePoint3D(
     override var y: Double,
     override var z: Double,
 ) : Point3D {
-    fun translate(x: Double, y: Double, z: Double) {
-        this.x += x
-        this.y += y
-        this.z += z
-    }
-
-    fun translate(point: Point3D) {
-        x += point.x
-        y += point.y
-        z += point.z
+    fun translate(dX: Double, dY: Double, dZ: Double) {
+        this.x += dX
+        this.y += dY
+        this.z += dZ
     }
 
     fun rotateXOld(point: Point3D, radians: Double) {
