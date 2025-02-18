@@ -129,6 +129,9 @@ internal class MatrixLogics(
         )
     }
 
+    private val matrix = MutableMatrix()
+    private val buffer = BufferUtils.createDoubleBuffer(16)
+
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
@@ -167,6 +170,10 @@ internal class MatrixLogics(
         val x0 = ps.width / 2
         val y0 = ps.height / 2
         val z0 = 0.0
+        matrix.identity()
+//        matrix.ortho(l = 0.0, t = 0.0, r = ps.width, b = ps.height, zNear = 0.0, zFar = 512.0)
+        matrix.translate(dX = 0.0, dY = 0.0, dZ = dZ)
+        matrix.rotateY(oX = x0, oZ = z0, radians = a)
         val pn = (z0 + s).let { z ->
             listOf(
                 -1 to -1,
@@ -182,6 +189,7 @@ internal class MatrixLogics(
                 point.rotateX(oY = y0, oZ = z0, radians = a)
                 point.rotateY(oX = x0, oZ = z0, radians = a)
                 point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
+//                point.mul(matrix = matrix)
                 point
             }
         }
@@ -200,6 +208,7 @@ internal class MatrixLogics(
                 point.rotateX(oY = y0, oZ = z0, radians = a)
                 point.rotateY(oX = x0, oZ = z0, radians = a)
                 point.translate(dX = 0.0, dY = 0.0, dZ = dZ)
+//                point.mul(matrix = matrix)
                 point
             }
         }

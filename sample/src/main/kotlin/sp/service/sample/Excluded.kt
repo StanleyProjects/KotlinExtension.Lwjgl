@@ -173,6 +173,18 @@ internal fun MutableMatrix.rotateY(value: Double) {
     m22 *= java.lang.Math.cos(value)
 }
 
+@Deprecated("sp.kx.math.rotateY")
+internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
+    translate(dX = -oX, dY = 0.0, dZ = -oZ)
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    m00 *= c
+    m02 *= s
+    m20 *= -s
+    m22 *= c
+    translate(dX = oX, dY = 0.0, dZ = oZ)
+}
+
 @Deprecated("sp.kx.math.translate")
 internal fun MutableMatrix.translate(dX: Double, dY: Double, dZ: Double) {
     m30 = Math.fma(m00, dX, Math.fma(m10, dY, Math.fma(m20, dZ, m30)))
@@ -351,5 +363,11 @@ internal class MutablePoint3D(
         val angle = angleOf(aX = point.x, aY = point.y, bX = x, bY = y)
         x = point.x + distance * kotlin.math.cos(angle + radians)
         y = point.y + distance * kotlin.math.sin(angle + radians)
+    }
+
+    fun mul(matrix: Matrix) {
+        x = matrix.m00 * x + matrix.m01 * x + matrix.m02 * x
+        y = matrix.m10 * y + matrix.m11 * y + matrix.m12 * y
+        z = matrix.m20 * z + matrix.m21 * z + matrix.m22 * z
     }
 }
