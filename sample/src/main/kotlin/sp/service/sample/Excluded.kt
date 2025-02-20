@@ -173,23 +173,66 @@ internal fun MutableMatrix.rotateY(value: Double) {
     m22 *= java.lang.Math.cos(value)
 }
 
-@Deprecated("sp.kx.math.rotateY")
-internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
-    translate(dX = -oX, dY = 0.0, dZ = -oZ)
+@Deprecated("sp.kx.math.rotateX")
+internal fun MutableMatrix.rotateX(oY: Double, oZ: Double, radians: Double) {
+//    translate(dX = -oX, dY = 0.0, dZ = -oZ)
     val c = kotlin.math.cos(radians)
     val s = kotlin.math.sin(radians)
-    m00 *= c
-    m02 *= s
-    m20 *= -s
-    m22 *= c
-    translate(dX = oX, dY = 0.0, dZ = oZ)
+    m11 = c
+    m12 = -s
+    m21 = s
+    m22 = c
+//    translate(dX = oX, dY = 0.0, dZ = oZ)
+}
+
+@Deprecated("sp.kx.math.rotateY")
+internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
+//    translate(dX = -oX, dY = 0.0, dZ = -oZ)
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    m00 = c
+    m02 = s
+    m20 = -s
+    m22 = c
+//    translate(dX = oX, dY = 0.0, dZ = oZ)
 }
 
 @Deprecated("sp.kx.math.translate")
 internal fun MutableMatrix.translate(dX: Double, dY: Double, dZ: Double) {
-    m30 = Math.fma(m00, dX, Math.fma(m10, dY, Math.fma(m20, dZ, m30)))
-    m31 = Math.fma(m01, dX, Math.fma(m11, dY, Math.fma(m21, dZ, m31)))
-    m32 = Math.fma(m02, dX, Math.fma(m12, dY, Math.fma(m22, dZ, m32)))
+    m03 = dX
+    m13 = dY
+    m23 = dZ
+}
+
+@Deprecated("sp.kx.math.scale")
+internal fun MutableMatrix.scale(dX: Double, dY: Double, dZ: Double) {
+    m00 = dX
+    m11 = dY
+    m22 = dZ
+}
+
+@Deprecated("sp.kx.math.translate")
+internal fun MutableMatrix.mul(other: Matrix) {
+    val m1 = mut()
+    m00 = m1.m00 * other.m00 + m1.m01 * other.m10 + m1.m02 * other.m20 + m1.m03 * other.m30
+    m01 = m1.m00 * other.m01 + m1.m01 * other.m11 + m1.m02 * other.m21 + m1.m03 * other.m31
+    m02 = m1.m00 * other.m02 + m1.m01 * other.m12 + m1.m02 * other.m22 + m1.m03 * other.m32
+    m03 = m1.m00 * other.m03 + m1.m01 * other.m13 + m1.m02 * other.m23 + m1.m03 * other.m33
+    //
+    m10 = m1.m10 * other.m00 + m1.m11 * other.m10 + m1.m12 * other.m20 + m1.m13 * other.m30
+    m11 = m1.m10 * other.m01 + m1.m11 * other.m11 + m1.m12 * other.m21 + m1.m13 * other.m31
+    m12 = m1.m10 * other.m02 + m1.m11 * other.m12 + m1.m12 * other.m22 + m1.m13 * other.m32
+    m13 = m1.m10 * other.m03 + m1.m11 * other.m13 + m1.m12 * other.m23 + m1.m13 * other.m33
+    //
+    m20 = m1.m20 * other.m00 + m1.m21 * other.m10 + m1.m22 * other.m20 + m1.m23 * other.m30
+    m21 = m1.m20 * other.m01 + m1.m21 * other.m11 + m1.m22 * other.m21 + m1.m23 * other.m31
+    m22 = m1.m20 * other.m02 + m1.m21 * other.m12 + m1.m22 * other.m22 + m1.m23 * other.m32
+    m23 = m1.m20 * other.m03 + m1.m21 * other.m13 + m1.m22 * other.m23 + m1.m23 * other.m33
+    //
+    m30 = m1.m30 * other.m00 + m1.m31 * other.m10 + m1.m32 * other.m20 + m1.m33 * other.m30
+    m31 = m1.m30 * other.m01 + m1.m31 * other.m11 + m1.m32 * other.m21 + m1.m33 * other.m31
+    m32 = m1.m30 * other.m02 + m1.m31 * other.m12 + m1.m32 * other.m22 + m1.m33 * other.m32
+    m33 = m1.m30 * other.m03 + m1.m31 * other.m13 + m1.m32 * other.m23 + m1.m33 * other.m33
 }
 
 private fun load(buffer: DoubleBuffer, matrix: Matrix) {
@@ -366,8 +409,8 @@ internal class MutablePoint3D(
     }
 
     fun mul(matrix: Matrix) {
-        x = matrix.m00 * x + matrix.m01 * x + matrix.m02 * x
-        y = matrix.m10 * y + matrix.m11 * y + matrix.m12 * y
-        z = matrix.m20 * z + matrix.m21 * z + matrix.m22 * z
+        x = matrix.m00 * x + matrix.m01 * y + matrix.m02 * z + matrix.m03
+        y = matrix.m10 * x + matrix.m11 * y + matrix.m12 * z + matrix.m13
+        z = matrix.m20 * x + matrix.m21 * y + matrix.m22 * z + matrix.m23
     }
 }
