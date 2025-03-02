@@ -58,10 +58,10 @@ internal class MutableMatrix(
     override var m30: Double, override var m31: Double, override var m32: Double, override var m33: Double,
 ): Matrix {
     constructor() : this(
-        m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
-        m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0,
-        m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0,
-        m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+        m00 = 0.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
+        m10 = 0.0, m11 = 0.0, m12 = 0.0, m13 = 0.0,
+        m20 = 0.0, m21 = 0.0, m22 = 0.0, m23 = 0.0,
+        m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 0.0,
     )
 
     constructor(other: Matrix) : this(
@@ -70,6 +70,62 @@ internal class MutableMatrix(
         m20 = other.m20, m21 = other.m21, m22 = other.m22, m23 = other.m23,
         m30 = other.m30, m31 = other.m31, m32 = other.m32, m33 = other.m33,
     )
+
+    companion object {
+        fun ofRotationX(radians: Double): Matrix {
+            val c = kotlin.math.cos(radians)
+            val s = kotlin.math.sin(radians)
+            return MutableMatrix(
+                m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
+                m10 = 0.0, m11 = c, m12 = -s, m13 = 0.0,
+                m20 = 0.0, m21 = s, m22 = c, m23 = 0.0,
+                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+            )
+        }
+
+        fun ofTranslation(
+            dX: Double,
+            dY: Double,
+            dZ: Double,
+        ): Matrix {
+            return MutableMatrix(
+                m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = dX,
+                m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = dY,
+                m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = dZ,
+                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+            )
+        }
+    }
+}
+
+@Deprecated("sp.kx.math.identity")
+internal fun MutableMatrix.perform(
+    dX: Double,
+    dY: Double,
+    dZ: Double,
+) {
+    m00 = 1.0; m01 = 0.0; m02 = 0.0; m03 = dX
+    m10 = 0.0; m11 = 1.0; m12 = 0.0; m13 = dY
+    m20 = 0.0; m21 = 0.0; m22 = 1.0; m23 = dZ
+    m30 = 0.0; m31 = 0.0; m32 = 0.0; m33 = 1.0
+}
+
+@Deprecated("sp.kx.math.identity")
+internal fun MutableMatrix.perform(
+    dX: Double,
+    dY: Double,
+    dZ: Double,
+    pointOfRotation: Point3D,
+    aX: Double,
+) {
+    identity()
+//    mul(MutableMatrix.ofTranslation(dX = dX, dY = dY, dZ = dZ))
+    mul(o03 = dX, o13 = dY, o23 = dZ)
+//    mul(MutableMatrix.ofTranslation(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z))
+    mul(o03 = -pointOfRotation.x, o13 = -pointOfRotation.y, o23 = -pointOfRotation.z)
+    mul(MutableMatrix.ofRotationX(radians = aX))
+//    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
+    mul(o03 = pointOfRotation.x, o13 = pointOfRotation.y, o23 = pointOfRotation.z)
 }
 
 @Deprecated("sp.kx.math.identity")
@@ -185,6 +241,18 @@ internal fun MutableMatrix.rotateX(oY: Double, oZ: Double, radians: Double) {
 //    translate(dX = oX, dY = 0.0, dZ = oZ)
 }
 
+@Deprecated("sp.kx.math.rotateX")
+internal fun MutableMatrix.rotateX(oX: Double, oY: Double, oZ: Double, radians: Double) {
+    translate(dX = -oX, dY = 0.0, dZ = -oZ)
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    m11 = c
+    m12 = -s
+    m21 = s
+    m22 = c
+    translate(dX = oX, dY = 0.0, dZ = oZ)
+}
+
 @Deprecated("sp.kx.math.rotateY")
 internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
 //    translate(dX = -oX, dY = 0.0, dZ = -oZ)
@@ -233,6 +301,14 @@ internal fun MutableMatrix.mul(other: Matrix) {
     m31 = m1.m30 * other.m01 + m1.m31 * other.m11 + m1.m32 * other.m21 + m1.m33 * other.m31
     m32 = m1.m30 * other.m02 + m1.m31 * other.m12 + m1.m32 * other.m22 + m1.m33 * other.m32
     m33 = m1.m30 * other.m03 + m1.m31 * other.m13 + m1.m32 * other.m23 + m1.m33 * other.m33
+}
+
+@Deprecated("sp.kx.math.translate")
+internal fun MutableMatrix.mul(o03: Double, o13: Double, o23: Double) {
+    m03 += m00 * o03 + m01 * o13 + m02 * o23
+    m13 += m10 * o03 + m11 * o13 + m12 * o23
+    m23 += m20 * o03 + m21 * o13 + m22 * o23
+    m33 += m30 * o03 + m31 * o13 + m32 * o23
 }
 
 private fun load(buffer: DoubleBuffer, matrix: Matrix) {
