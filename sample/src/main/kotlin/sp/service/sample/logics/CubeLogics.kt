@@ -36,9 +36,9 @@ internal class CubeLogics(
             when (button) {
                 KeyboardButton.Escape -> ses = Unit
                 KeyboardButton.C -> {
-                    angle.x = 0.0
-                    angle.y = 0.0
-                    angle.z = 0.0
+                    aX = 0.0
+                    aY = 0.0
+                    aZ = 0.0
                 }
                 else -> Unit
             }
@@ -51,15 +51,35 @@ internal class CubeLogics(
 
     private fun onPreRender() {
         val diff = engine.property.time.diff()
-        val speed = speedOf(1.0)
-        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
-            angle.y = (angle.y + speed.length(diff)).radians()
-        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
-            angle.y = (angle.y - speed.length(diff)).radians()
-        } else if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
-            angle.x = (angle.x + speed.length(diff)).radians()
+        val aS = speedOf(2.0)
+        if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+            if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+                aZ = (aZ + aS.length(diff)).radians()
+            } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+                aZ = (aZ - aS.length(diff)).radians()
+            }
+        } else {
+            if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+                aY = (aY + aS.length(diff)).radians()
+            } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+                aY = (aY - aS.length(diff)).radians()
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
+            aX = (aX+ aS.length(diff)).radians()
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
-            angle.x = (angle.x - speed.length(diff)).radians()
+            aX = (aX - aS.length(diff)).radians()
+        }
+        val dS = speedOf(48.0)
+        if (engine.input.keyboard.isPressed(KeyboardButton.A)) {
+            dX -= dS.length(diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.D)) {
+            dX += dS.length(diff)
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.W)) {
+            dY -= dS.length(diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.S)) {
+            dY += dS.length(diff)
         }
     }
 
@@ -235,7 +255,21 @@ internal class CubeLogics(
             ),
         )
     }
-    private val angle = MutablePoint3D(x = 0.0, y = 0.0, z = 0.0)
+
+    private var aX = 0.0
+    private var aY = 0.0
+    private var aZ = 0.0
+
+    private var dX: Double
+    private var dY: Double
+    private var dZ: Double
+
+    init {
+        val ps = engine.property.pictureSize
+        dX = ps.width / 2
+        dY = ps.height / 2
+        dZ = -64.0
+    }
 
     private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
@@ -243,12 +277,10 @@ internal class CubeLogics(
         val ps = engine.property.pictureSize
         onPreRender()
         //
-//        val dX = 0.0; val dY = 0.0; val dZ = 0.0
-        val dX = ps.width / 2; val dY = ps.height / 2; val dZ = -192.0
         matrix.perform(
-            dX = ps.width / 2, dY = ps.height / 2, dZ = -64.0,
+            dX = dX, dY = dY, dZ = dZ,
             rX = axes.p0.x, rY = axes.p0.y, rZ = axes.p0.z,
-            aX = angle.x, aY = angle.y, aZ = angle.z,
+            aX = aX, aY = aY, aZ = aZ,
         )
 //        matrix.identity()
 //        val tm = matrix.mut()
@@ -267,6 +299,9 @@ internal class CubeLogics(
             pointTopLeft = axes.pX.mut().let {
                 it.mul(matrix)
                 pointOf(x = it.x, y = it.y)
+//                val x = matrix.m00 * it.x + matrix.m01 * it.y + matrix.m02 * it.z + matrix.m03
+//                val y = matrix.m10 * it.x + matrix.m11 * it.y + matrix.m12 * it.z + matrix.m13
+//                pointOf(x = x, y = y)
             },
         )
         canvas.texts.draw(
@@ -311,9 +346,12 @@ internal class CubeLogics(
             pointTopLeft = pointOf(x = ps.width - 96.0, y = ps.height - fontHeight * 2),
         )
         listOf(
-            String.format("a:x: %+6.2f", angle.x),
-            String.format("a:y: %+6.2f", angle.y),
-            String.format("a:z: %+6.2f", angle.z),
+            String.format("aX: %+6.2f", aX),
+            String.format("aY: %+6.2f", aY),
+            String.format("aZ: %+6.2f", aZ),
+            String.format("dX: %+6.2f", dX),
+            String.format("dY: %+6.2f", dY),
+            String.format("dZ: %+6.2f", dZ),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,

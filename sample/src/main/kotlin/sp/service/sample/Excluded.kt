@@ -83,6 +83,28 @@ internal class MutableMatrix(
             )
         }
 
+        fun ofRotationY(radians: Double): Matrix {
+            val c = kotlin.math.cos(radians)
+            val s = kotlin.math.sin(radians)
+            return MutableMatrix(
+                m00 = c, m01 = 0.0, m02 = s, m03 = 0.0,
+                m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0,
+                m20 = -s, m21 = 0.0, m22 = c, m23 = 0.0,
+                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+            )
+        }
+
+        fun ofRotationZ(radians: Double): Matrix {
+            val c = kotlin.math.cos(radians)
+            val s = kotlin.math.sin(radians)
+            return MutableMatrix(
+                m00 = c, m01 = -s, m02 = 0.0, m03 = 0.0,
+                m10 = s, m11 = c, m12 = 0.0, m13 = 0.0,
+                m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0,
+                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+            )
+        }
+
         fun ofRotation(
             aX: Double,
             aY: Double,
@@ -162,7 +184,10 @@ internal fun MutableMatrix.perform(
     identity()
     mul(o03 = dX, o13 = dY, o23 = dZ)
     mul(o03 = -rX, o13 = -rY, o23 = -rZ)
-    mul(MutableMatrix.ofRotation(aX = aX, aY = aY, aZ = aZ))
+    mul(MutableMatrix.ofRotationZ(radians = aZ))
+    mul(MutableMatrix.ofRotationY(radians = aY))
+    mul(MutableMatrix.ofRotationX(radians = aX))
+//    mul(MutableMatrix.ofRotation(aX = aX, aY = aY, aZ = aZ))
     mul(o03 = rX, o13 = rY, o23 = rZ)
 }
 
@@ -523,8 +548,11 @@ internal class MutablePoint3D(
     }
 
     fun mul(matrix: Matrix) {
-        x = matrix.m00 * x + matrix.m01 * y + matrix.m02 * z + matrix.m03
-        y = matrix.m10 * x + matrix.m11 * y + matrix.m12 * z + matrix.m13
-        z = matrix.m20 * x + matrix.m21 * y + matrix.m22 * z + matrix.m23
+        val oX = x
+        val oY = y
+        val oZ = z
+        x = matrix.m00 * oX + matrix.m01 * oY + matrix.m02 * oZ + matrix.m03
+        y = matrix.m10 * oX + matrix.m11 * oY + matrix.m12 * oZ + matrix.m13
+        z = matrix.m20 * oX + matrix.m21 * oY + matrix.m22 * oZ + matrix.m23
     }
 }
