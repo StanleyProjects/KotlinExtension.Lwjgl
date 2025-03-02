@@ -83,6 +83,25 @@ internal class MutableMatrix(
             )
         }
 
+        fun ofRotation(
+            aX: Double,
+            aY: Double,
+            aZ: Double,
+        ): Matrix {
+            val cX = kotlin.math.cos(aX)
+            val cY = kotlin.math.cos(aY)
+            val cZ = kotlin.math.cos(aZ)
+            val sX = kotlin.math.sin(aX)
+            val sY = kotlin.math.sin(aY)
+            val sZ = kotlin.math.sin(aZ)
+            return MutableMatrix(
+                m00 = cZ * cY, m01 = cZ * sY * sX - sZ * cX, m02 = cZ * sY * cX + sZ * sX, m03 = 0.0,
+                m10 = sZ * cY, m11 = sZ * sY * sX + cZ * cX, m12 = sZ * sY * cX - cZ * sX, m13 = 0.0,
+                m20 = -sY, m21 = cY * sX, m22 = cY * cX, m23 = 0.0,
+                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+            )
+        }
+
         fun ofTranslation(
             dX: Double,
             dY: Double,
@@ -126,6 +145,25 @@ internal fun MutableMatrix.perform(
     mul(MutableMatrix.ofRotationX(radians = aX))
 //    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
     mul(o03 = pointOfRotation.x, o13 = pointOfRotation.y, o23 = pointOfRotation.z)
+}
+
+@Deprecated("sp.kx.math.identity")
+internal fun MutableMatrix.perform(
+    dX: Double,
+    dY: Double,
+    dZ: Double,
+    rX: Double,
+    rY: Double,
+    rZ: Double,
+    aX: Double,
+    aY: Double,
+    aZ: Double,
+) {
+    identity()
+    mul(o03 = dX, o13 = dY, o23 = dZ)
+    mul(o03 = -rX, o13 = -rY, o23 = -rZ)
+    mul(MutableMatrix.ofRotation(aX = aX, aY = aY, aZ = aZ))
+    mul(o03 = rX, o13 = rY, o23 = rZ)
 }
 
 @Deprecated("sp.kx.math.identity")

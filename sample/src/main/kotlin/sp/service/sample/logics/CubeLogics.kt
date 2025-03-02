@@ -35,6 +35,11 @@ internal class CubeLogics(
             if (isPressed) return
             when (button) {
                 KeyboardButton.Escape -> ses = Unit
+                KeyboardButton.C -> {
+                    angle.x = 0.0
+                    angle.y = 0.0
+                    angle.z = 0.0
+                }
                 else -> Unit
             }
         }
@@ -48,8 +53,12 @@ internal class CubeLogics(
         val diff = engine.property.time.diff()
         val speed = speedOf(1.0)
         if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
-            angle.x = (angle.x + speed.length(diff)).radians()
+            angle.y = (angle.y + speed.length(diff)).radians()
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+            angle.y = (angle.y - speed.length(diff)).radians()
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
+            angle.x = (angle.x + speed.length(diff)).radians()
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
             angle.x = (angle.x - speed.length(diff)).radians()
         }
     }
@@ -238,8 +247,8 @@ internal class CubeLogics(
         val dX = ps.width / 2; val dY = ps.height / 2; val dZ = -192.0
         matrix.perform(
             dX = ps.width / 2, dY = ps.height / 2, dZ = -64.0,
-            pointOfRotation = axes.p0,
-            aX = angle.x,
+            rX = axes.p0.x, rY = axes.p0.y, rZ = axes.p0.z,
+            aX = angle.x, aY = angle.y, aZ = angle.z,
         )
 //        matrix.identity()
 //        val tm = matrix.mut()
