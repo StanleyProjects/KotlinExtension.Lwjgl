@@ -13,6 +13,7 @@ import sp.service.sample.logics.TranslateLogics
 import sp.service.sample.logics.VectorsEngineLogics
 import org.lwjgl.glfw.GLFW
 import sp.service.sample.logics.AffineLogics
+import sp.service.sample.logics.CubeLogics
 import sp.service.sample.logics.MatrixLogics
 
 fun main() {
@@ -27,7 +28,8 @@ fun main() {
 //		title = "Blending", supplier = ::BlendingEngineLogics,
 //		title = "Translate", supplier = ::TranslateLogics,
 //		title = "Affine", supplier = ::AffineLogics,
-		title = "Matrix", supplier = ::MatrixLogics,
+//		title = "Matrix", supplier = ::MatrixLogics,
+		title = "Cube", supplier = ::CubeLogics,
 		size = sizeOf(640, 480),
 //		refreshRate = 144.0,
 //		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
