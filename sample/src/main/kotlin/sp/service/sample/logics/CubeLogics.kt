@@ -277,6 +277,16 @@ internal class CubeLogics(
         val ps = engine.property.pictureSize
         onPreRender()
         //
+        GLUtil.colorOf(Color.Gray)
+        drawLine(
+            p0 = MutablePoint3D(ps.width / 2, 0.0, -256.0),
+            p1 = MutablePoint3D(ps.width / 2, ps.height, -256.0),
+        )
+        drawLine(
+            p0 = MutablePoint3D(0.0, ps.height / 2, -256.0),
+            p1 = MutablePoint3D(ps.width, ps.height / 2, -256.0),
+        )
+        //
         matrix.perform(
             dX = dX, dY = dY, dZ = dZ,
             rX = axes.p0.x, rY = axes.p0.y, rZ = axes.p0.z,
@@ -299,9 +309,6 @@ internal class CubeLogics(
             pointTopLeft = axes.pX.mut().let {
                 it.mul(matrix)
                 pointOf(x = it.x, y = it.y)
-//                val x = matrix.m00 * it.x + matrix.m01 * it.y + matrix.m02 * it.z + matrix.m03
-//                val y = matrix.m10 * it.x + matrix.m11 * it.y + matrix.m12 * it.z + matrix.m13
-//                pointOf(x = x, y = y)
             },
         )
         canvas.texts.draw(
