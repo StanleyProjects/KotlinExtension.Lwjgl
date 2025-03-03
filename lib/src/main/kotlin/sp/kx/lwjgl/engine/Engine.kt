@@ -28,6 +28,7 @@ sealed interface Engine {
             monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
             times: Times = SystemTimes,
             defaultFontName: String,
+            zNear: Double = -512.0,
             zFar: Double = 512.0,
         ) {
             // todo run once
@@ -58,6 +59,7 @@ sealed interface Engine {
                         buffer = engine.property.ortho,
                         width = engine.property.pictureSize.width,
                         height = engine.property.pictureSize.height,
+                        zNear = zNear,
                         zFar = zFar,
                     )
                 },
@@ -71,6 +73,7 @@ sealed interface Engine {
                         buffer = engine.property.ortho,
                         width = engine.property.pictureSize.width,
                         height = engine.property.pictureSize.height,
+                        zNear = zNear,
                         zFar = zFar,
                     )
                     logics = supplier(engine)

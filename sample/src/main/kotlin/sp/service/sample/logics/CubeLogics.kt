@@ -19,12 +19,14 @@ import sp.service.sample.Matrix
 import sp.service.sample.MutableMatrix
 import sp.service.sample.MutablePoint3D
 import sp.service.sample.Point3D
+import sp.service.sample.copy
 import sp.service.sample.identity
 import sp.service.sample.mul
 import sp.service.sample.mut
 import sp.service.sample.perform
 import sp.service.sample.rotateX
 import sp.service.sample.translate
+import kotlin.time.Duration
 
 internal class CubeLogics(
     private val engine: Engine,
@@ -88,6 +90,11 @@ internal class CubeLogics(
         val pX: MutablePoint3D,
         val pY: MutablePoint3D,
         val pZ: MutablePoint3D,
+    )
+
+    private class Cube(
+        val p0: Point3D,
+        val w: Double,
     )
 
     private fun drawLine(
@@ -168,6 +175,89 @@ internal class CubeLogics(
         GL11.glVertex3d(p0.x + dX, p0.y + dY, p0.z + dZ)
         GL11.glVertex3d(p1.x + dX, p1.y + dY, p1.z + dZ)
         GL11.glEnd()
+    }
+
+    private fun draw(cube: Cube, matrix: Matrix) {
+        GLUtil.colorOf(Color.White)
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z - cube.w / 2),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w * 3 / 2),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x - cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w * 3 / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y - cube.w / 2, z = cube.p0.z + cube.w / 2),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w * 3 / 2, z = cube.p0.z + cube.w / 2),
+            matrix = matrix,
+        )
+        GLUtil.colorOf(Color.Red)
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(y = cube.p0.y + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
+        GLUtil.colorOf(Color.Green)
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w),
+            p1 = cube.p0.copy(y = cube.p0.y + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
+        GLUtil.colorOf(Color.Blue)
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(x = cube.p0.x + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
+        GLUtil.colorOf(Color.Yellow)
+        drawLine(
+            p0 = cube.p0.copy(y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(y = cube.p0.y + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
+        drawLine(
+            p0 = cube.p0.copy(y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w, y = cube.p0.y + cube.w, z = cube.p0.z + cube.w),
+            matrix = matrix,
+        )
     }
 
     private fun draw(axes: Axes, matrix: Matrix) {
@@ -256,6 +346,15 @@ internal class CubeLogics(
         )
     }
 
+    private val cube = Cube(
+        p0 = MutablePoint3D(
+            x = -48.0,
+            y = -48.0,
+            z = -48.0,
+        ),
+        w = 96.0,
+    )
+
     private var aX = 0.0
     private var aY = 0.0
     private var aZ = 0.0
@@ -277,21 +376,21 @@ internal class CubeLogics(
         val ps = engine.property.pictureSize
         onPreRender()
         //
-        GLUtil.colorOf(Color.Gray)
-        drawLine(
-            p0 = MutablePoint3D(ps.width / 2, 0.0, -256.0),
-            p1 = MutablePoint3D(ps.width / 2, ps.height, -256.0),
-        )
-        drawLine(
-            p0 = MutablePoint3D(0.0, ps.height / 2, -256.0),
-            p1 = MutablePoint3D(ps.width, ps.height / 2, -256.0),
-        )
+//        GLUtil.colorOf(Color.Gray)
+//        drawLine(
+//            p0 = MutablePoint3D(ps.width / 2, 0.0, -256.0),
+//            p1 = MutablePoint3D(ps.width / 2, ps.height, -256.0),
+//        )
+//        drawLine(
+//            p0 = MutablePoint3D(0.0, ps.height / 2, -256.0),
+//            p1 = MutablePoint3D(ps.width, ps.height / 2, -256.0),
+//        )
         //
-        matrix.perform(
-            dX = dX, dY = dY, dZ = dZ,
-            rX = axes.p0.x, rY = axes.p0.y, rZ = axes.p0.z,
-            aX = aX, aY = aY, aZ = aZ,
-        )
+//        matrix.perform(
+//            dX = dX, dY = dY, dZ = dZ,
+//            rX = axes.p0.x, rY = axes.p0.y, rZ = axes.p0.z,
+//            aX = aX, aY = aY, aZ = aZ,
+//        )
 //        matrix.identity()
 //        val tm = matrix.mut()
 //        tm.translate(dX = ps.width / 2, dY = ps.height / 2, dZ = -64.0)
@@ -301,30 +400,46 @@ internal class CubeLogics(
 //        rm.mul(tm)
 //        rm.mul(rx)
 //        matrix.rotateX(angle.x)
-        draw(axes = axes, matrix = matrix)
+//        draw(axes = axes, matrix = matrix)
+        //
+        matrix.perform(
+            dX = dX, dY = dY, dZ = dZ,
+            rX = cube.p0.x + cube.w / 2, rY = cube.p0.y + cube.w / 2, rZ = cube.p0.z + cube.w / 2,
+            aX = aX, aY = aY, aZ = aZ,
+        )
+        draw(cube = cube, matrix = matrix)
+        canvas.texts.draw(
+            color = Color.Red,
+            fontHeight = 24.0,
+            text = "0",
+            pointTopLeft = cube.p0.mut().let {
+                it.mul(matrix)
+                pointOf(x = it.x, y = it.y)
+            },
+        )
         canvas.texts.draw(
             color = Color.Red,
             fontHeight = 24.0,
             text = "x",
-            pointTopLeft = axes.pX.mut().let {
+            pointTopLeft = cube.p0.copy(x = cube.p0.x + cube.w).mut().let {
                 it.mul(matrix)
                 pointOf(x = it.x, y = it.y)
             },
         )
         canvas.texts.draw(
-            color = Color.Green,
+            color = Color.Red,
             fontHeight = 24.0,
             text = "y",
-            pointTopLeft = axes.pY.mut().let {
+            pointTopLeft = cube.p0.copy(y = cube.p0.y + cube.w).mut().let {
                 it.mul(matrix)
                 pointOf(x = it.x, y = it.y)
             },
         )
         canvas.texts.draw(
-            color = Color.Blue,
+            color = Color.Red,
             fontHeight = 24.0,
             text = "z",
-            pointTopLeft = axes.pZ.mut().let {
+            pointTopLeft = cube.p0.copy(z = cube.p0.z + cube.w).mut().let {
                 it.mul(matrix)
                 pointOf(x = it.x, y = it.y)
             },
