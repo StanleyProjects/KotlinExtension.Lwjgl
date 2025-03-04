@@ -525,12 +525,12 @@ internal class CubeLogics(
             aX = aX, aY = aY, aZ = aZ,
         )
 //        val p = MutableQuaternion.ofVector(x = , y = , z = )
-//        draw(cube = cube, matrix = matrix)
-        draw(
-            cube = cube,
-            dX = dX, dY = dY, dZ = dZ,
-            aX = aX, aY = aY, aZ = aZ,
-        )
+        draw(cube = cube, matrix = matrix)
+//        draw(
+//            cube = cube,
+//            dX = dX, dY = dY, dZ = dZ,
+//            aX = aX, aY = aY, aZ = aZ,
+//        )
         canvas.texts.draw(
             color = Color.Red,
             fontHeight = 24.0,
