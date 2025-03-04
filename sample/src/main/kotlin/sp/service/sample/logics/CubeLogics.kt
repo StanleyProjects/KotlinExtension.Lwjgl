@@ -390,15 +390,15 @@ internal class CubeLogics(
         val ps = engine.property.pictureSize
         onPreRender()
         //
-//        GLUtil.colorOf(Color.Gray)
-//        drawLine(
-//            p0 = MutablePoint3D(ps.width / 2, 0.0, -256.0),
-//            p1 = MutablePoint3D(ps.width / 2, ps.height, -256.0),
-//        )
-//        drawLine(
-//            p0 = MutablePoint3D(0.0, ps.height / 2, -256.0),
-//            p1 = MutablePoint3D(ps.width, ps.height / 2, -256.0),
-//        )
+        GLUtil.colorOf(Color.Gray)
+        drawLine(
+            p0 = MutablePoint3D(ps.width / 2, 0.0, -256.0),
+            p1 = MutablePoint3D(ps.width / 2, ps.height, -256.0),
+        )
+        drawLine(
+            p0 = MutablePoint3D(0.0, ps.height / 2, -256.0),
+            p1 = MutablePoint3D(ps.width, ps.height / 2, -256.0),
+        )
         //
 //        matrix.perform(
 //            dX = dX, dY = dY, dZ = dZ,
@@ -425,20 +425,19 @@ internal class CubeLogics(
 //        val p = Point.Center.moved(1.0, aY)
 //        val p = MutablePoint3D.unitOf(radians = aY)
 //        val p = MutablePoint3D.unitOf(p = kotlin.math.PI / 4, t = 0.0)
-        val p = MutablePoint3D.unitOf(p = kotlin.math.PI / 4, t = aY)
-        val rX = p.x
-        val rY = p.y
-        val rZ = p.z
-        GLUtil.colorOf(Color.White)
-        drawLine(
-            x0 = 0.0, y0 = 0.0, z0 = 0.0,
-            x1 = rX * 48.0, y1 = rY * 48.0, z1 = rZ * 48.0,
-            dX = dX, dY = dY, dZ = dZ,
-        )
+//        val p = MutablePoint3D.unitOf(p = kotlin.math.PI / 4, t = aY)
+//        val rX = p.x
+//        val rY = p.y
+//        val rZ = p.z
+//        GLUtil.colorOf(Color.White)
+//        drawLine(
+//            x0 = 0.0, y0 = 0.0, z0 = 0.0,
+//            x1 = rX * 48.0, y1 = rY * 48.0, z1 = rZ * 48.0,
+//            dX = dX, dY = dY, dZ = dZ,
+//        )
         matrix.perform(
             dX = dX, dY = dY, dZ = dZ,
-            rX = rX, rY = rY, rZ = rZ,
-            radians = aX,
+            aX = aX, aY = aY, aZ = aZ,
         )
 //        val p = MutableQuaternion.ofVector(x = , y = , z = )
         draw(cube = cube, matrix = matrix)
