@@ -9,15 +9,18 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Offset
+import sp.kx.math.Point
 import sp.kx.math.measure.diff
 import sp.kx.math.measure.frequency
 import sp.kx.math.measure.speedOf
+import sp.kx.math.moved
 import sp.kx.math.offsetOf
 import sp.kx.math.pointOf
 import sp.kx.math.radians
 import sp.service.sample.Matrix
 import sp.service.sample.MutableMatrix
 import sp.service.sample.MutablePoint3D
+import sp.service.sample.MutableQuaternion
 import sp.service.sample.Point3D
 import sp.service.sample.copy
 import sp.service.sample.identity
@@ -108,6 +111,17 @@ internal class CubeLogics(
     }
 
     private fun drawLine(
+        x0: Double, y0: Double, z0: Double,
+        x1: Double, y1: Double, z1: Double,
+        dX: Double, dY: Double, dZ: Double,
+    ) {
+        GL11.glBegin(GL11.GL_LINES)
+        GL11.glVertex3d(x0 + dX, y0 + dY, z0 + dZ)
+        GL11.glVertex3d(x1 + dX, y1 + dY, z1 + dZ)
+        GL11.glEnd()
+    }
+
+    private fun drawLine(
         point: Point3D,
         x1: Double = point.x, y1: Double = point.y, z1: Double = point.z,
     ) {
@@ -178,22 +192,22 @@ internal class CubeLogics(
     }
 
     private fun draw(cube: Cube, matrix: Matrix) {
-        GLUtil.colorOf(Color.White)
-        drawLine(
-            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z - cube.w / 2),
-            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w * 3 / 2),
-            matrix = matrix,
-        )
-        drawLine(
-            p0 = cube.p0.copy(x = cube.p0.x - cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
-            p1 = cube.p0.copy(x = cube.p0.x + cube.w * 3 / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
-            matrix = matrix,
-        )
-        drawLine(
-            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y - cube.w / 2, z = cube.p0.z + cube.w / 2),
-            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w * 3 / 2, z = cube.p0.z + cube.w / 2),
-            matrix = matrix,
-        )
+//        GLUtil.colorOf(Color.White)
+//        drawLine(
+//            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z - cube.w / 2),
+//            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w * 3 / 2),
+//            matrix = matrix,
+//        )
+//        drawLine(
+//            p0 = cube.p0.copy(x = cube.p0.x - cube.w / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
+//            p1 = cube.p0.copy(x = cube.p0.x + cube.w * 3 / 2, y = cube.p0.y + cube.w / 2, z = cube.p0.z + cube.w / 2),
+//            matrix = matrix,
+//        )
+//        drawLine(
+//            p0 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y - cube.w / 2, z = cube.p0.z + cube.w / 2),
+//            p1 = cube.p0.copy(x = cube.p0.x + cube.w / 2, y = cube.p0.y + cube.w * 3 / 2, z = cube.p0.z + cube.w / 2),
+//            matrix = matrix,
+//        )
         GLUtil.colorOf(Color.Red)
         drawLine(
             p0 = cube.p0,
@@ -402,11 +416,31 @@ internal class CubeLogics(
 //        matrix.rotateX(angle.x)
 //        draw(axes = axes, matrix = matrix)
         //
+//        matrix.perform(
+//            dX = dX, dY = dY, dZ = dZ,
+//            rX = cube.p0.x + cube.w / 2, rY = cube.p0.y + cube.w / 2, rZ = cube.p0.z + cube.w / 2,
+//            aX = aX, aY = aY, aZ = aZ,
+//        )
+        //
+//        val p = Point.Center.moved(1.0, aY)
+//        val p = MutablePoint3D.unitOf(radians = aY)
+//        val p = MutablePoint3D.unitOf(p = kotlin.math.PI / 4, t = 0.0)
+        val p = MutablePoint3D.unitOf(p = kotlin.math.PI / 4, t = aY)
+        val rX = p.x
+        val rY = p.y
+        val rZ = p.z
+        GLUtil.colorOf(Color.White)
+        drawLine(
+            x0 = 0.0, y0 = 0.0, z0 = 0.0,
+            x1 = rX * 48.0, y1 = rY * 48.0, z1 = rZ * 48.0,
+            dX = dX, dY = dY, dZ = dZ,
+        )
         matrix.perform(
             dX = dX, dY = dY, dZ = dZ,
-            rX = cube.p0.x + cube.w / 2, rY = cube.p0.y + cube.w / 2, rZ = cube.p0.z + cube.w / 2,
-            aX = aX, aY = aY, aZ = aZ,
+            rX = rX, rY = rY, rZ = rZ,
+            radians = aX,
         )
+//        val p = MutableQuaternion.ofVector(x = , y = , z = )
         draw(cube = cube, matrix = matrix)
         canvas.texts.draw(
             color = Color.Red,
