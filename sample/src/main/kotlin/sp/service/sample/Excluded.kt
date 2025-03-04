@@ -70,6 +70,19 @@ internal fun Quaternion.mut(): MutableQuaternion {
     )
 }
 
+@Deprecated("sp.kx.math.rotated")
+internal fun Point3D.rotated(q: Quaternion): Point3D {
+    val p = MutableQuaternion.ofVector(x = x, y = y, z = z)
+    val c = q.mut()
+    c.conjugate()
+    val r = q * p * c
+    return MutablePoint3D(
+        x = r.x,
+        y = r.y,
+        z = r.z,
+    )
+}
+
 @Deprecated("sp.kx.math.cross")
 internal fun Point3D.cross(other: Point3D): Point3D {
     return MutablePoint3D(
@@ -100,6 +113,15 @@ internal operator fun Point3D.times(value: Double): Point3D {
 @Deprecated("sp.kx.math.dot")
 internal fun Point3D.dot(other: Point3D): Double {
     return x * other.x + y * other.y + z * other.z
+}
+
+@Deprecated("sp.kx.math.mul")
+internal fun Point3D.mul(matrix: Matrix): Point3D {
+    return MutablePoint3D(
+        x = matrix.m00 * x + matrix.m01 * y + matrix.m02 * z + matrix.m03,
+        y = matrix.m10 * x + matrix.m11 * y + matrix.m12 * z + matrix.m13,
+        z = matrix.m20 * x + matrix.m21 * y + matrix.m22 * z + matrix.m23,
+    )
 }
 
 @Deprecated("sp.kx.math.times")

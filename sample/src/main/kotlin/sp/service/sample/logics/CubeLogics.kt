@@ -22,12 +22,15 @@ import sp.service.sample.MutableMatrix
 import sp.service.sample.MutablePoint3D
 import sp.service.sample.MutableQuaternion
 import sp.service.sample.Point3D
+import sp.service.sample.Quaternion
 import sp.service.sample.copy
 import sp.service.sample.identity
 import sp.service.sample.mul
 import sp.service.sample.mut
 import sp.service.sample.perform
 import sp.service.sample.rotateX
+import sp.service.sample.rotated
+import sp.service.sample.times
 import sp.service.sample.translate
 import kotlin.time.Duration
 
@@ -189,6 +192,88 @@ internal class CubeLogics(
         GL11.glVertex3d(p0.x + dX, p0.y + dY, p0.z + dZ)
         GL11.glVertex3d(p1.x + dX, p1.y + dY, p1.z + dZ)
         GL11.glEnd()
+    }
+
+    private fun drawLine(
+        p0: Point3D,
+        p1: Point3D,
+        dX: Double,
+        dY: Double,
+        dZ: Double,
+        q: Quaternion,
+    ) {
+        GL11.glBegin(GL11.GL_LINES)
+        val p0q = p0.rotated(q = q)
+        val p1q = p1.rotated(q = q)
+        GL11.glVertex3d(p0q.x + dX, p0q.y + dY, p0q.z + dZ)
+        GL11.glVertex3d(p1q.x + dX, p1q.y + dY, p1q.z + dZ)
+        GL11.glEnd()
+    }
+
+//    private fun drawLine(
+//        p0: Point3D,
+//        p1: Point3D,
+//        dX: Double, dY: Double, dZ: Double,
+//        aX: Double, aY: Double, aZ: Double,
+//    ) {
+//        GL11.glBegin(GL11.GL_LINES)
+//        val qX = MutableQuaternion.ofVector(x = 1.0, y = 0.0, z = 0.0, radians = aX / 2)
+//        val qY = MutableQuaternion.ofVector(x = 0.0, y = 1.0, z = 0.0, radians = aY / 2)
+//        val qZ = MutableQuaternion.ofVector(x = 0.0, y = 0.0, z = 1.0, radians = aZ / 2)
+//        val p0q = p0
+//            .rotated(q = qX)
+//            .rotated(q = qY)
+//            .rotated(q = qZ)
+//        val p1q = p1
+//            .rotated(q = qX)
+//            .rotated(q = qY)
+//            .rotated(q = qZ)
+//        GL11.glVertex3d(p0q.x + dX, p0q.y + dY, p0q.z + dZ)
+//        GL11.glVertex3d(p1q.x + dX, p1q.y + dY, p1q.z + dZ)
+//        GL11.glEnd()
+//    }
+
+    private fun drawLine(
+        p0: Point3D,
+        p1: Point3D,
+        dX: Double, dY: Double, dZ: Double,
+        aX: Double, aY: Double, aZ: Double,
+    ) {
+        GL11.glBegin(GL11.GL_LINES)
+        val mX = MutableMatrix.ofRotation(rX = 1.0, rY = 0.0, rZ = 0.0, radians = aX)
+        val mY = MutableMatrix.ofRotation(rX = 0.0, rY = 1.0, rZ = 0.0, radians = aY)
+        val mZ = MutableMatrix.ofRotation(rX = 0.0, rY = 0.0, rZ = 1.0, radians = aZ)
+        val p0q = p0.mul(mX).mul(mY).mul(mZ)
+        val p1q = p1.mul(mX).mul(mY).mul(mZ)
+        GL11.glVertex3d(p0q.x + dX, p0q.y + dY, p0q.z + dZ)
+        GL11.glVertex3d(p1q.x + dX, p1q.y + dY, p1q.z + dZ)
+        GL11.glEnd()
+    }
+
+    private fun draw(
+        cube: Cube,
+        dX: Double, dY: Double, dZ: Double,
+        aX: Double, aY: Double, aZ: Double,
+    ) {
+        GLUtil.colorOf(Color.Red)
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(x = cube.p0.x + cube.w),
+            dX = dX, dY = dY, dZ = dZ,
+            aX = aX, aY = aY, aZ = aZ,
+        )
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(y = cube.p0.y + cube.w),
+            dX = dX, dY = dY, dZ = dZ,
+            aX = aX, aY = aY, aZ = aZ,
+        )
+        drawLine(
+            p0 = cube.p0,
+            p1 = cube.p0.copy(z = cube.p0.z + cube.w),
+            dX = dX, dY = dY, dZ = dZ,
+            aX = aX, aY = aY, aZ = aZ,
+        )
     }
 
     private fun draw(cube: Cube, matrix: Matrix) {
@@ -440,7 +525,12 @@ internal class CubeLogics(
             aX = aX, aY = aY, aZ = aZ,
         )
 //        val p = MutableQuaternion.ofVector(x = , y = , z = )
-        draw(cube = cube, matrix = matrix)
+//        draw(cube = cube, matrix = matrix)
+        draw(
+            cube = cube,
+            dX = dX, dY = dY, dZ = dZ,
+            aX = aX, aY = aY, aZ = aZ,
+        )
         canvas.texts.draw(
             color = Color.Red,
             fontHeight = 24.0,
