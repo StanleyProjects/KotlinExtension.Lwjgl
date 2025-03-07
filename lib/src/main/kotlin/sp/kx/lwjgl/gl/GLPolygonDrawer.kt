@@ -65,7 +65,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             x = measure.transform(center.x),
             y = measure.transform(center.y),
             z = measure.transform(center.z),
-            radius = radius,
+            radius = measure.transform(radius),
             edgeCount = edgeCount,
         )
     }
@@ -83,7 +83,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
             x = measure.transform(center.x + offset.dX),
             y = measure.transform(center.y + offset.dY),
             z = measure.transform(center.z + offset.dZ),
-            radius = radius,
+            radius = measure.transform(radius),
             edgeCount = edgeCount,
         )
     }
