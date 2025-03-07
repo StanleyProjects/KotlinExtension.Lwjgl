@@ -1,35 +1,41 @@
 package sp.service.sample
 
-import org.lwjgl.opengl.GL11
-import sp.kx.math.Point
-import sp.kx.math.angleOf
-import sp.kx.math.distanceOf
-import sp.kx.math.moved
-import sp.kx.math.pointOf
-import java.nio.DoubleBuffer
+import sp.kx.math.Matrix
+import sp.kx.math.MutableMatrix
+import sp.kx.math.MutableVertex
+import sp.kx.math.Offset
+import sp.kx.math.Vertex
+import sp.kx.math.mul
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
-@Deprecated("sp.kx.math.distanceOf") // todo hypot
-internal fun distanceOf(point: Point): Double {
-//    return distanceOf(Point.Center, point)
-//    return distanceOf(
-//        aX = 0.0,
-//        aY = 0.0,
-//        bX = point.x,
-//        bY = point.y,
-//    )
-    return kotlin.math.hypot(x = point.x, y = point.y)
+@Deprecated("sp.kx.math.isEmpty")
+internal fun Offset.isEmpty(): Boolean {
+    return dX == 0.0 && dY == 0.0 && dZ == 0.0
 }
 
 @Deprecated("sp.kx.math.angleOf")
-internal fun angleOf(point: Point): Double {
-//    return angleOf(Point.Center, point)
-//    return angleOf(
-//        aX = 0.0,
-//        aY = 0.0,
-//        bX = point.x,
-//        bY = point.y,
-//    )
-    return kotlin.math.atan2(y = point.y, x = point.x)
+internal fun angleOf(
+    aX: Double,
+    aY: Double,
+    bX: Double,
+    bY: Double,
+): Double {
+    return kotlin.math.atan2(y = bY - aY, x = bX - aX)
+}
+
+@Deprecated("sp.kx.math.angleOf")
+internal fun angleOf(
+    x: Double,
+    y: Double,
+): Double {
+    return kotlin.math.atan2(y = y, x = x)
+}
+
+@Deprecated("sp.kx.math.length")
+internal fun length(magnitude: Double, timeUnit: TimeUnit, duration: Duration): Double {
+    val raw = magnitude / timeUnit.toNanos(1)
+    return raw * duration.inWholeNanoseconds
 }
 
 @Deprecated("sp.kx.math.Quaternion")
@@ -71,12 +77,12 @@ internal fun Quaternion.mut(): MutableQuaternion {
 }
 
 @Deprecated("sp.kx.math.rotated")
-internal fun Point3D.rotated(q: Quaternion): Point3D {
+internal fun Vertex.rotated(q: Quaternion): Vertex {
     val p = MutableQuaternion.ofVector(x = x, y = y, z = z)
     val c = q.mut()
     c.conjugate()
     val r = q * p * c
-    return MutablePoint3D(
+    return MutableVertex(
         x = r.x,
         y = r.y,
         z = r.z,
@@ -84,8 +90,8 @@ internal fun Point3D.rotated(q: Quaternion): Point3D {
 }
 
 @Deprecated("sp.kx.math.cross")
-internal fun Point3D.cross(other: Point3D): Point3D {
-    return MutablePoint3D(
+internal fun Vertex.cross(other: Vertex): Vertex {
+    return MutableVertex(
         x = y * other.z - z * other.y,
         y = z * other.x - x * other.z,
         z = x * other.y - y * other.x,
@@ -93,8 +99,8 @@ internal fun Point3D.cross(other: Point3D): Point3D {
 }
 
 @Deprecated("sp.kx.math.plus")
-internal operator fun Point3D.plus(other: Point3D): Point3D {
-    return MutablePoint3D(
+internal operator fun Vertex.plus(other: Vertex): Vertex {
+    return MutableVertex(
         x = x + other.x,
         y = y + other.y,
         z = z + other.z,
@@ -102,8 +108,8 @@ internal operator fun Point3D.plus(other: Point3D): Point3D {
 }
 
 @Deprecated("sp.kx.math.times")
-internal operator fun Point3D.times(value: Double): Point3D {
-    return MutablePoint3D(
+internal operator fun Vertex.times(value: Double): Vertex {
+    return MutableVertex(
         x = x * value,
         y = y * value,
         z = z * value,
@@ -111,23 +117,14 @@ internal operator fun Point3D.times(value: Double): Point3D {
 }
 
 @Deprecated("sp.kx.math.dot")
-internal fun Point3D.dot(other: Point3D): Double {
+internal fun Vertex.dot(other: Vertex): Double {
     return x * other.x + y * other.y + z * other.z
-}
-
-@Deprecated("sp.kx.math.mul")
-internal fun Point3D.mul(matrix: Matrix): Point3D {
-    return MutablePoint3D(
-        x = matrix.m00 * x + matrix.m01 * y + matrix.m02 * z + matrix.m03,
-        y = matrix.m10 * x + matrix.m11 * y + matrix.m12 * z + matrix.m13,
-        z = matrix.m20 * x + matrix.m21 * y + matrix.m22 * z + matrix.m23,
-    )
 }
 
 @Deprecated("sp.kx.math.times")
 internal operator fun Quaternion.times(other: Quaternion): Quaternion {
-    val v1 = MutablePoint3D(x = x, y = y, z = z)
-    val v2 = MutablePoint3D(x = other.x, y = other.y, z = other.z)
+    val v1 = MutableVertex(x = x, y = y, z = z)
+    val v2 = MutableVertex(x = other.x, y = other.y, z = other.z)
     val vc = v1.cross(v2)
     val d = v1.dot(v2)
     val v3 = vc + (v2 * s) + (v1 * other.s)
@@ -171,141 +168,111 @@ internal class MutableQuaternion(
     }
 }
 
-@Deprecated("sp.kx.math.Matrix")
-internal interface Matrix {
-    val m00: Double; val m01: Double; val m02: Double; val m03: Double
-    val m10: Double; val m11: Double; val m12: Double; val m13: Double
-    val m20: Double; val m21: Double; val m22: Double; val m23: Double
-    val m30: Double; val m31: Double; val m32: Double; val m33: Double
-}
+internal object Matrices {
+    fun of(other: Matrix): MutableMatrix {
+        return MutableMatrix(
+            m00 = other.m00, m01 = other.m01, m02 = other.m02, m03 = other.m03,
+            m10 = other.m10, m11 = other.m11, m12 = other.m12, m13 = other.m13,
+            m20 = other.m20, m21 = other.m21, m22 = other.m22, m23 = other.m23,
+            m30 = other.m30, m31 = other.m31, m32 = other.m32, m33 = other.m33,
+        )
+    }
 
-@Deprecated("sp.kx.math.mut")
-internal fun Matrix.mut(): MutableMatrix {
-    return MutableMatrix(
-        m00 = m00, m01 = m01, m02 = m02, m03 = m03,
-        m10 = m10, m11 = m11, m12 = m12, m13 = m13,
-        m20 = m20, m21 = m21, m22 = m22, m23 = m23,
-        m30 = m30, m31 = m31, m32 = m32, m33 = m33,
-    )
-}
+    fun ofQuaternion(q: Quaternion): MutableMatrix {
+        val x2  = q.x + q.x
+        val y2  = q.y + q.y
+        val z2  = q.z + q.z
+        val xx2 = q.x * x2
+        val xy2 = q.x * y2
+        val xz2 = q.x * z2
+        val yy2 = q.y * y2
+        val yz2 = q.y * z2
+        val zz2 = q.z * z2
+        val sx2 = q.s * x2
+        val sy2 = q.s * y2
+        val sz2 = q.s * z2
+        return MutableMatrix(
+            m00 = 1 - (yy2 + zz2), m01 = xy2 + sz2,       m02 = xz2 - sy2,       m03 = 0.0,
+            m10 = xy2 - sz2,       m11 = 1 - (xx2 + zz2), m12 = yz2 + sx2,       m13 = 0.0,
+            m20 = xz2 + sy2,       m21 = yz2 - sx2,       m22 = 1 - (xx2 + yy2), m23 = 0.0,
+            m30 = 0.0,             m31 = 0.0,             m32 = 0.0,             m33 = 1.0,
+        )
+    }
 
-@Deprecated("sp.kx.math.MutableMatrix")
-internal class MutableMatrix(
-    override var m00: Double, override var m01: Double, override var m02: Double, override var m03: Double,
-    override var m10: Double, override var m11: Double, override var m12: Double, override var m13: Double,
-    override var m20: Double, override var m21: Double, override var m22: Double, override var m23: Double,
-    override var m30: Double, override var m31: Double, override var m32: Double, override var m33: Double,
-): Matrix {
-    constructor() : this(
-        m00 = 0.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
-        m10 = 0.0, m11 = 0.0, m12 = 0.0, m13 = 0.0,
-        m20 = 0.0, m21 = 0.0, m22 = 0.0, m23 = 0.0,
-        m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 0.0,
-    )
+    fun ofRotationX(radians: Double): Matrix {
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        return MutableMatrix(
+            m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
+            m10 = 0.0, m11 = c, m12 = -s, m13 = 0.0,
+            m20 = 0.0, m21 = s, m22 = c, m23 = 0.0,
+            m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+        )
+    }
 
-    constructor(other: Matrix) : this(
-        m00 = other.m00, m01 = other.m01, m02 = other.m02, m03 = other.m03,
-        m10 = other.m10, m11 = other.m11, m12 = other.m12, m13 = other.m13,
-        m20 = other.m20, m21 = other.m21, m22 = other.m22, m23 = other.m23,
-        m30 = other.m30, m31 = other.m31, m32 = other.m32, m33 = other.m33,
-    )
+    fun ofRotationY(radians: Double): Matrix {
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        return MutableMatrix(
+            m00 = c, m01 = 0.0, m02 = s, m03 = 0.0,
+            m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0,
+            m20 = -s, m21 = 0.0, m22 = c, m23 = 0.0,
+            m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+        )
+    }
 
-    companion object {
-        fun ofQuaternion(q: Quaternion): MutableMatrix {
-            val x2  = q.x + q.x
-            val y2  = q.y + q.y
-            val z2  = q.z + q.z
-            val xx2 = q.x * x2
-            val xy2 = q.x * y2
-            val xz2 = q.x * z2
-            val yy2 = q.y * y2
-            val yz2 = q.y * z2
-            val zz2 = q.z * z2
-            val sx2 = q.s * x2
-            val sy2 = q.s * y2
-            val sz2 = q.s * z2
-            return MutableMatrix(
-                m00 = 1 - (yy2 + zz2), m01 = xy2 + sz2,       m02 = xz2 - sy2,       m03 = 0.0,
-                m10 = xy2 - sz2,       m11 = 1 - (xx2 + zz2), m12 = yz2 + sx2,       m13 = 0.0,
-                m20 = xz2 + sy2,       m21 = yz2 - sx2,       m22 = 1 - (xx2 + yy2), m23 = 0.0,
-                m30 = 0.0,             m31 = 0.0,             m32 = 0.0,             m33 = 1.0,
-            )
-        }
+    fun ofRotationZ(radians: Double): Matrix {
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        return MutableMatrix(
+            m00 = c, m01 = -s, m02 = 0.0, m03 = 0.0,
+            m10 = s, m11 = c, m12 = 0.0, m13 = 0.0,
+            m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0,
+            m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+        )
+    }
 
-        fun ofRotationX(radians: Double): Matrix {
-            val c = kotlin.math.cos(radians)
-            val s = kotlin.math.sin(radians)
-            return MutableMatrix(
-                m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
-                m10 = 0.0, m11 = c, m12 = -s, m13 = 0.0,
-                m20 = 0.0, m21 = s, m22 = c, m23 = 0.0,
-                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
-            )
-        }
+    fun ofRotation(
+        aX: Double,
+        aY: Double,
+        aZ: Double,
+    ): Matrix {
+        val cX = kotlin.math.cos(aX)
+        val cY = kotlin.math.cos(aY)
+        val cZ = kotlin.math.cos(aZ)
+        val sX = kotlin.math.sin(aX)
+        val sY = kotlin.math.sin(aY)
+        val sZ = kotlin.math.sin(aZ)
+        return MutableMatrix(
+            m00 = cZ * cY, m01 = cZ * sY * sX - sZ * cX, m02 = cZ * sY * cX + sZ * sX, m03 = 0.0,
+            m10 = sZ * cY, m11 = sZ * sY * sX + cZ * cX, m12 = sZ * sY * cX - cZ * sX, m13 = 0.0,
+            m20 = -sY,     m21 = cY * sX,                m22 = cY * cX,                m23 = 0.0,
+            m30 = 0.0,     m31 = 0.0,                    m32 = 0.0,                    m33 = 1.0,
+        )
+    }
 
-        fun ofRotationY(radians: Double): Matrix {
-            val c = kotlin.math.cos(radians)
-            val s = kotlin.math.sin(radians)
-            return MutableMatrix(
-                m00 = c, m01 = 0.0, m02 = s, m03 = 0.0,
-                m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = 0.0,
-                m20 = -s, m21 = 0.0, m22 = c, m23 = 0.0,
-                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
-            )
-        }
+    fun ofRotation(
+        rX: Double,
+        rY: Double,
+        rZ: Double,
+        radians: Double,
+    ): Matrix {
+        val c = kotlin.math.cos(radians)
+        val s = kotlin.math.sin(radians)
+        return MutableMatrix(
+            m00 = c + (1 - c) * rX * rX,      m01 = (1 - c) * rX * rY - s * rZ, m02 = (1 - c) * rX * rZ + s * rY, m03 = 0.0,
+            m10 = (1 - c) * rY * rX + s * rZ, m11 = c + (1 - c) * rY * rY,      m12 = (1 - c) * rY * rZ - s * rX, m13 = 0.0,
+            m20 = (1 - c) * rZ * rX - s * rY, m21 = (1 - c) * rZ * rY + s * rX, m22 = c + (1 - c) * rZ * rZ,      m23 = 0.0,
+            m30 = 0.0,                        m31 = 0.0,                        m32 = 0.0,                        m33 = 1.0,
+        )
+    }
 
-        fun ofRotationZ(radians: Double): Matrix {
-            val c = kotlin.math.cos(radians)
-            val s = kotlin.math.sin(radians)
-            return MutableMatrix(
-                m00 = c, m01 = -s, m02 = 0.0, m03 = 0.0,
-                m10 = s, m11 = c, m12 = 0.0, m13 = 0.0,
-                m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = 0.0,
-                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
-            )
-        }
-
-        fun ofRotation(
-            aX: Double,
-            aY: Double,
-            aZ: Double,
-        ): Matrix {
-            val cX = kotlin.math.cos(aX)
-            val cY = kotlin.math.cos(aY)
-            val cZ = kotlin.math.cos(aZ)
-            val sX = kotlin.math.sin(aX)
-            val sY = kotlin.math.sin(aY)
-            val sZ = kotlin.math.sin(aZ)
-            return MutableMatrix(
-                m00 = cZ * cY, m01 = cZ * sY * sX - sZ * cX, m02 = cZ * sY * cX + sZ * sX, m03 = 0.0,
-                m10 = sZ * cY, m11 = sZ * sY * sX + cZ * cX, m12 = sZ * sY * cX - cZ * sX, m13 = 0.0,
-                m20 = -sY,     m21 = cY * sX,                m22 = cY * cX,                m23 = 0.0,
-                m30 = 0.0,     m31 = 0.0,                    m32 = 0.0,                    m33 = 1.0,
-            )
-        }
-
-        fun ofRotation(
-            rX: Double,
-            rY: Double,
-            rZ: Double,
-            radians: Double,
-        ): Matrix {
-            val c = kotlin.math.cos(radians)
-            val s = kotlin.math.sin(radians)
-            return MutableMatrix(
-                m00 = c + (1 - c) * rX * rX,      m01 = (1 - c) * rX * rY - s * rZ, m02 = (1 - c) * rX * rZ + s * rY, m03 = 0.0,
-                m10 = (1 - c) * rY * rX + s * rZ, m11 = c + (1 - c) * rY * rY,      m12 = (1 - c) * rY * rZ - s * rX, m13 = 0.0,
-                m20 = (1 - c) * rZ * rX - s * rY, m21 = (1 - c) * rZ * rY + s * rX, m22 = c + (1 - c) * rZ * rZ,      m23 = 0.0,
-                m30 = 0.0,                        m31 = 0.0,                        m32 = 0.0,                        m33 = 1.0,
-            )
-        }
-
-        fun ofRotationQ(
-            rX: Double,
-            rY: Double,
-            rZ: Double,
-            radians: Double,
-        ): Matrix {
+    fun ofRotationQ(
+        rX: Double,
+        rY: Double,
+        rZ: Double,
+        radians: Double,
+    ): Matrix {
 //            val s = kotlin.math.cos(radians / 2)
 //            val x = rX * kotlin.math.sin(radians / 2)
 //            val y = rY * kotlin.math.sin(radians / 2)
@@ -316,24 +283,23 @@ internal class MutableMatrix(
 //                m20 = 2 * x * z - 2 * s * y,     m21 = 2 * y * z + 2 * s * x,     m22 = 1 - 2 * x * x - 2 * y * y, m23 = 0.0,
 //                m30 = 0.0,                       m31 = 0.0,                       m32 = 0.0,                       m33 = 0.0,
 //            )
-            val q = MutableQuaternion.ofVector(x = rX, y = rY, z = rZ, radians = radians / 2)
-            val matrix = MutableMatrix()
-            matrix.set(q)
-            return matrix
-        }
+        val q = MutableQuaternion.ofVector(x = rX, y = rY, z = rZ, radians = radians / 2)
+        val matrix = MutableMatrix()
+        matrix.set(q)
+        return matrix
+    }
 
-        fun ofTranslation(
-            dX: Double,
-            dY: Double,
-            dZ: Double,
-        ): Matrix {
-            return MutableMatrix(
-                m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = dX,
-                m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = dY,
-                m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = dZ,
-                m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
-            )
-        }
+    fun ofTranslation(
+        dX: Double,
+        dY: Double,
+        dZ: Double,
+    ): Matrix {
+        return MutableMatrix(
+            m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = dX,
+            m10 = 0.0, m11 = 1.0, m12 = 0.0, m13 = dY,
+            m20 = 0.0, m21 = 0.0, m22 = 1.0, m23 = dZ,
+            m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+        )
     }
 }
 
@@ -354,7 +320,7 @@ internal fun MutableMatrix.perform(
     dX: Double,
     dY: Double,
     dZ: Double,
-    pointOfRotation: Point3D,
+    pointOfRotation: Vertex,
     aX: Double,
 ) {
     identity()
@@ -362,7 +328,7 @@ internal fun MutableMatrix.perform(
     mul(o03 = dX, o13 = dY, o23 = dZ)
 //    mul(MutableMatrix.ofTranslation(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z))
     mul(o03 = -pointOfRotation.x, o13 = -pointOfRotation.y, o23 = -pointOfRotation.z)
-    mul(MutableMatrix.ofRotationX(radians = aX))
+    mul(Matrices.ofRotationX(radians = aX))
 //    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
     mul(o03 = pointOfRotation.x, o13 = pointOfRotation.y, o23 = pointOfRotation.z)
 }
@@ -385,7 +351,7 @@ internal fun MutableMatrix.perform(
 //    mul(MutableMatrix.ofRotationZ(radians = aZ))
 //    mul(MutableMatrix.ofRotationY(radians = aY))
 //    mul(MutableMatrix.ofRotationX(radians = aX))
-    mul(MutableMatrix.ofRotation(aX = aX, aY = aY, aZ = aZ))
+    mul(Matrices.ofRotation(aX = aX, aY = aY, aZ = aZ))
 //    mul(o03 = rX, o13 = rY, o23 = rZ)
 }
 
@@ -401,7 +367,7 @@ internal fun MutableMatrix.perform(
 ) {
     identity()
     mul(o03 = dX, o13 = dY, o23 = dZ)
-    mul(MutableMatrix.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
+    mul(Matrices.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
 }
 
 @Deprecated("sp.kx.math.perform")
@@ -422,7 +388,7 @@ internal fun MutableMatrix.perform(
     val qY = MutableQuaternion.ofVector(x = 0.0, y = 1.0, z = 0.0, radians = aY / 2)
     val qZ = MutableQuaternion.ofVector(x = 0.0, y = 0.0, z = 1.0, radians = aZ / 2)
     val q = qX * qY * qZ
-    mul(MutableMatrix.ofQuaternion(q))
+    mul(Matrices.ofQuaternion(q))
 }
 
 @Deprecated("sp.kx.math.identity")
@@ -576,31 +542,7 @@ internal fun MutableMatrix.scale(dX: Double, dY: Double, dZ: Double) {
     m22 = dZ
 }
 
-@Deprecated("sp.kx.math.translate")
-internal fun MutableMatrix.mul(other: Matrix) {
-    val m1 = mut()
-    m00 = m1.m00 * other.m00 + m1.m01 * other.m10 + m1.m02 * other.m20 + m1.m03 * other.m30
-    m01 = m1.m00 * other.m01 + m1.m01 * other.m11 + m1.m02 * other.m21 + m1.m03 * other.m31
-    m02 = m1.m00 * other.m02 + m1.m01 * other.m12 + m1.m02 * other.m22 + m1.m03 * other.m32
-    m03 = m1.m00 * other.m03 + m1.m01 * other.m13 + m1.m02 * other.m23 + m1.m03 * other.m33
-    //
-    m10 = m1.m10 * other.m00 + m1.m11 * other.m10 + m1.m12 * other.m20 + m1.m13 * other.m30
-    m11 = m1.m10 * other.m01 + m1.m11 * other.m11 + m1.m12 * other.m21 + m1.m13 * other.m31
-    m12 = m1.m10 * other.m02 + m1.m11 * other.m12 + m1.m12 * other.m22 + m1.m13 * other.m32
-    m13 = m1.m10 * other.m03 + m1.m11 * other.m13 + m1.m12 * other.m23 + m1.m13 * other.m33
-    //
-    m20 = m1.m20 * other.m00 + m1.m21 * other.m10 + m1.m22 * other.m20 + m1.m23 * other.m30
-    m21 = m1.m20 * other.m01 + m1.m21 * other.m11 + m1.m22 * other.m21 + m1.m23 * other.m31
-    m22 = m1.m20 * other.m02 + m1.m21 * other.m12 + m1.m22 * other.m22 + m1.m23 * other.m32
-    m23 = m1.m20 * other.m03 + m1.m21 * other.m13 + m1.m22 * other.m23 + m1.m23 * other.m33
-    //
-    m30 = m1.m30 * other.m00 + m1.m31 * other.m10 + m1.m32 * other.m20 + m1.m33 * other.m30
-    m31 = m1.m30 * other.m01 + m1.m31 * other.m11 + m1.m32 * other.m21 + m1.m33 * other.m31
-    m32 = m1.m30 * other.m02 + m1.m31 * other.m12 + m1.m32 * other.m22 + m1.m33 * other.m32
-    m33 = m1.m30 * other.m03 + m1.m31 * other.m13 + m1.m32 * other.m23 + m1.m33 * other.m33
-}
-
-@Deprecated("sp.kx.math.translate")
+@Deprecated("sp.kx.math.mul")
 internal fun MutableMatrix.mul(o03: Double, o13: Double, o23: Double) {
     m03 += m00 * o03 + m01 * o13 + m02 * o23
     m13 += m10 * o03 + m11 * o13 + m12 * o23
@@ -608,203 +550,11 @@ internal fun MutableMatrix.mul(o03: Double, o13: Double, o23: Double) {
     m33 += m30 * o03 + m31 * o13 + m32 * o23
 }
 
-private fun load(buffer: DoubleBuffer, matrix: Matrix) {
-    buffer.put(0,  matrix.m00)
-        .put(1,  matrix.m01)
-        .put(2,  matrix.m02)
-        .put(3,  matrix.m03)
-        .put(4,  matrix.m10)
-        .put(5,  matrix.m11)
-        .put(6,  matrix.m12)
-        .put(7,  matrix.m13)
-        .put(8,  matrix.m20)
-        .put(9,  matrix.m21)
-        .put(10, matrix.m22)
-        .put(11, matrix.m23)
-        .put(12, matrix.m30)
-        .put(13, matrix.m31)
-        .put(14, matrix.m32)
-        .put(15, matrix.m33)
-}
-
-internal fun onMatrix(matrix: Matrix, buffer: DoubleBuffer, block: () -> Unit) {
-    GL11.glPushMatrix()
-    load(buffer = buffer, matrix = matrix)
-    GL11.glMatrixMode(GL11.GL_MODELVIEW)
-    GL11.glLoadMatrixd(buffer)
-    block()
-    GL11.glPopMatrix()
-}
-
-@Deprecated("sp.kx.math.Point")
-internal interface Point3D {
-    val x: Double
-    val y: Double
-    val z: Double
-}
-
-@Deprecated("sp.kx.math.mut")
-internal fun Point3D.mut(): MutablePoint3D {
-    return MutablePoint3D(
-        x = x,
-        y = y,
-        z = z,
-    )
-}
-
 @Deprecated("sp.kx.math.copy")
-internal fun Point3D.copy(x: Double = this.x, y: Double = this.y, z: Double = this.z): Point3D {
-    return MutablePoint3D(
+internal fun Vertex.copy(x: Double = this.x, y: Double = this.y, z: Double = this.z): Vertex {
+    return MutableVertex(
         x = x,
         y = y,
         z = z,
     )
-}
-
-@Deprecated("sp.kx.math.rotatedY")
-internal fun Point3D.rotatedY(oX: Double, oZ: Double, radians: Double): Point3D {
-    val distance = distanceOf(aX = oX, aY = oZ, bX = x, bY = z)
-    val angle = angleOf(aX = oX, aY = oZ, bX = x, bY = z)
-    return MutablePoint3D(
-        x = oX + distance * kotlin.math.cos(angle + radians),
-        y = y,
-        z = oZ + distance * kotlin.math.sin(angle + radians),
-    )
-}
-
-@Deprecated("sp.kx.math.rotatedY")
-internal fun Point3D.translated(dX: Double, dY: Double, dZ: Double): Point3D {
-    return MutablePoint3D(
-        x = this.x + dX,
-        y = this.y + dY,
-        z = this.z + dZ,
-    )
-}
-
-@Deprecated("sp.kx.math.MutablePoint")
-internal class MutablePoint3D(
-    override var x: Double,
-    override var y: Double,
-    override var z: Double,
-) : Point3D {
-    fun translate(dX: Double, dY: Double, dZ: Double) {
-        this.x += dX
-        this.y += dY
-        this.z += dZ
-    }
-
-    fun rotateXOld(point: Point3D, radians: Double) {
-        x -= point.x
-        y -= point.y
-        z -= point.z
-        // [ 1 0 0 ] [ x ] = [ 1 * x + 0 * x + 0 * x ] = [ x ]
-        // [ 0 c-s ] [ y ] = [ 0 * y + c * y - s * y ] = [ c * y - s * y ]
-        // [ 0 s c ] [ z ] = [ 0 * z + s * z + c * z ] = [ s * z + c * z ]
-        val c = kotlin.math.cos(radians)
-        val s = kotlin.math.sin(radians)
-        y = c * y - s * y
-        z = s * z + c * z
-        //
-        x += point.x
-        y += point.y
-        z += point.z
-    }
-
-    fun rotateX(point: Point3D, radians: Double) {
-        val distance = distanceOf(aX = point.z, aY = point.y, bX = z, bY = y)
-        val angle = angleOf(aX = point.z, aY = point.y, bX = z, bY = y)
-        z = point.z + distance * kotlin.math.cos(angle + radians)
-        y = point.y + distance * kotlin.math.sin(angle + radians)
-    }
-
-    fun rotateX(oY: Double, oZ: Double, radians: Double) {
-        val distance = distanceOf(aX = oZ, aY = oY, bX = z, bY = y)
-        val angle = angleOf(aX = oZ, aY = oY, bX = z, bY = y)
-        z = oZ + distance * kotlin.math.cos(angle + radians)
-        y = oY + distance * kotlin.math.sin(angle + radians)
-    }
-
-    fun rotateYOld(point: Point3D, radians: Double) {
-        x -= point.x
-        y -= point.y
-        z -= point.z
-        // [ c 0 s ] [ x ] = [ c * x + 0 * x + s * x ]   [ c * x + s * x ]
-        // [ 0 1 0 ] [ y ] = [ 0 * y + 1 * y + 0 * y ] = [ y ]
-        // [-s 0 c ] [ z ] = [-s * z + 0 * z + c * z ]   [-s * z + c * z ]
-        val c = kotlin.math.cos(radians)
-        val s = kotlin.math.sin(radians)
-        x = c * x + s * x
-        z = c * z - s * z
-        //
-        x += point.x
-        y += point.y
-        z += point.z
-    }
-
-    fun rotateY1(oX: Double, oZ: Double, radians: Double) {
-        x -= oX
-        z -= oZ
-        // [ c 0 s ] [ x ] = [ c * x + 0 * x + s * x ]   [ c * x + s * x ]
-        // [ 0 1 0 ] [ y ] = [ 0 * y + 1 * y + 0 * y ] = [ y ]
-        // [-s 0 c ] [ z ] = [-s * z + 0 * z + c * z ]   [-s * z + c * z ]
-        val c = kotlin.math.cos(radians)
-        val s = kotlin.math.sin(radians)
-        x = c * x + s * x
-        z = c * z - s * z
-        //
-        x += oX
-        z += oZ
-    }
-
-    fun rotateY2(oX: Double, oZ: Double, radians: Double) {
-        val distance = distanceOf(aX = oX, aY = oZ, bX = x, bY = z)
-        val angle = angleOf(aX = oX, aY = oZ, bX = x, bY = z)
-        x = oX + distance * kotlin.math.cos(angle + radians)
-        z = oZ + distance * kotlin.math.sin(angle + radians)
-    }
-
-    fun rotateY(oX: Double, oZ: Double, radians: Double) {
-        x -= oX
-        z -= oZ
-        val c = kotlin.math.cos(radians)
-        val s = kotlin.math.sin(radians)
-        x = z * s + x * c
-        z = z * c - x * s
-        x += oX
-        z += oZ
-    }
-
-    fun rotateZ(point: Point3D, radians: Double) {
-        val distance = distanceOf(aX = point.x, aY = point.y, bX = x, bY = y)
-        val angle = angleOf(aX = point.x, aY = point.y, bX = x, bY = y)
-        x = point.x + distance * kotlin.math.cos(angle + radians)
-        y = point.y + distance * kotlin.math.sin(angle + radians)
-    }
-
-    fun mul(matrix: Matrix) {
-        val oX = x
-        val oY = y
-        val oZ = z
-        x = matrix.m00 * oX + matrix.m01 * oY + matrix.m02 * oZ + matrix.m03
-        y = matrix.m10 * oX + matrix.m11 * oY + matrix.m12 * oZ + matrix.m13
-        z = matrix.m20 * oX + matrix.m21 * oY + matrix.m22 * oZ + matrix.m23
-    }
-
-    companion object {
-        fun unitOf(radians: Double): MutablePoint3D {
-            return MutablePoint3D(
-                x = kotlin.math.cos(radians),
-                y = kotlin.math.sin(radians),
-                z = 0.0,
-            )
-        }
-
-        fun unitOf(p: Double, t: Double): MutablePoint3D {
-            return MutablePoint3D(
-                x = kotlin.math.sin(t) * kotlin.math.cos(p),
-                y = kotlin.math.sin(t) * kotlin.math.sin(p),
-                z = kotlin.math.cos(t),
-            )
-        }
-    }
 }

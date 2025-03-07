@@ -8,16 +8,14 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableOffset
+import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
-import sp.kx.math.angleOf
-import sp.kx.math.div
-import sp.kx.math.isEmpty
-import sp.kx.math.measure.MutableDoubleMeasure
-import sp.kx.math.measure.diff
-import sp.kx.math.measure.frequency
-import sp.kx.math.measure.speedOf
-import sp.kx.math.pointOf
-import sp.kx.math.radians
+import sp.kx.math.frequency
+import sp.kx.math.diff
+import sp.service.sample.isEmpty
+import sp.service.sample.angleOf
+import sp.service.sample.length
+import java.util.concurrent.TimeUnit
 
 internal class AxisLogics(
     private val engine: Engine,
@@ -30,7 +28,9 @@ internal class AxisLogics(
                 KeyboardButton.Escape -> ses = Unit
                 KeyboardButton.C -> {
                     val ps = engine.property.pictureSize
-                    offset.set(dX = ps.width / 2, dY = ps.height / 2)
+                    offset.dX = ps.width / 2
+                    offset.dY = ps.height / 2
+                    offset.dZ = 0.0
                     aX = 0.0
                 }
                 else -> Unit
@@ -39,7 +39,7 @@ internal class AxisLogics(
     }
     private val offset = engine.property.let {
         val ps = it.pictureSize
-        MutableOffset(ps.width / 2, ps.height / 2)
+        MutableOffset(dX = ps.width / 2, dY = ps.height / 2, dZ = 0.0)
     }
     private var aX = 0.0
 
@@ -48,7 +48,7 @@ internal class AxisLogics(
     }
 
     private fun getOffset(keyboard: Keyboard): Offset {
-        val offset = MutableOffset(0.0, 0.0)
+        val offset = MutableOffset(dX = 0.0, dY = 0.0, dZ = 0.0)
         val left = keyboard.isPressed(KeyboardButton.A)
         if (keyboard.isPressed(KeyboardButton.D)) {
             if (!left) offset.dX = 1.0
@@ -68,21 +68,20 @@ internal class AxisLogics(
         val diff = engine.property.time.diff()
         val offset = getOffset(keyboard = engine.input.keyboard)
         if (!offset.isEmpty()) {
-            val length = speedOf(8.0).length(diff)
-            val angle = angleOf(offset)
-            this.offset.add(
-                dX = length * kotlin.math.cos(angle),
-                dY = length * kotlin.math.sin(angle),
-            )
+            val length = length(8.0, TimeUnit.SECONDS, diff)
+            val angle = angleOf(x = offset.dX, y = offset.dY)
+            this.offset.dX += length * kotlin.math.cos(angle)
+            this.offset.dY += length * kotlin.math.sin(angle)
         }
-        val aS = speedOf(2.0)
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
             if (aX < kotlin.math.PI / 4) {
-                aX = kotlin.math.min(kotlin.math.PI / 4, aX + aS.length(diff))
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aX = kotlin.math.min(kotlin.math.PI / 4, aX + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
             if (aX > - kotlin.math.PI / 4) {
-                aX = kotlin.math.max(- kotlin.math.PI / 4, aX - aS.length(diff))
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aX = kotlin.math.max(- kotlin.math.PI / 4, aX - radians)
             }
         }
     }
@@ -102,7 +101,7 @@ internal class AxisLogics(
             color = Color.Green,
             fontHeight = fontHeight,
             text = String.format("%6.2f", fps),
-            pointTopLeft = pointOf(x = ps.width - 96.0, y = ps.height - fontHeight * 2),
+            topLeft = MutableVertex(x = ps.width - 96.0, y = ps.height - fontHeight * 2, z = 0.0),
         )
         listOf(
             String.format("dX: %+6.2f", offset.dX - ps.width / 2),
@@ -113,7 +112,7 @@ internal class AxisLogics(
                 color = Color.Green,
                 fontHeight = fontHeight,
                 text = text,
-                pointTopLeft = pointOf(x = fontHeight, y = fontHeight * (1 + index)),
+                topLeft = MutableVertex(x = fontHeight, y = fontHeight * (1 + index), z = 0.0),
             )
         }
     }
