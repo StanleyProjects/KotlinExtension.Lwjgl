@@ -1,7 +1,7 @@
 package sp.kx.lwjgl.engine
 
+import sp.kx.math.Interval
 import sp.kx.math.Size
-import sp.kx.math.measure.Interval
 import java.nio.DoubleBuffer
 import kotlin.time.Duration
 

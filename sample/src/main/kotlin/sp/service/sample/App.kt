@@ -1,7 +1,6 @@
 package sp.service.sample
 
 import sp.kx.lwjgl.engine.Engine
-import sp.kx.math.sizeOf
 import sp.service.sample.logics.AntiAliasingEngineLogics
 import sp.service.sample.logics.BlendingEngineLogics
 import sp.service.sample.logics.CellsEngineLogics
@@ -11,7 +10,7 @@ import sp.service.sample.logics.TestEngineLogics
 import sp.service.sample.logics.TextsEngineLogics
 import sp.service.sample.logics.TranslateLogics
 import sp.service.sample.logics.VectorsEngineLogics
-import org.lwjgl.glfw.GLFW
+import sp.kx.math.MutableSize
 import sp.service.sample.logics.AffineLogics
 import sp.service.sample.logics.AxisLogics
 import sp.service.sample.logics.CubeLogics
@@ -32,10 +31,7 @@ fun main() {
 //		title = "Matrix", supplier = ::MatrixLogics,
 //		title = "Cube", supplier = ::CubeLogics,
 		title = "Axis", supplier = ::AxisLogics,
-		size = sizeOf(640, 480),
-//		refreshRate = 144.0,
-//		monitorIdSupplier = GLFW::glfwGetPrimaryMonitor,
-//		monitorIdSupplier = { GLFW.glfwGetMonitors()?.get(1) ?: error("No monitor!") },
+		size = MutableSize(640.0, 480.0),
 		defaultFontName = "JetBrainsMono.ttf",
 //		defaultFontName = "OpenSans.ttf",
 	)

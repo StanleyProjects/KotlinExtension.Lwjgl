@@ -1,9 +1,9 @@
 package sp.kx.lwjgl.drawer
 
 import sp.kx.lwjgl.entity.Color
+import sp.kx.math.Measure
 import sp.kx.math.Offset
-import sp.kx.math.Point
-import sp.kx.math.measure.Measure
+import sp.kx.math.Vertex
 
 abstract class TextDrawer(
     private val defaultFontName: String,
@@ -21,7 +21,7 @@ abstract class TextDrawer(
         color: Color,
         fontName: String = defaultFontName,
         fontHeight: Double,
-        pointTopLeft: Point,
+        topLeft: Vertex,
         text: CharSequence,
     ) {
         draw(
@@ -29,8 +29,8 @@ abstract class TextDrawer(
             fontName = fontName,
             fontHeight = fontHeight,
             text = text,
-            x = pointTopLeft.x,
-            y = pointTopLeft.y,
+            x = topLeft.x,
+            y = topLeft.y,
         )
     }
 
@@ -38,7 +38,7 @@ abstract class TextDrawer(
         color: Color,
         fontName: String = defaultFontName,
         fontHeight: Double,
-        pointTopLeft: Point,
+        topLeft: Vertex,
         text: CharSequence,
         offset: Offset,
     ) {
@@ -47,8 +47,8 @@ abstract class TextDrawer(
             fontName = fontName,
             fontHeight = fontHeight,
             text = text,
-            x = pointTopLeft.x + offset.dX,
-            y = pointTopLeft.y + offset.dY,
+            x = topLeft.x + offset.dX,
+            y = topLeft.y + offset.dY,
         )
     }
 
@@ -56,7 +56,7 @@ abstract class TextDrawer(
         color: Color,
         fontName: String = defaultFontName,
         fontHeight: Double,
-        pointTopLeft: Point,
+        topLeft: Vertex,
         text: CharSequence,
         measure: Measure<Double, Double>,
     ) {
@@ -65,8 +65,8 @@ abstract class TextDrawer(
             fontName = fontName,
             fontHeight = measure.transform(fontHeight),
             text = text,
-            x = measure.transform(pointTopLeft.x),
-            y = measure.transform(pointTopLeft.y),
+            x = measure.transform(topLeft.x),
+            y = measure.transform(topLeft.y),
         )
     }
 
@@ -74,7 +74,7 @@ abstract class TextDrawer(
         color: Color,
         fontName: String = defaultFontName,
         fontHeight: Double,
-        pointTopLeft: Point,
+        topLeft: Vertex,
         text: CharSequence,
         offset: Offset,
         measure: Measure<Double, Double>,
@@ -84,8 +84,8 @@ abstract class TextDrawer(
             fontName = fontName,
             fontHeight = measure.transform(fontHeight),
             text = text,
-            x = measure.transform(pointTopLeft.x + offset.dX),
-            y = measure.transform(pointTopLeft.y + offset.dY),
+            x = measure.transform(topLeft.x + offset.dX),
+            y = measure.transform(topLeft.y + offset.dY),
         )
     }
 

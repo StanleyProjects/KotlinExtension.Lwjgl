@@ -52,7 +52,7 @@ val compileKotlinTask = tasks.getByName<KotlinCompile>("compileKotlin") {
 }
 
 dependencies {
-    implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
+    implementation("com.github.kepocnhh:Math:${Version.math}")
     Lwjgl.modules.forEach { name ->
         implementation(group = Lwjgl.group, name = name, version = Version.lwjgl)
     }

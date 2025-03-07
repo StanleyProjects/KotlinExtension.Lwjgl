@@ -12,8 +12,8 @@ import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.provider.SystemTimes
 import sp.kx.lwjgl.provider.Times
+import sp.kx.math.MutableSize
 import sp.kx.math.Size
-import sp.kx.math.sizeOf
 
 sealed interface Engine {
     val input: EngineInputState
@@ -38,7 +38,8 @@ sealed interface Engine {
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
                 property = MutableEngineProperty(
-                    pictureSize = size ?: Size.Undefined,
+//                    pictureSize = size ?: Size.Undefined, // todo
+                    pictureSize = size ?: MutableSize(Double.NaN, Double.NaN),
                     ortho = BufferUtils.createDoubleBuffer(16),
                 ),
             )
@@ -54,7 +55,7 @@ sealed interface Engine {
                 },
                 onWindowResizeCallback = { _: Long, width: Int, height: Int ->
                     println("Engine: on -> window resize callback: width: $width height: $height") // todo
-                    engine.property.pictureSize = sizeOf(width = width, height = height)
+                    engine.property.pictureSize = MutableSize(width = width.toDouble(), height = height.toDouble()) // todo
                     GLUtil.ortho(
                         buffer = engine.property.ortho,
                         width = engine.property.pictureSize.width,

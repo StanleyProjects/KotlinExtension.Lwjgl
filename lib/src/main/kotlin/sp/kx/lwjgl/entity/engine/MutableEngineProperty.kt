@@ -1,8 +1,8 @@
 package sp.kx.lwjgl.entity.engine
 
 import sp.kx.lwjgl.engine.EngineProperty
+import sp.kx.math.MutableDurationInterval
 import sp.kx.math.Size
-import sp.kx.math.measure.MutableDurationInterval
 import java.nio.DoubleBuffer
 import kotlin.time.Duration
 

@@ -8,18 +8,14 @@ import org.lwjgl.glfw.GLFWWindowCloseCallbackI
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
-import org.lwjgl.system.MemoryStack.stackPush
 import sp.kx.lwjgl.drawer.PolygonDrawer
 import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Canvas
-import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.ft.FTTextDrawer
 import sp.kx.lwjgl.gl.GLPolygonDrawer
 import sp.kx.lwjgl.gl.GLVectorDrawer
-import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.system.checked
-import sp.kx.math.Point
 import sp.kx.math.Size
 import java.io.PrintStream
 
@@ -78,23 +74,6 @@ object WindowUtil {
         override val vectors: VectorDrawer = GLVectorDrawer
         override val polygons: PolygonDrawer = GLPolygonDrawer
         override val texts: TextDrawer = FTTextDrawer(defaultFontName = defaultFontName)
-
-        override fun drawPoint(color: Color, point: Point) {
-            GLUtil.colorOf(color)
-            GLUtil.transaction(GL11.GL_POINTS) {
-                GLUtil.vertexOf(point)
-            }
-        }
-
-        override fun drawLineLoop(color: Color, points: Iterable<Point>, lineWidth: Float) {
-            GL11.glLineWidth(1f)
-            GLUtil.colorOf(color)
-            GLUtil.transaction(GL11.GL_LINE_LOOP) {
-                points.forEach {
-                    GLUtil.vertexOf(it)
-                }
-            }
-        }
     }
 
     private fun onPreConfigure(windowId: Long) {

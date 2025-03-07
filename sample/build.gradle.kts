@@ -35,7 +35,7 @@ tasks.getByName<JavaExec>("run") {
 
 dependencies {
     implementation("org.json:json:20231013")
-    implementation("com.github.kepocnhh:KotlinExtension.Math:${Version.math}")
+    implementation("com.github.kepocnhh:Math:${Version.math}")
     implementation("com.github.kepocnhh:LwjglJoysticks:${Version.Lwjgl.joysticks}")
     implementation(project(":lib"))
     val classifier = Lwjgl.requireNativesName()
