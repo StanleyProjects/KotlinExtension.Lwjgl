@@ -13,6 +13,21 @@ import sp.kx.math.mul
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
+// https://en.wikipedia.org/wiki/Rotation_matrix
+@Deprecated("sp.kx.math.Rotation")
+internal interface Rotation {
+    val aX: Double
+    val aY: Double
+    val aZ: Double
+}
+
+@Deprecated("sp.kx.math.MutableRotation")
+internal class MutableRotation(
+    override var aX: Double,
+    override var aY: Double,
+    override var aZ: Double,
+) : Rotation
+
 @Deprecated("sp.kx.math.mut")
 internal fun Offset.mut(): MutableOffset {
     return MutableOffset(
