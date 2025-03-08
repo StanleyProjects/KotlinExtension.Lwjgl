@@ -637,6 +637,26 @@ internal fun Vertex.rotatedZ(radians: Double): Vertex {
     )
 }
 
+@Deprecated("sp.kx.math.rotated")
+internal fun Vertex.rotated(rotation: Rotation): Vertex {
+    var c = kotlin.math.cos(rotation.aX)
+    var s = kotlin.math.sin(rotation.aX)
+    var x = x
+    val y = y * c - z * s
+    var z = y * s + z * c
+    c = kotlin.math.cos(rotation.aY)
+    s = kotlin.math.sin(rotation.aY)
+    x = x * c - z * s
+    z = x * s + z * c
+    c = kotlin.math.cos(rotation.aZ)
+    s = kotlin.math.sin(rotation.aZ)
+    return MutableVertex(
+        x = x * c - y * s,
+        y = x * s + y * c,
+        z = z,
+    )
+}
+
 @Deprecated("sp.kx.math.plus")
 internal operator fun Vertex.plus(offset: Offset): Vertex {
     return MutableVertex(

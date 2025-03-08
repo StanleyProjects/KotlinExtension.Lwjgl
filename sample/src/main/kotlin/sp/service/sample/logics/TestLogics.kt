@@ -22,6 +22,7 @@ import sp.service.sample.isEmpty
 import sp.service.sample.length
 import sp.service.sample.mut
 import sp.service.sample.plus
+import sp.service.sample.rotated
 import sp.service.sample.rotatedX
 import sp.service.sample.rotatedY
 import sp.service.sample.rotatedZ
@@ -163,9 +164,10 @@ internal class TestLogics(
         canvas.polygons.drawCircle(
             color = color,
             center = vertex
-                .rotatedX(rotation.aX)
-                .rotatedY(rotation.aY)
-                .rotatedZ(rotation.aZ)
+//                .rotatedX(rotation.aX)
+//                .rotatedY(rotation.aY)
+//                .rotatedZ(rotation.aZ)
+                .rotated(rotation)
                 .plus(offset)
                 .times(measure),
             radius = radius,
