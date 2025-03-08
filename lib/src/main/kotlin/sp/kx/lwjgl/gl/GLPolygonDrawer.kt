@@ -87,4 +87,78 @@ internal object GLPolygonDrawer : PolygonDrawer {
             edgeCount = edgeCount,
         )
     }
+
+    override fun drawCircle(
+        color: Color,
+        x: Double,
+        y: Double,
+        z: Double,
+        aX: Double,
+        aY: Double,
+        aZ: Double,
+        radius: Double,
+        edgeCount: Int,
+    ) {
+        if (edgeCount < 3) TODO()
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            for (index in 0 until edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                var x = x + kotlin.math.cos(radians) * radius
+                var y = y + kotlin.math.sin(radians) * radius
+                var c = kotlin.math.cos(aX)
+                var s = kotlin.math.sin(aX)
+                y = y * c - z * s
+                var z = y * s + z * c
+                c = kotlin.math.cos(aY)
+                s = kotlin.math.sin(aY)
+                x = x * c - z * s
+                z = x * s + z * c
+                c = kotlin.math.cos(aZ)
+                s = kotlin.math.sin(aZ)
+                GL11.glVertex3d(
+                    x * c - y * s,
+                    x * s + y * c,
+                    z,
+                )
+            }
+        }
+    }
+
+    override fun drawCircle(
+        color: Color,
+        center: Vertex,
+        aX: Double,
+        aY: Double,
+        aZ: Double,
+        radius: Double,
+        edgeCount: Int,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    ) {
+        if (edgeCount < 3) TODO()
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_POLYGON) {
+            for (index in 0 until edgeCount) {
+                val radians = index * 2 * kotlin.math.PI / edgeCount
+                var x = center.x + kotlin.math.cos(radians) * radius
+                var y = center.y + kotlin.math.sin(radians) * radius
+                var c = kotlin.math.cos(aX)
+                var s = kotlin.math.sin(aX)
+                y = y * c - center.z * s
+                var z = y * s + center.z * c
+                c = kotlin.math.cos(aY)
+                s = kotlin.math.sin(aY)
+                x = x * c - z * s
+                z = x * s + z * c
+                c = kotlin.math.cos(aZ)
+                s = kotlin.math.sin(aZ)
+                GL11.glVertex3d(
+                    measure.transform(x * c - y * s + offset.dX),
+                    measure.transform(x * s + y * c + offset.dY),
+                    measure.transform(z + offset.dZ),
+                )
+            }
+        }
+    }
 }

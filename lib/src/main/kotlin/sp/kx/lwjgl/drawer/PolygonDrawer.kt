@@ -46,4 +46,28 @@ interface PolygonDrawer {
         offset: Offset,
         measure: Measure<Double, Double>,
     )
+
+    fun drawCircle(
+        color: Color,
+        x: Double,
+        y: Double,
+        z: Double,
+        aX: Double,
+        aY: Double,
+        aZ: Double,
+        radius: Double,
+        edgeCount: Int,
+    )
+
+    fun drawCircle(
+        color: Color,
+        center: Vertex,
+        aX: Double,
+        aY: Double,
+        aZ: Double,
+        radius: Double,
+        edgeCount: Int,
+        offset: Offset,
+        measure: Measure<Double, Double>,
+    )
 }

@@ -97,23 +97,23 @@ internal class TestLogics(
                 rotation.aX = kotlin.math.max(- kotlin.math.PI / 4, rotation.aX - radians)
             }
         }
-        if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
+        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
             if (rotation.aY < kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
                 rotation.aY = kotlin.math.min(kotlin.math.PI / 4, rotation.aY + radians)
             }
-        } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
             if (rotation.aY > - kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
                 rotation.aY = kotlin.math.max(- kotlin.math.PI / 4, rotation.aY - radians)
             }
         }
-        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+        if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
             if (rotation.aZ < kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
                 rotation.aZ = kotlin.math.min(kotlin.math.PI / 4, rotation.aZ + radians)
             }
-        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
             if (rotation.aZ > - kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
                 rotation.aZ = kotlin.math.max(- kotlin.math.PI / 4, rotation.aZ - radians)
@@ -160,6 +160,7 @@ internal class TestLogics(
 //        val x3 = measure.transform(x2 + offset.dX)
 //        val y3 = measure.transform(y2 + offset.dY)
 //        val z3 = measure.transform(z2 + offset.dZ)
+        /*
         val radius = measure.transform(0.25)
         canvas.polygons.drawCircle(
             color = color,
@@ -174,6 +175,18 @@ internal class TestLogics(
             edgeCount = 4,
 //            offset = offset,
 //            measure = measure,
+        )
+        */
+        canvas.polygons.drawCircle(
+            color = color,
+            center = vertex,
+            radius = 2.0,
+            edgeCount = 16,
+            aX = rotation.aX,
+            aY = rotation.aY,
+            aZ = rotation.aZ,
+            offset = offset,
+            measure = measure,
         )
 //        canvas.texts.draw(
 //            color = color,
