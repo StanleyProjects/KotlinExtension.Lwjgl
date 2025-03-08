@@ -615,6 +615,17 @@ internal fun Vertex.rotatedX(radians: Double): Vertex {
     )
 }
 
+@Deprecated("sp.kx.math.rotatedY")
+internal fun Vertex.rotatedY(radians: Double): Vertex {
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    return MutableVertex(
+        x = x * c - z * s,
+        y = y,
+        z = x * s + z * c,
+    )
+}
+
 @Deprecated("sp.kx.math.rotatedZ")
 internal fun Vertex.rotatedZ(radians: Double): Vertex {
     val c = kotlin.math.cos(radians)

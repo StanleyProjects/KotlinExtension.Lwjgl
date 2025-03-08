@@ -14,6 +14,7 @@ import sp.kx.math.Offset
 import sp.kx.math.Vertex
 import sp.kx.math.diff
 import sp.kx.math.frequency
+import sp.service.sample.MutableRotation
 import sp.service.sample.angleOf
 import sp.service.sample.center
 import sp.service.sample.div
@@ -22,6 +23,7 @@ import sp.service.sample.length
 import sp.service.sample.mut
 import sp.service.sample.plus
 import sp.service.sample.rotatedX
+import sp.service.sample.rotatedY
 import sp.service.sample.rotatedZ
 import sp.service.sample.times
 import java.util.concurrent.TimeUnit
@@ -41,9 +43,9 @@ internal class TestLogics(
                     offset.dX = psu.width / 2
                     offset.dY = psu.height / 2
                     offset.dZ = 0.0
-                    aX = 0.0
-                    aY = 0.0
-                    aZ = 0.0
+                    rotation.aX = 0.0
+                    rotation.aY = 0.0
+                    rotation.aZ = 0.0
                 }
                 else -> Unit
             }
@@ -51,9 +53,7 @@ internal class TestLogics(
     }
     private val measure = MutableDoubleMeasure(24.0)
     private val offset = engine.property.pictureSize.div(measure).center(dZ = 0.0).mut()
-    private var aX = 0.0
-    private var aY = 0.0
-    private var aZ = 0.0
+    private val rotation = MutableRotation(0.0, 0.0, 0.0)
 
     override fun shouldEngineStop(): Boolean {
         return ::ses.isInitialized
@@ -86,36 +86,36 @@ internal class TestLogics(
             this.offset.dY -= length * kotlin.math.sin(radians)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
-            if (aX < kotlin.math.PI / 4) {
+            if (rotation.aX < kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aX = kotlin.math.min(kotlin.math.PI / 4, aX + radians)
+                rotation.aX = kotlin.math.min(kotlin.math.PI / 4, rotation.aX + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
-            if (aX > - kotlin.math.PI / 4) {
+            if (rotation.aX > - kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aX = kotlin.math.max(- kotlin.math.PI / 4, aX - radians)
-            }
-        }
-        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
-            if (aY < kotlin.math.PI / 4) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aY = kotlin.math.min(kotlin.math.PI / 4, aY + radians)
-            }
-        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
-            if (aY > - kotlin.math.PI / 4) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aY = kotlin.math.max(- kotlin.math.PI / 4, aY - radians)
+                rotation.aX = kotlin.math.max(- kotlin.math.PI / 4, rotation.aX - radians)
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
-            if (aZ < kotlin.math.PI / 4) {
+            if (rotation.aY < kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aZ = kotlin.math.min(kotlin.math.PI / 4, aZ + radians)
+                rotation.aY = kotlin.math.min(kotlin.math.PI / 4, rotation.aY + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
-            if (aZ > - kotlin.math.PI / 4) {
+            if (rotation.aY > - kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                aZ = kotlin.math.max(- kotlin.math.PI / 4, aZ - radians)
+                rotation.aY = kotlin.math.max(- kotlin.math.PI / 4, rotation.aY - radians)
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+            if (rotation.aZ < kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                rotation.aZ = kotlin.math.min(kotlin.math.PI / 4, rotation.aZ + radians)
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+            if (rotation.aZ > - kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                rotation.aZ = kotlin.math.max(- kotlin.math.PI / 4, rotation.aZ - radians)
             }
         }
     }
@@ -162,7 +162,12 @@ internal class TestLogics(
         val radius = measure.transform(0.25)
         canvas.polygons.drawCircle(
             color = color,
-            center = vertex.rotatedX(aX).rotatedZ(aZ).plus(offset).times(measure),
+            center = vertex
+                .rotatedX(rotation.aX)
+                .rotatedY(rotation.aY)
+                .rotatedZ(rotation.aZ)
+                .plus(offset)
+                .times(measure),
             radius = radius,
             edgeCount = 4,
 //            offset = offset,
@@ -237,9 +242,9 @@ internal class TestLogics(
         listOf(
             String.format("dX: %+6.2f", offset.dX - psu.width / 2),
             String.format("dY: %+6.2f", offset.dY - psu.height / 2),
-            String.format("aX: %+6.2f", aX),
-            String.format("aY: %+6.2f", aY),
-            String.format("aZ: %+6.2f", aZ),
+            String.format("aX: %+6.2f", rotation.aX),
+            String.format("aY: %+6.2f", rotation.aY),
+            String.format("aZ: %+6.2f", rotation.aZ),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
