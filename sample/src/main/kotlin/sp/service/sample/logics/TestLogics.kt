@@ -11,6 +11,7 @@ import sp.kx.math.MutableDoubleMeasure
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
+import sp.kx.math.Vertex
 import sp.kx.math.diff
 import sp.kx.math.frequency
 import sp.service.sample.angleOf
@@ -19,6 +20,10 @@ import sp.service.sample.div
 import sp.service.sample.isEmpty
 import sp.service.sample.length
 import sp.service.sample.mut
+import sp.service.sample.plus
+import sp.service.sample.rotatedX
+import sp.service.sample.rotatedZ
+import sp.service.sample.times
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -30,12 +35,25 @@ internal class TestLogics(
             if (isPressed) return
             when (button) {
                 KeyboardButton.Escape -> ses = Unit
+                KeyboardButton.C -> {
+                    val ps = engine.property.pictureSize
+                    val psu = ps / measure
+                    offset.dX = psu.width / 2
+                    offset.dY = psu.height / 2
+                    offset.dZ = 0.0
+                    aX = 0.0
+                    aY = 0.0
+                    aZ = 0.0
+                }
                 else -> Unit
             }
         }
     }
     private val measure = MutableDoubleMeasure(24.0)
     private val offset = engine.property.pictureSize.div(measure).center(dZ = 0.0).mut()
+    private var aX = 0.0
+    private var aY = 0.0
+    private var aZ = 0.0
 
     override fun shouldEngineStop(): Boolean {
         return ::ses.isInitialized
@@ -64,9 +82,100 @@ internal class TestLogics(
         if (!offset.isEmpty()) {
             val length = length(8.0, TimeUnit.SECONDS, diff)
             val radians = angleOf(x = offset.dX, y = offset.dY)
-            this.offset.dX += length * kotlin.math.cos(radians)
-            this.offset.dY += length * kotlin.math.sin(radians)
+            this.offset.dX -= length * kotlin.math.cos(radians)
+            this.offset.dY -= length * kotlin.math.sin(radians)
         }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
+            if (aX < kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aX = kotlin.math.min(kotlin.math.PI / 4, aX + radians)
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
+            if (aX > - kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aX = kotlin.math.max(- kotlin.math.PI / 4, aX - radians)
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
+            if (aY < kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aY = kotlin.math.min(kotlin.math.PI / 4, aY + radians)
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
+            if (aY > - kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aY = kotlin.math.max(- kotlin.math.PI / 4, aY - radians)
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
+            if (aZ < kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aZ = kotlin.math.min(kotlin.math.PI / 4, aZ + radians)
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
+            if (aZ > - kotlin.math.PI / 4) {
+                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                aZ = kotlin.math.max(- kotlin.math.PI / 4, aZ - radians)
+            }
+        }
+    }
+
+    private val v00: Vertex = MutableVertex(-4.0, -4.0, 0.0)
+    private val v01: Vertex = MutableVertex(4.0, -4.0, 0.0)
+    private val v10: Vertex = MutableVertex(-4.0, 4.0, 0.0)
+    private val v11: Vertex = MutableVertex(4.0, 4.0, 0.0)
+
+    private fun onRenderVertex(
+        canvas: Canvas,
+        vertex: Vertex,
+        color: Color,
+        text: CharSequence,
+    ) {
+//        val x = measure.transform(vertex.x + offset.dX)
+//        val y = measure.transform(vertex.y + offset.dY)
+//        val z = measure.transform(vertex.z + offset.dZ)
+        val x1 = vertex.x// + offset.dX
+        val y1 = vertex.y// + offset.dY
+        val z1 = vertex.z// + offset.dZ
+        //
+//        val c = kotlin.math.cos(aX)
+//        val s = kotlin.math.sin(aX)
+//        val x2 = x1
+//        val y2 = y1 * c - z1 * s
+//        val z2 = y1 * s + z1 * c
+        //
+//        val c = kotlin.math.cos(aY)
+//        val s = kotlin.math.sin(aY)
+//        val x2 = x1 * c - z1 * s
+//        val y2 = y1
+//        val z2 = x1 * s + z1 * c
+        //
+//        val c = kotlin.math.cos(aZ)
+//        val s = kotlin.math.sin(aZ)
+//        val x2 = x1 * c - y1 * s
+//        val y2 = x1 * s + y1 * c
+//        val z2 = z1
+        //
+//        val x3 = measure.transform(x2 + offset.dX)
+//        val y3 = measure.transform(y2 + offset.dY)
+//        val z3 = measure.transform(z2 + offset.dZ)
+        val radius = measure.transform(0.25)
+        canvas.polygons.drawCircle(
+            color = color,
+            center = vertex.rotatedX(aX).rotatedZ(aZ).plus(offset).times(measure),
+            radius = radius,
+            edgeCount = 4,
+//            offset = offset,
+//            measure = measure,
+        )
+//        canvas.texts.draw(
+//            color = color,
+//            fontHeight = 1.0,
+//            text = text,
+//            topLeft = vertex,
+//            offset = offset,
+//            measure = measure,
+//        )
     }
 
     override fun onRender(canvas: Canvas) {
@@ -75,22 +184,38 @@ internal class TestLogics(
         val psu = ps / measure
         onPreRender()
         //
-        canvas.polygons.drawCircle(
+        onRenderVertex(
+            canvas = canvas,
+            vertex = v00,
+            color = Color.Red,
+            text = "00",
+        )
+        onRenderVertex(
+            canvas = canvas,
+            vertex = v01,
             color = Color.Green,
-            center = MutableVertex(0.0, 0.0, 0.0),
-            radius = 0.25,
-            edgeCount = 4,
-            offset = offset,
-            measure = measure,
+            text = "01",
         )
-        canvas.polygons.drawCircle(
+        onRenderVertex(
+            canvas = canvas,
+            vertex = v10,
+            color = Color.Blue,
+            text = "10",
+        )
+        onRenderVertex(
+            canvas = canvas,
+            vertex = v11,
             color = Color.Yellow,
-            center = MutableVertex(0.0, 0.0, 0.0),
-            radius = 0.25,
-            edgeCount = 4,
-            offset = psu.center(dZ = 0.0),
-            measure = measure,
+            text = "11",
         )
+//        canvas.polygons.drawCircle(
+//            color = Color.Yellow,
+//            center = MutableVertex(0.0, 0.0, 0.0),
+//            radius = 0.25,
+//            edgeCount = 4,
+//            offset = psu.center(dZ = 0.0),
+//            measure = measure,
+//        )
         canvas.vectors.draw(
             color = Color.Gray,
             start = MutableVertex(x = 0.0, y = ps.height / 2, z = 0.0),
@@ -112,6 +237,9 @@ internal class TestLogics(
         listOf(
             String.format("dX: %+6.2f", offset.dX - psu.width / 2),
             String.format("dY: %+6.2f", offset.dY - psu.height / 2),
+            String.format("aX: %+6.2f", aX),
+            String.format("aY: %+6.2f", aY),
+            String.format("aZ: %+6.2f", aZ),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,

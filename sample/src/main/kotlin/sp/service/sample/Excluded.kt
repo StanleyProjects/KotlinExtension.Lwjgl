@@ -603,3 +603,43 @@ internal fun Vertex.copy(x: Double = this.x, y: Double = this.y, z: Double = thi
         z = z,
     )
 }
+
+@Deprecated("sp.kx.math.rotatedX")
+internal fun Vertex.rotatedX(radians: Double): Vertex {
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    return MutableVertex(
+        x = x,
+        y = y * c - z * s,
+        z = y * s + z * c,
+    )
+}
+
+@Deprecated("sp.kx.math.rotatedZ")
+internal fun Vertex.rotatedZ(radians: Double): Vertex {
+    val c = kotlin.math.cos(radians)
+    val s = kotlin.math.sin(radians)
+    return MutableVertex(
+        x = x * c - y * s,
+        y = x * s + y * c,
+        z = z,
+    )
+}
+
+@Deprecated("sp.kx.math.plus")
+internal operator fun Vertex.plus(offset: Offset): Vertex {
+    return MutableVertex(
+        x = x + offset.dX,
+        y = y + offset.dY,
+        z = z + offset.dZ,
+    )
+}
+
+@Deprecated("sp.kx.math.times")
+internal operator fun Vertex.times(measure: Measure<Double, Double>): Vertex {
+    return MutableVertex(
+        x = measure.transform(x),
+        y = measure.transform(y),
+        z = measure.transform(z),
+    )
+}
