@@ -10,6 +10,7 @@ import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableDoubleMeasure
 import sp.kx.math.MutableOffset
 import sp.kx.math.MutableRotation
+import sp.kx.math.MutableSize
 import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
 import sp.kx.math.Vertex
@@ -18,9 +19,11 @@ import sp.kx.math.diff
 import sp.kx.math.div
 import sp.kx.math.frequency
 import sp.kx.math.mut
+import sp.service.sample.MutableIntPoint
 import sp.service.sample.angleOf
 import sp.service.sample.isEmpty
 import sp.service.sample.length
+import sp.service.sample.rotated
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -77,10 +80,10 @@ internal class TestLogics(
         if (!offset.isEmpty()) {
             val length = length(8.0, TimeUnit.SECONDS, diff)
             val radians = angleOf(x = offset.dX, y = offset.dY)
-//            this.offset.dX -= length * kotlin.math.cos(radians)
-//            this.offset.dY -= length * kotlin.math.sin(radians)
-            p1.x += length * kotlin.math.cos(radians)
-            p1.y += length * kotlin.math.sin(radians)
+            this.offset.dX -= length * kotlin.math.cos(radians)
+            this.offset.dY -= length * kotlin.math.sin(radians)
+//            p1.x += length * kotlin.math.cos(radians)
+//            p1.y += length * kotlin.math.sin(radians)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
             if (rotation.aX < kotlin.math.PI / 4) {
@@ -122,6 +125,7 @@ internal class TestLogics(
     private val v01: Vertex = MutableVertex(4.0, -4.0, 0.0)
     private val v10: Vertex = MutableVertex(-4.0, 4.0, 0.0)
     private val v11: Vertex = MutableVertex(4.0, 4.0, 0.0)
+    private val cursor = MutableIntPoint(x = 0, y = 0)
 
     private fun onRenderVertex(
         canvas: Canvas,
@@ -185,25 +189,58 @@ internal class TestLogics(
 //            measure = measure,
 //        )
         //
+        val ps = engine.property.pictureSize
+        val psu = ps / measure
         canvas.polygons.drawCircle(
             color = color,
             center = vertex,
             radius = 2.0,
             edgeCount = 16,
             rotation = rotation,
-            about = p1,
+//            about = MutableVertex(offset.dX - psu.width / 2, offset.dY - psu.height / 2, offset.dZ),
             offset = offset,
             measure = measure,
         )
         //
-//        canvas.texts.draw(
-//            color = color,
-//            fontHeight = 1.0,
-//            text = text,
-//            topLeft = vertex,
-//            offset = offset,
-//            measure = measure,
-//        )
+        canvas.texts.draw(
+            color = color,
+            fontHeight = 1.0,
+            text = text,
+            topLeft = vertex.rotated(rotation),
+            offset = offset,
+            measure = measure,
+        )
+    }
+
+    private fun onRenderGrid(
+        canvas: Canvas,
+        z: Double,
+        rows: Int,
+        columns: Int,
+        width: Double
+    ) {
+        val x = - width * rows / 2
+        val y = - width * columns / 2
+        for (row in 0..rows) {
+            canvas.vectors.draw(
+                color = Color.White,
+                start = MutableVertex(x + row * width, y, z),
+                finish = MutableVertex(x + row * width, y + columns * width, z),
+                offset = offset,
+                rotation = rotation,
+                measure = measure,
+            )
+        }
+        for (column in 0..columns) {
+            canvas.vectors.draw(
+                color = Color.White,
+                start = MutableVertex(x, y + column * width, z),
+                finish = MutableVertex(x + columns * width, y + column * width, z),
+                offset = offset,
+                rotation = rotation,
+                measure = measure,
+            )
+        }
     }
 
     override fun onRender(canvas: Canvas) {
@@ -212,6 +249,7 @@ internal class TestLogics(
         val psu = ps / measure
         onPreRender()
         //
+        /*
         onRenderVertex(
             canvas = canvas,
             vertex = v00,
@@ -236,24 +274,47 @@ internal class TestLogics(
             color = Color.Yellow,
             text = "11",
         )
-        canvas.polygons.drawCircle(
-            color = Color.Yellow,
-            center = p1,
-            radius = 0.25,
-            edgeCount = 4,
+        */
+//        canvas.polygons.drawCircle(
+//            color = Color.Yellow,
+//            center = p1,
+//            radius = 0.25,
+//            edgeCount = 4,
+//            offset = offset,
+//            measure = measure,
+//        )
+        val rows = 8
+        val columns = 8
+        val width = 2.0
+        onRenderGrid(
+            canvas = canvas,
+            z = -0.5,
+            rows = rows,
+            columns = columns,
+            width = width,
+        )
+        canvas.polygons.drawRectangle(
+            color = Color.Red,
+            topLeft = MutableVertex(
+                x = (cursor.x - rows / 2) * width,
+                y = (cursor.y - columns / 2) * width,
+                z = 0.5,
+            ),
+            size = MutableSize(2.0, 2.0),
             offset = offset,
+            rotation = rotation,
             measure = measure,
         )
-        canvas.vectors.draw(
-            color = Color.Gray,
-            start = MutableVertex(x = 0.0, y = ps.height / 2, z = 0.0),
-            finish = MutableVertex(x = ps.width, y = ps.height / 2, z = 0.0),
-        )
-        canvas.vectors.draw(
-            color = Color.Gray,
-            start = MutableVertex(x = ps.width / 2, y = 0.0, z = 0.0),
-            finish = MutableVertex(x = ps.width / 2, y = ps.height, z = 0.0),
-        )
+//        canvas.vectors.draw(
+//            color = Color.Gray,
+//            start = MutableVertex(x = 0.0, y = ps.height / 2, z = 0.0),
+//            finish = MutableVertex(x = ps.width, y = ps.height / 2, z = 0.0),
+//        )
+//        canvas.vectors.draw(
+//            color = Color.Gray,
+//            start = MutableVertex(x = ps.width / 2, y = 0.0, z = 0.0),
+//            finish = MutableVertex(x = ps.width / 2, y = ps.height, z = 0.0),
+//        )
         //
         val fontHeight = 24.0
         canvas.texts.draw(
@@ -263,10 +324,10 @@ internal class TestLogics(
             topLeft = MutableVertex(x = ps.width - 96.0, y = ps.height - fontHeight * 2, z = 0.0),
         )
         listOf(
-//            String.format("dX: %+6.2f", offset.dX - psu.width / 2),
-//            String.format("dY: %+6.2f", offset.dY - psu.height / 2),
-            String.format("pX: %+6.2f", p1.x),
-            String.format("pY: %+6.2f", p1.y),
+            String.format("dX: %+6.2f", offset.dX - psu.width / 2),
+            String.format("dY: %+6.2f", offset.dY - psu.height / 2),
+//            String.format("pX: %+6.2f", p1.x),
+//            String.format("pY: %+6.2f", p1.y),
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),

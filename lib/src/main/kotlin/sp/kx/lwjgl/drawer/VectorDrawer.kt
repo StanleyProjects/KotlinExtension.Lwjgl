@@ -3,6 +3,7 @@ package sp.kx.lwjgl.drawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Measure
 import sp.kx.math.Offset
+import sp.kx.math.Rotation
 import sp.kx.math.Vertex
 
 interface VectorDrawer {
@@ -37,6 +38,15 @@ interface VectorDrawer {
         start: Vertex,
         finish: Vertex,
         offset: Offset,
+        measure: Measure<Double, Double>,
+    )
+
+    fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        rotation: Rotation,
         measure: Measure<Double, Double>,
     )
 }

@@ -109,6 +109,22 @@ object GLUtil {
         )
     }
 
+    fun vertexOf(
+        vertex: Vertex,
+        offset: Offset,
+        rotation: Rotation,
+        measure: Measure<Double, Double>,
+    ) {
+        vertexOf(
+            x = vertex.x,
+            y = vertex.y,
+            z = vertex.z,
+            offset = offset,
+            rotation = rotation,
+            measure = measure,
+        )
+    }
+
     fun colorOf(color: Color) {
         GL11.glColor4ub(
             color.red,

@@ -6,6 +6,7 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Measure
 import sp.kx.math.Offset
+import sp.kx.math.Rotation
 import sp.kx.math.Vertex
 
 internal object GLVectorDrawer : VectorDrawer {
@@ -51,5 +52,30 @@ internal object GLVectorDrawer : VectorDrawer {
             x0 = measure.transform(start.x + offset.dX), y0 = measure.transform(start.y + offset.dY), z0 = measure.transform(start.z + offset.dZ),
             x1 = measure.transform(finish.x + offset.dX), y1 = measure.transform(finish.y + offset.dY), z1 = measure.transform(finish.z + offset.dZ),
         )
+    }
+
+    override fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        rotation: Rotation,
+        measure: Measure<Double, Double>
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(
+                vertex = start,
+                offset = offset,
+                rotation = rotation,
+                measure = measure,
+            )
+            GLUtil.vertexOf(
+                vertex = finish,
+                offset = offset,
+                rotation = rotation,
+                measure = measure,
+            )
+        }
     }
 }

@@ -4,9 +4,28 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.math.Measure
 import sp.kx.math.Offset
 import sp.kx.math.Rotation
+import sp.kx.math.Size
 import sp.kx.math.Vertex
 
 interface PolygonDrawer {
+    fun drawRectangle(
+        color: Color,
+        x: Double,
+        y: Double,
+        z: Double,
+        width: Double,
+        height: Double,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        rotation: Rotation,
+        measure: Measure<Double, Double>,
+    )
+
     fun drawCircle(
         color: Color,
         center: Vertex,

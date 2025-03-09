@@ -7,9 +7,54 @@ import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.math.Measure
 import sp.kx.math.Offset
 import sp.kx.math.Rotation
+import sp.kx.math.Size
 import sp.kx.math.Vertex
 
 internal object GLPolygonDrawer : PolygonDrawer {
+    override fun drawRectangle(
+        color: Color,
+        x: Double, y: Double, z: Double,
+        width: Double,
+        height: Double,
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GL11.glVertex3d(x, y, z)
+            GL11.glVertex3d(x + width, y, z)
+            GL11.glVertex3d(x, y + height, z)
+            GL11.glVertex3d(x + width, y + height, z)
+        }
+    }
+
+    override fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        rotation: Rotation,
+        measure: Measure<Double, Double>
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y, topLeft.z,
+                offset = offset, rotation = rotation, measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y, topLeft.z,
+                offset = offset, rotation = rotation, measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y + size.height, topLeft.z,
+                offset = offset, rotation = rotation, measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y + size.height, topLeft.z,
+                offset = offset, rotation = rotation, measure = measure,
+            )
+        }
+    }
+
     override fun drawCircle(
         color: Color,
         center: Vertex,

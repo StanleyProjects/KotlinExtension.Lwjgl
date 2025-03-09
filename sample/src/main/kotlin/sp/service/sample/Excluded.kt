@@ -14,6 +14,18 @@ import sp.kx.math.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
+@Deprecated("sp.kx.math.IntPoint")
+internal interface IntPoint {
+    val x: Int
+    val y: Int
+}
+
+@Deprecated("sp.kx.math.MutableIntPoint")
+internal class MutableIntPoint(
+    override var x: Int,
+    override var y: Int,
+) : IntPoint
+
 @Deprecated("sp.kx.math.isEmpty")
 internal fun Offset.isEmpty(): Boolean {
     return dX == 0.0 && dY == 0.0 && dZ == 0.0
