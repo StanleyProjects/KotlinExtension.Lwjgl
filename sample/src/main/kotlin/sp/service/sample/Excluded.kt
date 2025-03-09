@@ -9,7 +9,7 @@ import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
 import sp.kx.math.Size
 import sp.kx.math.Vertex
-import sp.kx.math.mul
+import sp.kx.math.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
@@ -373,7 +373,7 @@ internal fun MutableMatrix.perform(
     mul(o03 = dX, o13 = dY, o23 = dZ)
 //    mul(MutableMatrix.ofTranslation(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z))
     mul(o03 = -pointOfRotation.x, o13 = -pointOfRotation.y, o23 = -pointOfRotation.z)
-    mul(Matrices.ofRotationX(radians = aX))
+    timesAssign(Matrices.ofRotationX(radians = aX))
 //    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
     mul(o03 = pointOfRotation.x, o13 = pointOfRotation.y, o23 = pointOfRotation.z)
 }
@@ -396,7 +396,7 @@ internal fun MutableMatrix.perform(
 //    mul(MutableMatrix.ofRotationZ(radians = aZ))
 //    mul(MutableMatrix.ofRotationY(radians = aY))
 //    mul(MutableMatrix.ofRotationX(radians = aX))
-    mul(Matrices.ofRotation(aX = aX, aY = aY, aZ = aZ))
+    timesAssign(Matrices.ofRotation(aX = aX, aY = aY, aZ = aZ))
 //    mul(o03 = rX, o13 = rY, o23 = rZ)
 }
 
@@ -412,7 +412,7 @@ internal fun MutableMatrix.perform(
 ) {
     identity()
     mul(o03 = dX, o13 = dY, o23 = dZ)
-    mul(Matrices.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
+    timesAssign(Matrices.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
 }
 
 @Deprecated("sp.kx.math.perform")
@@ -433,7 +433,7 @@ internal fun MutableMatrix.perform(
     val qY = MutableQuaternion.ofVector(x = 0.0, y = 1.0, z = 0.0, radians = aY / 2)
     val qZ = MutableQuaternion.ofVector(x = 0.0, y = 0.0, z = 1.0, radians = aZ / 2)
     val q = qX * qY * qZ
-    mul(Matrices.ofQuaternion(q))
+    timesAssign(Matrices.ofQuaternion(q))
 }
 
 @Deprecated("sp.kx.math.identity")
