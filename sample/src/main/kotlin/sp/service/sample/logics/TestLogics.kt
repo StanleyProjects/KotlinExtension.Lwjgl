@@ -45,6 +45,26 @@ internal class TestLogics(
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
                 }
+                KeyboardButton.A -> {
+                    if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+                        cursor.x -= 1
+                    }
+                }
+                KeyboardButton.D -> {
+                    if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+                        cursor.x += 1
+                    }
+                }
+                KeyboardButton.W -> {
+                    if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+                        cursor.y -= 1
+                    }
+                }
+                KeyboardButton.S -> {
+                    if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+                        cursor.y += 1
+                    }
+                }
                 else -> Unit
             }
         }
@@ -76,14 +96,16 @@ internal class TestLogics(
 
     private fun onPreRender() {
         val diff = engine.property.time.diff()
-        val offset = getOffset(keyboard = engine.input.keyboard)
-        if (!offset.isEmpty()) {
-            val length = length(8.0, TimeUnit.SECONDS, diff)
-            val radians = angleOf(x = offset.dX, y = offset.dY)
-            this.offset.dX -= length * kotlin.math.cos(radians)
-            this.offset.dY -= length * kotlin.math.sin(radians)
+        if (!engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
+            val offset = getOffset(keyboard = engine.input.keyboard)
+            if (!offset.isEmpty()) {
+                val length = length(8.0, TimeUnit.SECONDS, diff)
+                val radians = angleOf(x = offset.dX, y = offset.dY)
+                this.offset.dX -= length * kotlin.math.cos(radians)
+                this.offset.dY -= length * kotlin.math.sin(radians)
 //            p1.x += length * kotlin.math.cos(radians)
 //            p1.y += length * kotlin.math.sin(radians)
+            }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
             if (rotation.aX < kotlin.math.PI / 4) {
@@ -294,11 +316,11 @@ internal class TestLogics(
             width = width,
         )
         canvas.polygons.drawRectangle(
-            color = Color.Red,
+            color = Color.Yellow,
             topLeft = MutableVertex(
                 x = (cursor.x - rows / 2) * width,
                 y = (cursor.y - columns / 2) * width,
-                z = 0.5,
+                z = 0.1,
             ),
             size = MutableSize(2.0, 2.0),
             offset = offset,
