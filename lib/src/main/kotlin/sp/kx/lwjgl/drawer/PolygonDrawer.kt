@@ -26,6 +26,16 @@ interface PolygonDrawer {
         measure: Measure<Double, Double>,
     )
 
+    fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        about: Vertex,
+        rotation: Rotation,
+        measure: Measure<Double, Double>,
+    )
+
     fun drawCircle(
         color: Color,
         center: Vertex,

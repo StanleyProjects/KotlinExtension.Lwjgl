@@ -49,4 +49,14 @@ interface VectorDrawer {
         rotation: Rotation,
         measure: Measure<Double, Double>,
     )
+
+    fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        about: Vertex,
+        rotation: Rotation,
+        measure: Measure<Double, Double>,
+    )
 }

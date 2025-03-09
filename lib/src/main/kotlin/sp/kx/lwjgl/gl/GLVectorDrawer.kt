@@ -78,4 +78,32 @@ internal object GLVectorDrawer : VectorDrawer {
             )
         }
     }
+
+    override fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        about: Vertex,
+        rotation: Rotation,
+        measure: Measure<Double, Double>
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(
+                vertex = start,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+            GLUtil.vertexOf(
+                vertex = finish,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+        }
+    }
 }

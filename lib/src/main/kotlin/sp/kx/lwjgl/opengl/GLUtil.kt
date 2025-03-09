@@ -107,6 +107,11 @@ object GLUtil {
             measure.transform(x1 * s + y1 * c + about.y + offset.dY),
             measure.transform(z1 + about.z + offset.dZ),
         )
+//        GL11.glVertex3d(
+//            measure.transform(x1 * c - y1 * s + about.x),
+//            measure.transform(x1 * s + y1 * c + about.y),
+//            measure.transform(z1 + about.z),
+//        )
     }
 
     fun vertexOf(
@@ -119,6 +124,24 @@ object GLUtil {
             x = vertex.x,
             y = vertex.y,
             z = vertex.z,
+            offset = offset,
+            rotation = rotation,
+            measure = measure,
+        )
+    }
+
+    fun vertexOf(
+        vertex: Vertex,
+        offset: Offset,
+        about: Vertex,
+        rotation: Rotation,
+        measure: Measure<Double, Double>,
+    ) {
+        vertexOf(
+            x = vertex.x,
+            y = vertex.y,
+            z = vertex.z,
+            about = about,
             offset = offset,
             rotation = rotation,
             measure = measure,

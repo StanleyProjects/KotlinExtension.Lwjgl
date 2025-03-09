@@ -44,6 +44,7 @@ internal class TestLogics(
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
+                    setMagnitude(24.0)
                 }
                 KeyboardButton.A -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -94,6 +95,17 @@ internal class TestLogics(
         return offset
     }
 
+    private fun setMagnitude(magnitude: Double) {
+        val ps = engine.property.pictureSize
+        val op = ps / measure
+        val dw = op.width / 2 - offset.dX
+        val dh = op.height / 2 - offset.dY
+        measure.magnitude = magnitude
+        val np = ps / measure
+        offset.dX = np.width / 2 - dw
+        offset.dY = np.height / 2 - dh
+    }
+
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         if (!engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -138,6 +150,17 @@ internal class TestLogics(
             if (rotation.aZ > - kotlin.math.PI / 4) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
                 rotation.aZ = kotlin.math.max(- kotlin.math.PI / 4, rotation.aZ - radians)
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
+            if (measure.magnitude < 64.0) {
+                val value = length(24.0, TimeUnit.SECONDS, diff)
+                setMagnitude(kotlin.math.min(64.0, measure.magnitude + value))
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Minus)) {
+            if (measure.magnitude > 8.0) {
+                val value = length(24.0, TimeUnit.SECONDS, diff)
+                setMagnitude(kotlin.math.max(8.0, measure.magnitude - value))
             }
         }
     }
@@ -243,22 +266,26 @@ internal class TestLogics(
     ) {
         val x = - width * rows / 2
         val y = - width * columns / 2
+        val ps = engine.property.pictureSize
+        val psu = ps / measure
         for (row in 0..rows) {
             canvas.vectors.draw(
                 color = Color.White,
                 start = MutableVertex(x + row * width, y, z),
                 finish = MutableVertex(x + row * width, y + columns * width, z),
                 offset = offset,
+                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
                 rotation = rotation,
                 measure = measure,
             )
         }
         for (column in 0..columns) {
             canvas.vectors.draw(
-                color = Color.White,
+                color = Color.Gray,
                 start = MutableVertex(x, y + column * width, z),
                 finish = MutableVertex(x + columns * width, y + column * width, z),
                 offset = offset,
+                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
                 rotation = rotation,
                 measure = measure,
             )
@@ -324,6 +351,7 @@ internal class TestLogics(
             ),
             size = MutableSize(2.0, 2.0),
             offset = offset,
+            about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
             rotation = rotation,
             measure = measure,
         )
@@ -353,6 +381,7 @@ internal class TestLogics(
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),
+            String.format("m: %+6.2f", measure.magnitude),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,

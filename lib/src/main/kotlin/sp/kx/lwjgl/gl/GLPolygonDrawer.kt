@@ -55,6 +55,48 @@ internal object GLPolygonDrawer : PolygonDrawer {
         }
     }
 
+    override fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        about: Vertex,
+        rotation: Rotation,
+        measure: Measure<Double, Double>
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y, topLeft.z,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y, topLeft.z,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y + size.height, topLeft.z,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y + size.height, topLeft.z,
+                offset = offset,
+                about = about,
+                rotation = rotation,
+                measure = measure,
+            )
+        }
+    }
+
     override fun drawCircle(
         color: Color,
         center: Vertex,
