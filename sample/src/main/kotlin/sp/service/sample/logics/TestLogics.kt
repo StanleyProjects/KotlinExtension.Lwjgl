@@ -9,24 +9,18 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.math.MutableDoubleMeasure
 import sp.kx.math.MutableOffset
+import sp.kx.math.MutableRotation
 import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
 import sp.kx.math.Vertex
+import sp.kx.math.center
 import sp.kx.math.diff
+import sp.kx.math.div
 import sp.kx.math.frequency
-import sp.service.sample.MutableRotation
+import sp.kx.math.mut
 import sp.service.sample.angleOf
-import sp.service.sample.center
-import sp.service.sample.div
 import sp.service.sample.isEmpty
 import sp.service.sample.length
-import sp.service.sample.mut
-import sp.service.sample.plus
-import sp.service.sample.rotated
-import sp.service.sample.rotatedX
-import sp.service.sample.rotatedY
-import sp.service.sample.rotatedZ
-import sp.service.sample.times
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -83,8 +77,10 @@ internal class TestLogics(
         if (!offset.isEmpty()) {
             val length = length(8.0, TimeUnit.SECONDS, diff)
             val radians = angleOf(x = offset.dX, y = offset.dY)
-            this.offset.dX -= length * kotlin.math.cos(radians)
-            this.offset.dY -= length * kotlin.math.sin(radians)
+//            this.offset.dX -= length * kotlin.math.cos(radians)
+//            this.offset.dY -= length * kotlin.math.sin(radians)
+            p1.x += length * kotlin.math.cos(radians)
+            p1.y += length * kotlin.math.sin(radians)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
             if (rotation.aX < kotlin.math.PI / 4) {
@@ -121,6 +117,7 @@ internal class TestLogics(
         }
     }
 
+    private val p1 = MutableVertex(0.0, 0.0, 0.0)
     private val v00: Vertex = MutableVertex(-4.0, -4.0, 0.0)
     private val v01: Vertex = MutableVertex(4.0, -4.0, 0.0)
     private val v10: Vertex = MutableVertex(-4.0, 4.0, 0.0)
@@ -177,17 +174,28 @@ internal class TestLogics(
 //            measure = measure,
         )
         */
+        //
+//        canvas.polygons.drawCircle(
+//            color = color,
+//            center = vertex,
+//            radius = 2.0,
+//            edgeCount = 16,
+//            offset = offset,
+//            rotation = rotation,
+//            measure = measure,
+//        )
+        //
         canvas.polygons.drawCircle(
             color = color,
             center = vertex,
             radius = 2.0,
             edgeCount = 16,
-            aX = rotation.aX,
-            aY = rotation.aY,
-            aZ = rotation.aZ,
+            rotation = rotation,
+            about = p1,
             offset = offset,
             measure = measure,
         )
+        //
 //        canvas.texts.draw(
 //            color = color,
 //            fontHeight = 1.0,
@@ -228,14 +236,14 @@ internal class TestLogics(
             color = Color.Yellow,
             text = "11",
         )
-//        canvas.polygons.drawCircle(
-//            color = Color.Yellow,
-//            center = MutableVertex(0.0, 0.0, 0.0),
-//            radius = 0.25,
-//            edgeCount = 4,
-//            offset = psu.center(dZ = 0.0),
-//            measure = measure,
-//        )
+        canvas.polygons.drawCircle(
+            color = Color.Yellow,
+            center = p1,
+            radius = 0.25,
+            edgeCount = 4,
+            offset = offset,
+            measure = measure,
+        )
         canvas.vectors.draw(
             color = Color.Gray,
             start = MutableVertex(x = 0.0, y = ps.height / 2, z = 0.0),
@@ -255,8 +263,10 @@ internal class TestLogics(
             topLeft = MutableVertex(x = ps.width - 96.0, y = ps.height - fontHeight * 2, z = 0.0),
         )
         listOf(
-            String.format("dX: %+6.2f", offset.dX - psu.width / 2),
-            String.format("dY: %+6.2f", offset.dY - psu.height / 2),
+//            String.format("dX: %+6.2f", offset.dX - psu.width / 2),
+//            String.format("dY: %+6.2f", offset.dY - psu.height / 2),
+            String.format("pX: %+6.2f", p1.x),
+            String.format("pY: %+6.2f", p1.y),
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),

@@ -7,52 +7,12 @@ import sp.kx.math.MutableOffset
 import sp.kx.math.MutableSize
 import sp.kx.math.MutableVertex
 import sp.kx.math.Offset
+import sp.kx.math.Rotation
 import sp.kx.math.Size
 import sp.kx.math.Vertex
 import sp.kx.math.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
-
-// https://en.wikipedia.org/wiki/Rotation_matrix
-@Deprecated("sp.kx.math.Rotation")
-internal interface Rotation {
-    val aX: Double
-    val aY: Double
-    val aZ: Double
-}
-
-@Deprecated("sp.kx.math.MutableRotation")
-internal class MutableRotation(
-    override var aX: Double,
-    override var aY: Double,
-    override var aZ: Double,
-) : Rotation
-
-@Deprecated("sp.kx.math.mut")
-internal fun Offset.mut(): MutableOffset {
-    return MutableOffset(
-        dX = dX,
-        dY = dY,
-        dZ = dZ,
-    )
-}
-
-@Deprecated("sp.kx.math.div")
-internal operator fun Size.div(measure: Measure<Double, Double>): Size {
-    return MutableSize(
-        width = measure.units(width),
-        height = measure.units(height),
-    )
-}
-
-@Deprecated("sp.kx.math.center")
-internal fun Size.center(dZ: Double): Offset {
-    return MutableOffset(
-        dX = width / 2,
-        dY = height / 2,
-        dZ = dZ,
-    )
-}
 
 @Deprecated("sp.kx.math.isEmpty")
 internal fun Offset.isEmpty(): Boolean {
@@ -654,23 +614,5 @@ internal fun Vertex.rotated(rotation: Rotation): Vertex {
         x = x * c - y * s,
         y = x * s + y * c,
         z = z,
-    )
-}
-
-@Deprecated("sp.kx.math.plus")
-internal operator fun Vertex.plus(offset: Offset): Vertex {
-    return MutableVertex(
-        x = x + offset.dX,
-        y = y + offset.dY,
-        z = z + offset.dZ,
-    )
-}
-
-@Deprecated("sp.kx.math.times")
-internal operator fun Vertex.times(measure: Measure<Double, Double>): Vertex {
-    return MutableVertex(
-        x = measure.transform(x),
-        y = measure.transform(y),
-        z = measure.transform(z),
     )
 }
