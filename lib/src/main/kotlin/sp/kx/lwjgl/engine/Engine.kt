@@ -4,6 +4,8 @@ import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.MutableSize
+import sp.kx.calculations.Size
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
 import sp.kx.lwjgl.glfw.GLFWUtil
@@ -12,8 +14,6 @@ import sp.kx.lwjgl.glfw.toKeyboardButtonOrNull
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.kx.lwjgl.provider.SystemTimes
 import sp.kx.lwjgl.provider.Times
-import sp.kx.math.MutableSize
-import sp.kx.math.Size
 
 sealed interface Engine {
     val input: EngineInputState

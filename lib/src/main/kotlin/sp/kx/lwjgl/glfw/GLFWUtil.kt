@@ -8,9 +8,9 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil
+import sp.kx.calculations.MutableSize
+import sp.kx.calculations.Size
 import sp.kx.lwjgl.system.use
-import sp.kx.math.MutableSize
-import sp.kx.math.Size
 import java.nio.ByteBuffer
 
 object GLFWUtil {

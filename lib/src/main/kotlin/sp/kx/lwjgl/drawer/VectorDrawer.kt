@@ -1,10 +1,9 @@
 package sp.kx.lwjgl.drawer
 
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.entity.Color
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Vertex
 
 interface VectorDrawer {
     fun draw(
@@ -30,7 +29,7 @@ interface VectorDrawer {
         color: Color,
         start: Vertex,
         finish: Vertex,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun draw(
@@ -38,7 +37,7 @@ interface VectorDrawer {
         start: Vertex,
         finish: Vertex,
         offset: Offset,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun draw(
@@ -47,7 +46,7 @@ interface VectorDrawer {
         finish: Vertex,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun draw(
@@ -57,6 +56,6 @@ interface VectorDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 }

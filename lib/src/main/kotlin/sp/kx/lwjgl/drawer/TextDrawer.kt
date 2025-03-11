@@ -1,9 +1,8 @@
 package sp.kx.lwjgl.drawer
 
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.entity.Color
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Vertex
 
 abstract class TextDrawer(
     private val defaultFontName: String,
@@ -58,15 +57,15 @@ abstract class TextDrawer(
         fontHeight: Double,
         topLeft: Vertex,
         text: CharSequence,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         draw(
             color = color,
             fontName = fontName,
-            fontHeight = measure.transform(fontHeight),
+            fontHeight = fontHeight * scale,
             text = text,
-            x = measure.transform(topLeft.x),
-            y = measure.transform(topLeft.y),
+            x = topLeft.x * scale,
+            y = topLeft.y * scale,
         )
     }
 
@@ -77,15 +76,15 @@ abstract class TextDrawer(
         topLeft: Vertex,
         text: CharSequence,
         offset: Offset,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         draw(
             color = color,
             fontName = fontName,
-            fontHeight = measure.transform(fontHeight),
+            fontHeight = fontHeight * scale,
             text = text,
-            x = measure.transform(topLeft.x + offset.dX),
-            y = measure.transform(topLeft.y + offset.dY),
+            x = (topLeft.x + offset.dX) * scale,
+            y = (topLeft.y + offset.dY) * scale,
         )
     }
 
@@ -98,12 +97,12 @@ abstract class TextDrawer(
     fun getTextWidth(
         fontHeight: Double,
         text: CharSequence,
-        measure: Measure<Double, Double>,
+        scale: Double,
         fontName: String = defaultFontName,
     ): Double {
         return getTextWidth(
             fontName = fontName,
-            fontHeight = measure.transform(fontHeight),
+            fontHeight = fontHeight * scale,
             text = text,
         )
     }
@@ -111,14 +110,14 @@ abstract class TextDrawer(
     fun getTextUnits(
         fontHeight: Double,
         text: CharSequence,
-        measure: Measure<Double, Double>,
+        scale: Double,
         fontName: String = defaultFontName,
     ): Double {
         val width = getTextWidth(
             fontName = fontName,
-            fontHeight = measure.transform(fontHeight),
+            fontHeight = fontHeight * scale,
             text = text,
         )
-        return measure.units(width)
+        return width / scale
     }
 }

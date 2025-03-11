@@ -1,11 +1,10 @@
 package sp.kx.lwjgl.drawer
 
+import sp.kx.calculations.Size
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.entity.Color
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Size
-import sp.kx.math.Vertex
 
 interface PolygonDrawer {
     fun drawRectangle(
@@ -23,7 +22,7 @@ interface PolygonDrawer {
         size: Size,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun drawRectangle(
@@ -33,7 +32,7 @@ interface PolygonDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun drawCircle(
@@ -44,7 +43,7 @@ interface PolygonDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun drawCircle(
@@ -76,7 +75,7 @@ interface PolygonDrawer {
         center: Vertex,
         radius: Double,
         edgeCount: Int,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun drawCircle(
@@ -85,7 +84,7 @@ interface PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         offset: Offset,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 
     fun drawCircle(
@@ -107,6 +106,6 @@ interface PolygonDrawer {
         edgeCount: Int,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     )
 }

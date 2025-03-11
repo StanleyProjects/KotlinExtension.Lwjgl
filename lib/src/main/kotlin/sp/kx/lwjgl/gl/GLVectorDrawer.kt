@@ -1,13 +1,12 @@
 package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.drawer.VectorDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Vertex
 
 internal object GLVectorDrawer : VectorDrawer {
     override fun draw(
@@ -38,19 +37,38 @@ internal object GLVectorDrawer : VectorDrawer {
         )
     }
 
-    override fun draw(color: Color, start: Vertex, finish: Vertex, measure: Measure<Double, Double>) {
+    override fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        scale: Double,
+    ) {
         draw(
             color = color,
-            x0 = measure.transform(start.x), y0 = measure.transform(start.y), z0 = measure.transform(start.z),
-            x1 = measure.transform(finish.x), y1 = measure.transform(finish.y), z1 = measure.transform(finish.z),
+            x0 = start.x * scale,
+            y0 = start.y * scale,
+            z0 = start.z * scale,
+            x1 = finish.x * scale,
+            y1 = finish.y * scale,
+            z1 = finish.z * scale,
         )
     }
 
-    override fun draw(color: Color, start: Vertex, finish: Vertex, offset: Offset, measure: Measure<Double, Double>) {
+    override fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        scale: Double,
+    ) {
         draw(
             color = color,
-            x0 = measure.transform(start.x + offset.dX), y0 = measure.transform(start.y + offset.dY), z0 = measure.transform(start.z + offset.dZ),
-            x1 = measure.transform(finish.x + offset.dX), y1 = measure.transform(finish.y + offset.dY), z1 = measure.transform(finish.z + offset.dZ),
+            x0 = (start.x + offset.dX) * scale,
+            y0 = (start.y + offset.dY) * scale,
+            z0 = (start.z + offset.dZ) * scale,
+            x1 = (finish.x + offset.dX) * scale,
+            y1 = (finish.y + offset.dY) * scale,
+            z1 = (finish.z + offset.dZ) * scale,
         )
     }
 
@@ -60,7 +78,7 @@ internal object GLVectorDrawer : VectorDrawer {
         finish: Vertex,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_LINES) {
@@ -68,13 +86,13 @@ internal object GLVectorDrawer : VectorDrawer {
                 vertex = start,
                 offset = offset,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
             GLUtil.vertexOf(
                 vertex = finish,
                 offset = offset,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
         }
     }
@@ -86,7 +104,7 @@ internal object GLVectorDrawer : VectorDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_LINES) {
@@ -95,14 +113,14 @@ internal object GLVectorDrawer : VectorDrawer {
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
             GLUtil.vertexOf(
                 vertex = finish,
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
         }
     }

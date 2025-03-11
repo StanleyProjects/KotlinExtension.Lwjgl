@@ -1,11 +1,10 @@
 package sp.kx.lwjgl.opengl
 
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.entity.Color
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Vertex
 import java.nio.DoubleBuffer
 
 object GLUtil {
@@ -19,12 +18,12 @@ object GLUtil {
     fun vertexOf(
         x: Double, y: Double, z: Double,
         offset: Offset,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         GL11.glVertex3d(
-            measure.transform(x + offset.dX),
-            measure.transform(y + offset.dY),
-            measure.transform(z + offset.dZ),
+            (x + offset.dX) * scale,
+            (y + offset.dY) * scale,
+            (z + offset.dZ) * scale,
         )
     }
 
@@ -32,7 +31,7 @@ object GLUtil {
         x: Double, y: Double, z: Double,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         //
 //        var c = kotlin.math.cos(rotation.aX)
@@ -74,9 +73,9 @@ object GLUtil {
         s = kotlin.math.sin(rotation.aZ)
         //
         GL11.glVertex3d(
-            measure.transform(x1 * c - y1 * s + offset.dX),
-            measure.transform(x1 * s + y1 * c + offset.dY),
-            measure.transform(z1 + offset.dZ),
+            (x1 * c - y1 * s + offset.dX) * scale,
+            (x1 * s + y1 * c + offset.dY) * scale,
+            (z1 +              offset.dZ) * scale,
         )
     }
 
@@ -85,7 +84,7 @@ object GLUtil {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         var x1 = x - about.x
         var y1 = y - about.y
@@ -103,9 +102,9 @@ object GLUtil {
         s = kotlin.math.sin(rotation.aZ)
         //
         GL11.glVertex3d(
-            measure.transform(x1 * c - y1 * s + about.x + offset.dX),
-            measure.transform(x1 * s + y1 * c + about.y + offset.dY),
-            measure.transform(z1 + about.z + offset.dZ),
+            (x1 * c - y1 * s + about.x + offset.dX) * scale,
+            (x1 * s + y1 * c + about.y + offset.dY) * scale,
+            (z1 + about.z +              offset.dZ) * scale,
         )
 //        GL11.glVertex3d(
 //            measure.transform(x1 * c - y1 * s + about.x),
@@ -118,7 +117,7 @@ object GLUtil {
         vertex: Vertex,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         vertexOf(
             x = vertex.x,
@@ -126,7 +125,7 @@ object GLUtil {
             z = vertex.z,
             offset = offset,
             rotation = rotation,
-            measure = measure,
+            scale = scale,
         )
     }
 
@@ -135,7 +134,7 @@ object GLUtil {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         vertexOf(
             x = vertex.x,
@@ -144,7 +143,7 @@ object GLUtil {
             about = about,
             offset = offset,
             rotation = rotation,
-            measure = measure,
+            scale = scale,
         )
     }
 

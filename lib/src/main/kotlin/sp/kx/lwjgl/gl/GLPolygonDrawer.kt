@@ -1,14 +1,13 @@
 package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.Size
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.drawer.PolygonDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
-import sp.kx.math.Measure
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Size
-import sp.kx.math.Vertex
 
 internal object GLPolygonDrawer : PolygonDrawer {
     override fun drawRectangle(
@@ -32,25 +31,29 @@ internal object GLPolygonDrawer : PolygonDrawer {
         size: Size,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(
-                topLeft.x, topLeft.y, topLeft.z,
-                offset = offset, rotation = rotation, measure = measure,
+                topLeft.x, topLeft.y,
+                z = topLeft.z,
+                offset = offset, rotation = rotation, scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x + size.width, topLeft.y, topLeft.z,
-                offset = offset, rotation = rotation, measure = measure,
+                topLeft.x + size.width, topLeft.y,
+                z = topLeft.z,
+                offset = offset, rotation = rotation, scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x, topLeft.y + size.height, topLeft.z,
-                offset = offset, rotation = rotation, measure = measure,
+                topLeft.x, topLeft.y + size.height,
+                z = topLeft.z,
+                offset = offset, rotation = rotation, scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x + size.width, topLeft.y + size.height, topLeft.z,
-                offset = offset, rotation = rotation, measure = measure,
+                topLeft.x + size.width, topLeft.y + size.height,
+                z = topLeft.z,
+                offset = offset, rotation = rotation, scale = scale,
             )
         }
     }
@@ -62,7 +65,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
@@ -71,28 +74,28 @@ internal object GLPolygonDrawer : PolygonDrawer {
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
             GLUtil.vertexOf(
                 topLeft.x + size.width, topLeft.y, topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
             GLUtil.vertexOf(
                 topLeft.x, topLeft.y + size.height, topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
             GLUtil.vertexOf(
                 topLeft.x + size.width, topLeft.y + size.height, topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
         }
     }
@@ -105,7 +108,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         offset: Offset,
         about: Vertex,
         rotation: Rotation,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         if (edgeCount < 3) TODO()
         GLUtil.colorOf(color)
@@ -144,7 +147,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
                     offset = offset,
                     about = about,
                     rotation = rotation,
-                    measure = measure,
+                    scale = scale,
                 )
             }
         }
@@ -199,14 +202,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         center: Vertex,
         radius: Double,
         edgeCount: Int,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         drawCircle(
             color = color,
-            x = measure.transform(center.x),
-            y = measure.transform(center.y),
-            z = measure.transform(center.z),
-            radius = measure.transform(radius),
+            x = center.x * scale,
+            y = center.y * scale,
+            z = center.z * scale,
+            radius = radius * scale,
             edgeCount = edgeCount,
         )
     }
@@ -217,14 +220,14 @@ internal object GLPolygonDrawer : PolygonDrawer {
         radius: Double,
         edgeCount: Int,
         offset: Offset,
-        measure: Measure<Double, Double>
+        scale: Double,
     ) {
         drawCircle(
             color = color,
-            x = measure.transform(center.x + offset.dX),
-            y = measure.transform(center.y + offset.dY),
-            z = measure.transform(center.z + offset.dZ),
-            radius = measure.transform(radius),
+            x = (center.x + offset.dX) * scale,
+            y = (center.y + offset.dY) * scale,
+            z = (center.z + offset.dZ) * scale,
+            radius = radius * scale,
             edgeCount = edgeCount,
         )
     }
@@ -273,7 +276,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
         edgeCount: Int,
         offset: Offset,
         rotation: Rotation,
-        measure: Measure<Double, Double>,
+        scale: Double,
     ) {
         if (edgeCount < 3) TODO()
         GLUtil.colorOf(color)
@@ -305,7 +308,7 @@ internal object GLPolygonDrawer : PolygonDrawer {
                     z = center.z,
                     offset = offset,
                     rotation = rotation,
-                    measure = measure,
+                    scale = scale,
                 )
             }
         }
