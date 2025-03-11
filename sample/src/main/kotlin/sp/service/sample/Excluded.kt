@@ -1,16 +1,10 @@
 package sp.service.sample
 
-import sp.kx.math.Matrix
-import sp.kx.math.Measure
-import sp.kx.math.MutableMatrix
-import sp.kx.math.MutableOffset
-import sp.kx.math.MutableSize
-import sp.kx.math.MutableVertex
-import sp.kx.math.Offset
-import sp.kx.math.Rotation
-import sp.kx.math.Size
-import sp.kx.math.Vertex
-import sp.kx.math.timesAssign
+import sp.kx.calculations.algebra.Matrix
+import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.geometry.MutableVertex
+import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Vertex
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
@@ -25,11 +19,6 @@ internal class MutableIntPoint(
     override var x: Int,
     override var y: Int,
 ) : IntPoint
-
-@Deprecated("sp.kx.math.isEmpty")
-internal fun Offset.isEmpty(): Boolean {
-    return dX == 0.0 && dY == 0.0 && dZ == 0.0
-}
 
 @Deprecated("sp.kx.math.angleOf")
 internal fun angleOf(

@@ -1,5 +1,14 @@
 package sp.service.sample.logics
 
+import sp.kx.calculations.MutableSize
+import sp.kx.calculations.comparisons.isEmpty
+import sp.kx.calculations.geometry.MutableOffset
+import sp.kx.calculations.geometry.MutableRotation
+import sp.kx.calculations.geometry.MutableVertex
+import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.operators.div
+import sp.kx.calculations.physics.diff
+import sp.kx.calculations.physics.frequency
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogics
@@ -7,23 +16,9 @@ import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.kx.math.MutableDoubleMeasure
-import sp.kx.math.MutableOffset
-import sp.kx.math.MutableRotation
-import sp.kx.math.MutableSize
-import sp.kx.math.MutableVertex
-import sp.kx.math.Offset
-import sp.kx.math.Vertex
-import sp.kx.math.center
-import sp.kx.math.diff
-import sp.kx.math.div
-import sp.kx.math.frequency
-import sp.kx.math.mut
 import sp.service.sample.MutableIntPoint
 import sp.service.sample.angleOf
-import sp.service.sample.isEmpty
 import sp.service.sample.length
-import sp.service.sample.rotated
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -37,14 +32,14 @@ internal class TestLogics(
                 KeyboardButton.Escape -> ses = Unit
                 KeyboardButton.C -> {
                     val ps = engine.property.pictureSize
-                    val psu = ps / measure
+                    val psu = ps / scale
                     offset.dX = psu.width / 2
                     offset.dY = psu.height / 2
                     offset.dZ = 0.0
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
-                    setMagnitude(24.0)
+                    setScale(24.0)
                 }
                 KeyboardButton.A -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -70,8 +65,12 @@ internal class TestLogics(
             }
         }
     }
-    private val measure = MutableDoubleMeasure(24.0)
-    private val offset = engine.property.pictureSize.div(measure).center(dZ = 0.0).mut()
+    private var scale = 24.0
+    private val offset = MutableOffset(
+        dX = engine.property.pictureSize.width / 2 / scale,
+        dY = engine.property.pictureSize.height / 2 / scale,
+        dZ = 0.0,
+    )
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
 
     override fun shouldEngineStop(): Boolean {
@@ -95,13 +94,13 @@ internal class TestLogics(
         return offset
     }
 
-    private fun setMagnitude(magnitude: Double) {
+    private fun setScale(value: Double) {
         val ps = engine.property.pictureSize
-        val op = ps / measure
+        val op = ps / scale
         val dw = op.width / 2 - offset.dX
         val dh = op.height / 2 - offset.dY
-        measure.magnitude = magnitude
-        val np = ps / measure
+        scale = value
+        val np = ps / scale
         offset.dX = np.width / 2 - dw
         offset.dY = np.height / 2 - dh
     }
@@ -153,109 +152,19 @@ internal class TestLogics(
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
-            if (measure.magnitude < 64.0) {
+            if (scale < 64.0) {
                 val value = length(24.0, TimeUnit.SECONDS, diff)
-                setMagnitude(kotlin.math.min(64.0, measure.magnitude + value))
+                setScale(kotlin.math.min(64.0, scale + value))
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Minus)) {
-            if (measure.magnitude > 8.0) {
+            if (scale > 8.0) {
                 val value = length(24.0, TimeUnit.SECONDS, diff)
-                setMagnitude(kotlin.math.max(8.0, measure.magnitude - value))
+                setScale(kotlin.math.max(8.0, scale - value))
             }
         }
     }
 
-    private val p1 = MutableVertex(0.0, 0.0, 0.0)
-    private val v00: Vertex = MutableVertex(-4.0, -4.0, 0.0)
-    private val v01: Vertex = MutableVertex(4.0, -4.0, 0.0)
-    private val v10: Vertex = MutableVertex(-4.0, 4.0, 0.0)
-    private val v11: Vertex = MutableVertex(4.0, 4.0, 0.0)
     private val cursor = MutableIntPoint(x = 0, y = 0)
-
-    private fun onRenderVertex(
-        canvas: Canvas,
-        vertex: Vertex,
-        color: Color,
-        text: CharSequence,
-    ) {
-//        val x = measure.transform(vertex.x + offset.dX)
-//        val y = measure.transform(vertex.y + offset.dY)
-//        val z = measure.transform(vertex.z + offset.dZ)
-        val x1 = vertex.x// + offset.dX
-        val y1 = vertex.y// + offset.dY
-        val z1 = vertex.z// + offset.dZ
-        //
-//        val c = kotlin.math.cos(aX)
-//        val s = kotlin.math.sin(aX)
-//        val x2 = x1
-//        val y2 = y1 * c - z1 * s
-//        val z2 = y1 * s + z1 * c
-        //
-//        val c = kotlin.math.cos(aY)
-//        val s = kotlin.math.sin(aY)
-//        val x2 = x1 * c - z1 * s
-//        val y2 = y1
-//        val z2 = x1 * s + z1 * c
-        //
-//        val c = kotlin.math.cos(aZ)
-//        val s = kotlin.math.sin(aZ)
-//        val x2 = x1 * c - y1 * s
-//        val y2 = x1 * s + y1 * c
-//        val z2 = z1
-        //
-//        val x3 = measure.transform(x2 + offset.dX)
-//        val y3 = measure.transform(y2 + offset.dY)
-//        val z3 = measure.transform(z2 + offset.dZ)
-        /*
-        val radius = measure.transform(0.25)
-        canvas.polygons.drawCircle(
-            color = color,
-            center = vertex
-//                .rotatedX(rotation.aX)
-//                .rotatedY(rotation.aY)
-//                .rotatedZ(rotation.aZ)
-                .rotated(rotation)
-                .plus(offset)
-                .times(measure),
-            radius = radius,
-            edgeCount = 4,
-//            offset = offset,
-//            measure = measure,
-        )
-        */
-        //
-//        canvas.polygons.drawCircle(
-//            color = color,
-//            center = vertex,
-//            radius = 2.0,
-//            edgeCount = 16,
-//            offset = offset,
-//            rotation = rotation,
-//            measure = measure,
-//        )
-        //
-        val ps = engine.property.pictureSize
-        val psu = ps / measure
-        canvas.polygons.drawCircle(
-            color = color,
-            center = vertex,
-            radius = 2.0,
-            edgeCount = 16,
-            rotation = rotation,
-//            about = MutableVertex(offset.dX - psu.width / 2, offset.dY - psu.height / 2, offset.dZ),
-            offset = offset,
-            measure = measure,
-        )
-        //
-        canvas.texts.draw(
-            color = color,
-            fontHeight = 1.0,
-            text = text,
-            topLeft = vertex.rotated(rotation),
-            offset = offset,
-            measure = measure,
-        )
-    }
 
     private fun onRenderGrid(
         canvas: Canvas,
@@ -267,7 +176,7 @@ internal class TestLogics(
         val x = - width * rows / 2
         val y = - width * columns / 2
         val ps = engine.property.pictureSize
-        val psu = ps / measure
+        val psu = ps / scale
         for (row in 0..rows) {
             canvas.vectors.draw(
                 color = Color.White,
@@ -276,7 +185,7 @@ internal class TestLogics(
                 offset = offset,
                 about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
         }
         for (column in 0..columns) {
@@ -287,7 +196,7 @@ internal class TestLogics(
                 offset = offset,
                 about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
                 rotation = rotation,
-                measure = measure,
+                scale = scale,
             )
         }
     }
@@ -295,7 +204,7 @@ internal class TestLogics(
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
-        val psu = ps / measure
+        val psu = ps / scale
         onPreRender()
         //
         /*
@@ -353,7 +262,7 @@ internal class TestLogics(
             offset = offset,
             about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
             rotation = rotation,
-            measure = measure,
+            scale = scale,
         )
 //        canvas.vectors.draw(
 //            color = Color.Gray,
@@ -381,7 +290,7 @@ internal class TestLogics(
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),
-            String.format("m: %+6.2f", measure.magnitude),
+            String.format("scale: %+6.2f", scale),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
