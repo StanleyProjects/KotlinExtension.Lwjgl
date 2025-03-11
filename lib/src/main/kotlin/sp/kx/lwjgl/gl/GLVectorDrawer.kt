@@ -1,6 +1,7 @@
 package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.Size
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -119,6 +120,34 @@ internal object GLVectorDrawer : VectorDrawer {
                 vertex = finish,
                 offset = offset,
                 about = about,
+                rotation = rotation,
+                scale = scale,
+            )
+        }
+    }
+
+    override fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        pictureSize: Size,
+        rotation: Rotation,
+        scale: Double,
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(
+                x = start.x, y = start.y, z = start.z,
+                offset = offset,
+                pictureSize = pictureSize,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                x = finish.x, y = finish.y, z = finish.z,
+                offset = offset,
+                pictureSize = pictureSize,
                 rotation = rotation,
                 scale = scale,
             )

@@ -1,12 +1,39 @@
 package sp.service.sample
 
+import sp.kx.calculations.Size
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableVertex
-import sp.kx.calculations.geometry.Rotation
+import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Vertex
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+
+@Deprecated("sp.kx.calculations.copy")
+internal fun Offset.copy(
+    dX: Double = this.dX,
+    dY: Double = this.dY,
+    dZ: Double = this.dZ,
+): Offset {
+    return MutableOffset(
+        dX = dX,
+        dY = dY,
+        dZ = dZ,
+    )
+}
+
+@Deprecated("sp.kx.calculations.pov")
+internal fun pov(
+    pictureSize: Size,
+    offset: Offset,
+): Vertex {
+    return MutableVertex(
+        x = pictureSize.width / 2 - offset.dX,
+        y = pictureSize.height / 2 - offset.dY,
+        z = offset.dZ,
+    )
+}
 
 @Deprecated("sp.kx.math.IntPoint")
 internal interface IntPoint {
@@ -591,26 +618,6 @@ internal fun Vertex.rotatedY(radians: Double): Vertex {
 internal fun Vertex.rotatedZ(radians: Double): Vertex {
     val c = kotlin.math.cos(radians)
     val s = kotlin.math.sin(radians)
-    return MutableVertex(
-        x = x * c - y * s,
-        y = x * s + y * c,
-        z = z,
-    )
-}
-
-@Deprecated("sp.kx.math.rotated")
-internal fun Vertex.rotated(rotation: Rotation): Vertex {
-    var c = kotlin.math.cos(rotation.aX)
-    var s = kotlin.math.sin(rotation.aX)
-    var x = x
-    val y = y * c - z * s
-    var z = y * s + z * c
-    c = kotlin.math.cos(rotation.aY)
-    s = kotlin.math.sin(rotation.aY)
-    x = x * c - z * s
-    z = x * s + z * c
-    c = kotlin.math.cos(rotation.aZ)
-    s = kotlin.math.sin(rotation.aZ)
     return MutableVertex(
         x = x * c - y * s,
         y = x * s + y * c,

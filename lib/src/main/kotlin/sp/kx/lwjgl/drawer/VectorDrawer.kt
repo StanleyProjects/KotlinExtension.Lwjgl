@@ -1,5 +1,6 @@
 package sp.kx.lwjgl.drawer
 
+import sp.kx.calculations.Size
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -55,6 +56,16 @@ interface VectorDrawer {
         finish: Vertex,
         offset: Offset,
         about: Vertex,
+        rotation: Rotation,
+        scale: Double,
+    )
+
+    fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        offset: Offset,
+        pictureSize: Size,
         rotation: Rotation,
         scale: Double,
     )

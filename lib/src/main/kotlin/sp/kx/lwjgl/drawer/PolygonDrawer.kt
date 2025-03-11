@@ -35,6 +35,16 @@ interface PolygonDrawer {
         scale: Double,
     )
 
+    fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        pictureSize: Size,
+        rotation: Rotation,
+        scale: Double,
+    )
+
     fun drawCircle(
         color: Color,
         center: Vertex,

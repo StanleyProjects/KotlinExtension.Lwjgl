@@ -70,30 +70,80 @@ internal object GLPolygonDrawer : PolygonDrawer {
         GLUtil.colorOf(color)
         GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
             GLUtil.vertexOf(
-                topLeft.x, topLeft.y, topLeft.z,
+                topLeft.x, topLeft.y,
+                z = topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
                 scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x + size.width, topLeft.y, topLeft.z,
+                topLeft.x + size.width, topLeft.y,
+                z = topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
                 scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x, topLeft.y + size.height, topLeft.z,
+                topLeft.x, topLeft.y + size.height,
+                z = topLeft.z,
                 offset = offset,
                 about = about,
                 rotation = rotation,
                 scale = scale,
             )
             GLUtil.vertexOf(
-                topLeft.x + size.width, topLeft.y + size.height, topLeft.z,
+                topLeft.x + size.width, topLeft.y + size.height,
+                z = topLeft.z,
                 offset = offset,
                 about = about,
+                rotation = rotation,
+                scale = scale,
+            )
+        }
+    }
+
+    override fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+        offset: Offset,
+        pictureSize: Size,
+        rotation: Rotation,
+        scale: Double
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y,
+                z = topLeft.z,
+                offset = offset,
+                pictureSize = pictureSize,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y,
+                z = topLeft.z,
+                offset = offset,
+                pictureSize = pictureSize,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                topLeft.x, topLeft.y + size.height,
+                z = topLeft.z,
+                offset = offset,
+                pictureSize = pictureSize,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                topLeft.x + size.width, topLeft.y + size.height,
+                z = topLeft.z,
+                offset = offset,
+                pictureSize = pictureSize,
                 rotation = rotation,
                 scale = scale,
             )

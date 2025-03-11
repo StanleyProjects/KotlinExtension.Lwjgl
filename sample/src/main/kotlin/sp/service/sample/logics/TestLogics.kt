@@ -18,7 +18,9 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.MutableIntPoint
 import sp.service.sample.angleOf
+import sp.service.sample.copy
 import sp.service.sample.length
+import sp.service.sample.pov
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -96,14 +98,25 @@ internal class TestLogics(
 
     private fun setScale(value: Double) {
         val ps = engine.property.pictureSize
-        val op = ps / scale
-        val dw = op.width / 2 - offset.dX
-        val dh = op.height / 2 - offset.dY
+        val dw = ps.width / 2 / scale - offset.dX
+        val dh = ps.height / 2 / scale - offset.dY
         scale = value
-        val np = ps / scale
-        offset.dX = np.width / 2 - dw
-        offset.dY = np.height / 2 - dh
+        offset.dX = ps.width / 2 / value - dw
+        offset.dY = ps.height / 2 / value - dh
     }
+
+//    private fun setScale(value: Double) = synchronized(this) {
+//        val ps = engine.property.pictureSize
+//        val ps2w = ps.width / 2
+//        val ps2h = ps.height / 2
+//        val os = scale
+//        val oo = offset.copy()
+//        val dw = ps2w / os - oo.dX
+//        val dh = ps2h / os - oo.dY
+//        scale = value
+//        offset.dX = ps2w / value - dw
+//        offset.dY = ps2h / value - dh
+//    }
 
     private fun onPreRender() {
         val diff = engine.property.time.diff()
@@ -118,37 +131,44 @@ internal class TestLogics(
 //            p1.y += length * kotlin.math.sin(radians)
             }
         }
+        val pi12 = kotlin.math.PI / 2
+        val pi22 = kotlin.math.PI
+        val pi32 = kotlin.math.PI / 2 * 3
+        val pi14 = kotlin.math.PI / 4
+        val max = pi14
+//        val max = pi12
+        val min = -max
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
-            if (rotation.aX < kotlin.math.PI / 4) {
+            if (rotation.aX < max) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aX = kotlin.math.min(kotlin.math.PI / 4, rotation.aX + radians)
+                rotation.aX = kotlin.math.min(max, rotation.aX + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
-            if (rotation.aX > - kotlin.math.PI / 4) {
+            if (rotation.aX > min) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aX = kotlin.math.max(- kotlin.math.PI / 4, rotation.aX - radians)
+                rotation.aX = kotlin.math.max(min, rotation.aX - radians)
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
-            if (rotation.aY < kotlin.math.PI / 4) {
+            if (rotation.aY < max) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aY = kotlin.math.min(kotlin.math.PI / 4, rotation.aY + radians)
+                rotation.aY = kotlin.math.min(max, rotation.aY + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
-            if (rotation.aY > - kotlin.math.PI / 4) {
+            if (rotation.aY > min) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aY = kotlin.math.max(- kotlin.math.PI / 4, rotation.aY - radians)
+                rotation.aY = kotlin.math.max(min, rotation.aY - radians)
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
-            if (rotation.aZ < kotlin.math.PI / 4) {
+            if (rotation.aZ < max) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aZ = kotlin.math.min(kotlin.math.PI / 4, rotation.aZ + radians)
+                rotation.aZ = kotlin.math.min(max, rotation.aZ + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
-            if (rotation.aZ > - kotlin.math.PI / 4) {
+            if (rotation.aZ > min) {
                 val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aZ = kotlin.math.max(- kotlin.math.PI / 4, rotation.aZ - radians)
+                rotation.aZ = kotlin.math.max(min, rotation.aZ - radians)
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
@@ -171,7 +191,9 @@ internal class TestLogics(
         z: Double,
         rows: Int,
         columns: Int,
-        width: Double
+        width: Double,
+        offset: Offset,
+        scale: Double,
     ) {
         val x = - width * rows / 2
         val y = - width * columns / 2
@@ -183,7 +205,9 @@ internal class TestLogics(
                 start = MutableVertex(x + row * width, y, z),
                 finish = MutableVertex(x + row * width, y + columns * width, z),
                 offset = offset,
-                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//                about = pov(psu, offset),
+                pictureSize = psu,
                 rotation = rotation,
                 scale = scale,
             )
@@ -194,7 +218,9 @@ internal class TestLogics(
                 start = MutableVertex(x, y + column * width, z),
                 finish = MutableVertex(x + columns * width, y + column * width, z),
                 offset = offset,
-                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//                about = pov(psu, offset),
+                pictureSize = psu,
                 rotation = rotation,
                 scale = scale,
             )
@@ -204,6 +230,11 @@ internal class TestLogics(
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
+        val scale = scale
+        val offset = offset.copy()
+//        val (offset, scale) = synchronized(this) {
+//            offset.copy() to scale
+//        }
         val psu = ps / scale
         onPreRender()
         //
@@ -250,6 +281,8 @@ internal class TestLogics(
             rows = rows,
             columns = columns,
             width = width,
+            offset = offset,
+            scale = scale,
         )
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
@@ -260,7 +293,9 @@ internal class TestLogics(
             ),
             size = MutableSize(2.0, 2.0),
             offset = offset,
-            about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//            about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+//            about = pov(psu, offset),
+            pictureSize = psu,
             rotation = rotation,
             scale = scale,
         )
