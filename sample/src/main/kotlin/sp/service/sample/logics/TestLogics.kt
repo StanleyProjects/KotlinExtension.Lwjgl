@@ -15,8 +15,10 @@ import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.calculations.geometry.copy
 import sp.kx.calculations.operators.div
+import sp.kx.calculations.operators.times
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
 import sp.kx.lwjgl.engine.Engine
@@ -25,6 +27,7 @@ import sp.kx.lwjgl.engine.EngineLogics
 import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
+import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.angleOf
 import sp.service.sample.length
@@ -125,6 +128,7 @@ internal class TestLogics(
 //        offset.dY = ps2h / value - dh
 //    }
 
+    private var zTest = 0.2
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         if (!engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -189,6 +193,11 @@ internal class TestLogics(
                 setScale(kotlin.math.max(8.0, scale - value))
             }
         }
+        if (engine.input.keyboard.isPressed(KeyboardButton.O)) {
+            zTest -= length(8.0, TimeUnit.SECONDS, diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.P)) {
+            zTest += length(8.0, TimeUnit.SECONDS, diff)
+        }
     }
 
     private val cell = MutableCell(x = 0, y = 0)
@@ -246,7 +255,7 @@ internal class TestLogics(
         val y = - width * columns / 2
         for (row in 0..rows) {
             canvas.vectors.draw(
-                color = Color.White,
+                color = colorOf(0xff8888ff),
                 start = MutableVertex(x + row * width, y, z),
                 finish = MutableVertex(x + row * width, y + columns * width, z),
                 matrix = matrix,
@@ -260,6 +269,97 @@ internal class TestLogics(
                 matrix = matrix,
             )
         }
+    }
+
+    private fun onRenderAxis(
+        canvas: Canvas,
+        color: Color,
+        vertex: Vertex,
+        prefix: CharSequence,
+        matrix: Matrix,
+    ) {
+        canvas.vectors.draw(
+            color = color,
+            start = MutableVertex(0.0, 0.0, 0.0),
+            finish = vertex,
+            matrix = matrix,
+        )
+        val vm = vertex * matrix
+//        val text = String.format("$prefix: %.1f:%.1f:%.1f (%.1f:%.1f:%.1f)", vertex.x, vertex.y, vertex.z, vm.x, vm.y, vm.z)
+        val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = color,
+            fontHeight = 24.0,
+            topLeft = vm,
+            text = text,
+        )
+    }
+
+    private fun onRenderAxes(
+        canvas: Canvas,
+        matrix: Matrix,
+    ) {
+        val v0 = MutableVertex(0.0, 0.0, 0.0)
+        val vX = MutableVertex(4.0, 0.0, 0.0)
+        val vY = MutableVertex(0.0, 4.0, 0.0)
+        val vZ = MutableVertex(0.0, 0.0, 4.0)
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Red,
+            vertex = vX,
+            prefix = "x",
+            matrix = matrix,
+        )
+//        canvas.vectors.draw(
+//            color = Color.Red,
+//            start = v0,
+//            finish = vX,
+//            matrix = matrix,
+//        )
+//        canvas.texts.draw(
+//            color = Color.Red,
+//            fontHeight = 24.0,
+//            topLeft = vX * matrix,
+//            text = "x",
+//        )
+//        canvas.vectors.draw(
+//            color = Color.Green,
+//            start = v0,
+//            finish = vY,
+//            matrix = matrix,
+//        )
+//        canvas.texts.draw(
+//            color = Color.Green,
+//            fontHeight = 24.0,
+//            topLeft = vY * matrix,
+//            text = "y",
+//        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Green,
+            vertex = vY,
+            prefix = "y",
+            matrix = matrix,
+        )
+//        canvas.vectors.draw(
+//            color = Color.Blue,
+//            start = v0,
+//            finish = vZ,
+//            matrix = matrix,
+//        )
+//        canvas.texts.draw(
+//            color = Color.Blue,
+//            fontHeight = 24.0,
+//            topLeft = vZ * matrix,
+//            text = "z",
+//        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Blue,
+            vertex = vZ,
+            prefix = "z",
+            matrix = matrix,
+        )
     }
 
     private val matrix = MutableMatrix()
@@ -337,6 +437,16 @@ internal class TestLogics(
             height = 2.0,
             matrix = matrix,
         )
+        canvas.polygons.drawRectangle(
+            color = Color.White,
+            x = -1.0,
+            y = -1.0,
+            z = zTest,
+            width = 4.0,
+            height = 4.0,
+            matrix = matrix,
+        )
+        onRenderAxes(canvas = canvas, matrix = matrix)
 //        canvas.polygons.drawRectangle(
 //            color = Color.Yellow,
 //            topLeft = MutableVertex(
