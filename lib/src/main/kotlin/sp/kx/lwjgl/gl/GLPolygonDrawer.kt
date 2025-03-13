@@ -33,6 +33,48 @@ internal object GLPolygonDrawer : PolygonDrawer {
         x: Double, y: Double, z: Double,
         width: Double,
         height: Double,
+        offset: Offset,
+        rotation: Rotation,
+        scale: Double,
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(
+                x, y,
+                z = z,
+                offset = offset,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                x + width, y,
+                z = z,
+                offset = offset,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                x, y + height,
+                z = z,
+                offset = offset,
+                rotation = rotation,
+                scale = scale,
+            )
+            GLUtil.vertexOf(
+                x + width, y + height,
+                z = z,
+                offset = offset,
+                rotation = rotation,
+                scale = scale,
+            )
+        }
+    }
+
+    override fun drawRectangle(
+        color: Color,
+        x: Double, y: Double, z: Double,
+        width: Double,
+        height: Double,
         matrix: Matrix,
     ) {
         GLUtil.colorOf(color)

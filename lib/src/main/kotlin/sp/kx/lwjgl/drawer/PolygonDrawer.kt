@@ -24,6 +24,18 @@ interface PolygonDrawer {
         z: Double,
         width: Double,
         height: Double,
+        offset: Offset,
+        rotation: Rotation,
+        scale: Double,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        x: Double,
+        y: Double,
+        z: Double,
+        width: Double,
+        height: Double,
         matrix: Matrix,
     )
 

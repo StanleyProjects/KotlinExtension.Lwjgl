@@ -15,9 +15,12 @@ import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
 import sp.kx.calculations.geometry.copy
+import sp.kx.calculations.geometry.rotate
 import sp.kx.calculations.operators.div
+import sp.kx.calculations.operators.plus
 import sp.kx.calculations.operators.times
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
@@ -31,6 +34,10 @@ import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.angleOf
 import sp.service.sample.length
+import sp.service.sample.rotated
+import sp.service.sample.rotatedX
+import sp.service.sample.rotatedY
+import sp.service.sample.rotatedZ
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -128,7 +135,7 @@ internal class TestLogics(
 //        offset.dY = ps2h / value - dh
 //    }
 
-    private var zTest = 0.2
+    private var zTest = -1.0
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         if (!engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -210,6 +217,7 @@ internal class TestLogics(
         width: Double,
         offset: Offset,
         scale: Double,
+        rotation: Rotation,
     ) {
         val x = - width * rows / 2
         val y = - width * columns / 2
@@ -217,13 +225,13 @@ internal class TestLogics(
         val psu = ps / scale
         for (row in 0..rows) {
             canvas.vectors.draw(
-                color = Color.White,
+                color = colorOf(0xff8888ff),
                 start = MutableVertex(x + row * width, y, z),
                 finish = MutableVertex(x + row * width, y + columns * width, z),
                 offset = offset,
 //                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
 //                about = pov(psu, offset),
-                pictureSize = psu,
+//                pictureSize = psu,
                 rotation = rotation,
                 scale = scale,
             )
@@ -236,7 +244,7 @@ internal class TestLogics(
                 offset = offset,
 //                about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
 //                about = pov(psu, offset),
-                pictureSize = psu,
+//                pictureSize = psu,
                 rotation = rotation,
                 scale = scale,
             )
@@ -292,6 +300,74 @@ internal class TestLogics(
             fontHeight = 24.0,
             topLeft = vm,
             text = text,
+        )
+    }
+
+    private fun onRenderAxis(
+        canvas: Canvas,
+        color: Color,
+        vertex: Vertex,
+        prefix: CharSequence,
+        offset: Offset,
+        scale: Double,
+        rotation: Rotation,
+    ) {
+        canvas.vectors.draw(
+            color = color,
+            start = MutableVertex(0.0, 0.0, 0.0),
+            finish = vertex,
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
+        )
+//        val vm = vertex.rotated(rotation).plus(offset).times(scale)
+        val vm = vertex
+            .rotatedX(rotation.aX)
+            .rotatedY(rotation.aY)
+            .rotatedZ(rotation.aZ)
+            .plus(offset)
+            .times(scale)
+        val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = color,
+            fontHeight = 24.0,
+            topLeft = vm,
+            text = text,
+        )
+    }
+
+    private fun onRenderAxes(
+        canvas: Canvas,
+        offset: Offset,
+        scale: Double,
+        rotation: Rotation,
+    ) {
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Red,
+            vertex = MutableVertex(4.0, 0.0, 0.0),
+            prefix = "x",
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Green,
+            vertex = MutableVertex(0.0, 4.0, 0.0),
+            prefix = "y",
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Blue,
+            vertex = MutableVertex(0.0, 0.0, 4.0),
+            prefix = "z",
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
         )
     }
 
@@ -411,19 +487,20 @@ internal class TestLogics(
         val rows = 8
         val columns = 8
         val width = 2.0
-        matrix.identity()
-        matrix.scale(scale)
-        matrix.translate(offset.dX, offset.dY, offset.dZ)
-        matrix.rotate(rotation.aX, rotation.aY, rotation.aZ)
+//        matrix.identity()
+//        matrix.scale(scale)
+//        matrix.translate(offset.dX, offset.dY, offset.dZ)
+//        matrix.rotate(rotation.aX, rotation.aY, rotation.aZ)
         onRenderGrid(
             canvas = canvas,
             z = -0.5,
             rows = rows,
             columns = columns,
             width = width,
-            matrix = matrix,
-//            offset = offset,
-//            scale = scale,
+//            matrix = matrix,
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
         )
 //        matrix.rz(rotation.aZ)
 //        matrix.ry(rotation.aY)
@@ -435,7 +512,10 @@ internal class TestLogics(
             z = 0.1,
             width = 2.0,
             height = 2.0,
-            matrix = matrix,
+//            matrix = matrix,
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
         )
         canvas.polygons.drawRectangle(
             color = Color.White,
@@ -444,9 +524,17 @@ internal class TestLogics(
             z = zTest,
             width = 4.0,
             height = 4.0,
-            matrix = matrix,
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
         )
-        onRenderAxes(canvas = canvas, matrix = matrix)
+//        onRenderAxes(canvas = canvas, matrix = matrix)
+        onRenderAxes(
+            canvas = canvas,
+            offset = offset,
+            scale = scale,
+            rotation = rotation,
+        )
 //        canvas.polygons.drawRectangle(
 //            color = Color.Yellow,
 //            topLeft = MutableVertex(

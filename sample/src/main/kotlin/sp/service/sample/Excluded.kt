@@ -7,10 +7,40 @@ import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
+import sp.kx.calculations.geometry.rotate
 import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+
+@Deprecated("sp.kx.calculations.rotated")
+internal fun Vertex.rotated(rotation: Rotation): Vertex {
+    return rotate(
+        x = x,
+        y = y,
+        z = z,
+        aX = rotation.aX,
+        aY = rotation.aY,
+        aZ = rotation.aZ,
+    )
+}
+
+@Deprecated("sp.kx.calculations.rotated")
+internal fun Vertex.rotated(
+    aX: Double,
+    aY: Double,
+    aZ: Double,
+): Vertex {
+    return rotate(
+        x = x,
+        y = y,
+        z = z,
+        aX = aX,
+        aY = aY,
+        aZ = aZ,
+    )
+}
 
 @Deprecated("sp.kx.calculations.pov")
 internal fun pov(
