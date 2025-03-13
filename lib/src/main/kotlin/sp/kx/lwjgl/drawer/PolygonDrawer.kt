@@ -1,6 +1,7 @@
 package sp.kx.lwjgl.drawer
 
 import sp.kx.calculations.Size
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -14,6 +15,16 @@ interface PolygonDrawer {
         z: Double,
         width: Double,
         height: Double,
+    )
+
+    fun drawRectangle(
+        color: Color,
+        x: Double,
+        y: Double,
+        z: Double,
+        width: Double,
+        height: Double,
+        matrix: Matrix,
     )
 
     fun drawRectangle(

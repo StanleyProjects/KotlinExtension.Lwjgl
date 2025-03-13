@@ -2,6 +2,7 @@ package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
 import sp.kx.calculations.Size
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -28,6 +29,14 @@ internal object GLVectorDrawer : VectorDrawer {
             x0 = start.x, y0 = start.y, z0 = start.z,
             x1 = finish.x, y1 = finish.y, z1 = finish.z,
         )
+    }
+
+    override fun draw(color: Color, start: Vertex, finish: Vertex, matrix: Matrix) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GLUtil.vertexOf(start, matrix)
+            GLUtil.vertexOf(finish, matrix)
+        }
     }
 
     override fun draw(color: Color, start: Vertex, finish: Vertex, offset: Offset) {

@@ -3,26 +3,14 @@ package sp.service.sample
 import sp.kx.calculations.Size
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
-import sp.kx.calculations.geometry.MutableOffset
+import sp.kx.calculations.algebra.identity
+import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Vertex
 import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
-
-@Deprecated("sp.kx.calculations.copy")
-internal fun Offset.copy(
-    dX: Double = this.dX,
-    dY: Double = this.dY,
-    dZ: Double = this.dZ,
-): Offset {
-    return MutableOffset(
-        dX = dX,
-        dY = dY,
-        dZ = dZ,
-    )
-}
 
 @Deprecated("sp.kx.calculations.pov")
 internal fun pov(
@@ -221,17 +209,6 @@ internal object Matrices {
         )
     }
 
-    fun ofRotationX(radians: Double): Matrix {
-        val c = kotlin.math.cos(radians)
-        val s = kotlin.math.sin(radians)
-        return MutableMatrix(
-            m00 = 1.0, m01 = 0.0, m02 = 0.0, m03 = 0.0,
-            m10 = 0.0, m11 = c, m12 = -s, m13 = 0.0,
-            m20 = 0.0, m21 = s, m22 = c, m23 = 0.0,
-            m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
-        )
-    }
-
     fun ofRotationY(radians: Double): Matrix {
         val c = kotlin.math.cos(radians)
         val s = kotlin.math.sin(radians)
@@ -330,29 +307,17 @@ internal fun MutableMatrix.perform(
     dX: Double,
     dY: Double,
     dZ: Double,
-) {
-    m00 = 1.0; m01 = 0.0; m02 = 0.0; m03 = dX
-    m10 = 0.0; m11 = 1.0; m12 = 0.0; m13 = dY
-    m20 = 0.0; m21 = 0.0; m22 = 1.0; m23 = dZ
-    m30 = 0.0; m31 = 0.0; m32 = 0.0; m33 = 1.0
-}
-
-@Deprecated("sp.kx.math.perform")
-internal fun MutableMatrix.perform(
-    dX: Double,
-    dY: Double,
-    dZ: Double,
     pointOfRotation: Vertex,
     aX: Double,
 ) {
     identity()
 //    mul(MutableMatrix.ofTranslation(dX = dX, dY = dY, dZ = dZ))
-    mul(o03 = dX, o13 = dY, o23 = dZ)
+    translate(dX = dX, dY = dY, dZ = dZ)
 //    mul(MutableMatrix.ofTranslation(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z))
-    mul(o03 = -pointOfRotation.x, o13 = -pointOfRotation.y, o23 = -pointOfRotation.z)
-    timesAssign(Matrices.ofRotationX(radians = aX))
+    translate(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z)
+    timesAssign(MutableMatrix.ofRotationX(radians = aX))
 //    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
-    mul(o03 = pointOfRotation.x, o13 = pointOfRotation.y, o23 = pointOfRotation.z)
+    translate(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z)
 }
 
 @Deprecated("sp.kx.math.perform")
@@ -368,7 +333,7 @@ internal fun MutableMatrix.perform(
     aZ: Double,
 ) {
     identity()
-    mul(o03 = dX, o13 = dY, o23 = dZ)
+    translate(dX = dX, dY = dY, dZ = dZ)
 //    mul(o03 = -rX, o13 = -rY, o23 = -rZ)
 //    mul(MutableMatrix.ofRotationZ(radians = aZ))
 //    mul(MutableMatrix.ofRotationY(radians = aY))
@@ -388,7 +353,7 @@ internal fun MutableMatrix.perform(
     radians: Double,
 ) {
     identity()
-    mul(o03 = dX, o13 = dY, o23 = dZ)
+    translate(dX = dX, dY = dY, dZ = dZ)
     timesAssign(Matrices.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
 }
 
@@ -402,7 +367,7 @@ internal fun MutableMatrix.perform(
     aZ: Double,
 ) {
     identity()
-    mul(o03 = dX, o13 = dY, o23 = dZ)
+    translate(dX = dX, dY = dY, dZ = dZ)
 //    mul(MutableMatrix.ofRotationQ(rX = 1.0, rY = 0.0, rZ = 0.0, radians = aX))
 //    mul(MutableMatrix.ofRotationQ(rX = 0.0, rY = 1.0, rZ = 0.0, radians = aY))
 //    mul(MutableMatrix.ofRotationQ(rX = 0.0, rY = 0.0, rZ = 1.0, radians = aZ))
@@ -412,32 +377,6 @@ internal fun MutableMatrix.perform(
     val q = qX * qY * qZ
     timesAssign(Matrices.ofQuaternion(q))
 }
-
-@Deprecated("sp.kx.math.identity")
-internal fun MutableMatrix.identity() {
-    m00 = 1.0; m01 = 0.0; m02 = 0.0; m03 = 0.0
-    m10 = 0.0; m11 = 1.0; m12 = 0.0; m13 = 0.0
-    m20 = 0.0; m21 = 0.0; m22 = 1.0; m23 = 0.0
-    m30 = 0.0; m31 = 0.0; m32 = 0.0; m33 = 1.0
-}
-
-@Deprecated("sp.kx.math.set")
-internal fun MutableMatrix.set(other: Matrix) {
-    m00 = other.m00; m01 = other.m01; m02 = other.m02; m03 = other.m03
-    m10 = other.m10; m11 = other.m11; m12 = other.m12; m13 = other.m13
-    m20 = other.m20; m21 = other.m21; m22 = other.m22; m23 = other.m23
-    m30 = other.m30; m31 = other.m31; m32 = other.m32; m33 = other.m33
-}
-
-//@Deprecated("sp.kx.math.ortho")
-//internal fun MutableMatrix.ortho(width: Double, height: Double) {
-//    m00 = 2.0 / width
-//    m11 = -2.0 / height
-//    m22 = -2.0
-//    m30 = -1.0
-//    m31 = 1.0
-//    m32 = -1.0
-//}
 
 @Deprecated("sp.kx.math.ortho")
 internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double, zNear: Double, zFar: Double) {
@@ -548,37 +487,6 @@ internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
     m20 = -s
     m22 = c
 //    translate(dX = oX, dY = 0.0, dZ = oZ)
-}
-
-@Deprecated("sp.kx.math.translate")
-internal fun MutableMatrix.translate(dX: Double, dY: Double, dZ: Double) {
-    m03 = dX
-    m13 = dY
-    m23 = dZ
-}
-
-@Deprecated("sp.kx.math.scale")
-internal fun MutableMatrix.scale(dX: Double, dY: Double, dZ: Double) {
-    m00 = dX
-    m11 = dY
-    m22 = dZ
-}
-
-@Deprecated("sp.kx.math.mul")
-internal fun MutableMatrix.mul(o03: Double, o13: Double, o23: Double) {
-    m03 += m00 * o03 + m01 * o13 + m02 * o23
-    m13 += m10 * o03 + m11 * o13 + m12 * o23
-    m23 += m20 * o03 + m21 * o13 + m22 * o23
-    m33 += m30 * o03 + m31 * o13 + m32 * o23
-}
-
-@Deprecated("sp.kx.math.copy")
-internal fun Vertex.copy(x: Double = this.x, y: Double = this.y, z: Double = this.z): Vertex {
-    return MutableVertex(
-        x = x,
-        y = y,
-        z = z,
-    )
 }
 
 @Deprecated("sp.kx.math.rotatedX")

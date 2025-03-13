@@ -1,6 +1,7 @@
 package sp.kx.lwjgl.drawer
 
 import sp.kx.calculations.Size
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -17,6 +18,13 @@ interface VectorDrawer {
         color: Color,
         start: Vertex,
         finish: Vertex,
+    )
+
+    fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+        matrix: Matrix,
     )
 
     fun draw(

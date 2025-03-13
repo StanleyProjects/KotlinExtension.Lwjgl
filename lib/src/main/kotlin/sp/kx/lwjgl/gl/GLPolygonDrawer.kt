@@ -2,9 +2,12 @@ package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
 import sp.kx.calculations.Size
+import sp.kx.calculations.algebra.Matrix
+import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
+import sp.kx.calculations.operators.times
 import sp.kx.lwjgl.drawer.PolygonDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
@@ -22,6 +25,22 @@ internal object GLPolygonDrawer : PolygonDrawer {
             GL11.glVertex3d(x + width, y, z)
             GL11.glVertex3d(x, y + height, z)
             GL11.glVertex3d(x + width, y + height, z)
+        }
+    }
+
+    override fun drawRectangle(
+        color: Color,
+        x: Double, y: Double, z: Double,
+        width: Double,
+        height: Double,
+        matrix: Matrix,
+    ) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(x, y, z, matrix = matrix)
+            GLUtil.vertexOf(x + width, y, z, matrix = matrix)
+            GLUtil.vertexOf(x, y + height, z, matrix = matrix)
+            GLUtil.vertexOf(x + width, y + height, z, matrix = matrix)
         }
     }
 

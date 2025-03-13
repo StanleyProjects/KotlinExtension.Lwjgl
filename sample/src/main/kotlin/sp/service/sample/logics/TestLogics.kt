@@ -1,12 +1,21 @@
 package sp.service.sample.logics
 
 import sp.kx.calculations.MutableCell
-import sp.kx.calculations.MutableSize
+import sp.kx.calculations.algebra.Matrix
+import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.algebra.identity
+import sp.kx.calculations.algebra.rotate
+import sp.kx.calculations.algebra.rx
+import sp.kx.calculations.algebra.ry
+import sp.kx.calculations.algebra.rz
+import sp.kx.calculations.algebra.scale
+import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.copy
 import sp.kx.calculations.operators.div
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
@@ -18,7 +27,6 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.angleOf
-import sp.service.sample.copy
 import sp.service.sample.length
 import java.util.concurrent.TimeUnit
 
@@ -226,6 +234,35 @@ internal class TestLogics(
         }
     }
 
+    private fun onRenderGrid(
+        canvas: Canvas,
+        z: Double,
+        rows: Int,
+        columns: Int,
+        width: Double,
+        matrix: Matrix,
+    ) {
+        val x = - width * rows / 2
+        val y = - width * columns / 2
+        for (row in 0..rows) {
+            canvas.vectors.draw(
+                color = Color.White,
+                start = MutableVertex(x + row * width, y, z),
+                finish = MutableVertex(x + row * width, y + columns * width, z),
+                matrix = matrix,
+            )
+        }
+        for (column in 0..columns) {
+            canvas.vectors.draw(
+                color = Color.Gray,
+                start = MutableVertex(x, y + column * width, z),
+                finish = MutableVertex(x + columns * width, y + column * width, z),
+                matrix = matrix,
+            )
+        }
+    }
+
+    private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val ps = engine.property.pictureSize
@@ -274,30 +311,47 @@ internal class TestLogics(
         val rows = 8
         val columns = 8
         val width = 2.0
+        matrix.identity()
+        matrix.scale(scale)
+        matrix.translate(offset.dX, offset.dY, offset.dZ)
+        matrix.rotate(rotation.aX, rotation.aY, rotation.aZ)
         onRenderGrid(
             canvas = canvas,
             z = -0.5,
             rows = rows,
             columns = columns,
             width = width,
-            offset = offset,
-            scale = scale,
+            matrix = matrix,
+//            offset = offset,
+//            scale = scale,
         )
+//        matrix.rz(rotation.aZ)
+//        matrix.ry(rotation.aY)
+//        matrix.rx(rotation.aX)
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
-            topLeft = MutableVertex(
-                x = (cell.x - rows / 2) * width,
-                y = (cell.y - columns / 2) * width,
-                z = 0.1,
-            ),
-            size = MutableSize(2.0, 2.0),
-            offset = offset,
-//            about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
-//            about = pov(psu, offset),
-            pictureSize = psu,
-            rotation = rotation,
-            scale = scale,
+            x = (cell.x - rows / 2) * width,
+            y = (cell.y - columns / 2) * width,
+            z = 0.1,
+            width = 2.0,
+            height = 2.0,
+            matrix = matrix,
         )
+//        canvas.polygons.drawRectangle(
+//            color = Color.Yellow,
+//            topLeft = MutableVertex(
+//                x = (cell.x - rows / 2) * width,
+//                y = (cell.y - columns / 2) * width,
+//                z = 0.1,
+//            ),
+//            size = MutableSize(2.0, 2.0),
+//            offset = offset,
+////            about = MutableVertex(psu.width / 2 - offset.dX, psu.height / 2 - offset.dY, offset.dZ),
+////            about = pov(psu, offset),
+//            pictureSize = psu,
+//            rotation = rotation,
+//            scale = scale,
+//        )
 //        canvas.vectors.draw(
 //            color = Color.Gray,
 //            start = MutableVertex(x = 0.0, y = ps.height / 2, z = 0.0),
