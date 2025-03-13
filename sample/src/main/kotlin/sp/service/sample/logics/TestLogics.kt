@@ -1,5 +1,6 @@
 package sp.service.sample.logics
 
+import sp.kx.calculations.MutableCell
 import sp.kx.calculations.MutableSize
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
@@ -16,11 +17,9 @@ import sp.kx.lwjgl.engine.input.Keyboard
 import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.input.KeyboardButton
-import sp.service.sample.MutableIntPoint
 import sp.service.sample.angleOf
 import sp.service.sample.copy
 import sp.service.sample.length
-import sp.service.sample.pov
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -45,22 +44,22 @@ internal class TestLogics(
                 }
                 KeyboardButton.A -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
-                        cursor.x -= 1
+                        cell.x -= 1
                     }
                 }
                 KeyboardButton.D -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
-                        cursor.x += 1
+                        cell.x += 1
                     }
                 }
                 KeyboardButton.W -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
-                        cursor.y -= 1
+                        cell.y -= 1
                     }
                 }
                 KeyboardButton.S -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
-                        cursor.y += 1
+                        cell.y += 1
                     }
                 }
                 else -> Unit
@@ -184,7 +183,7 @@ internal class TestLogics(
         }
     }
 
-    private val cursor = MutableIntPoint(x = 0, y = 0)
+    private val cell = MutableCell(x = 0, y = 0)
 
     private fun onRenderGrid(
         canvas: Canvas,
@@ -287,8 +286,8 @@ internal class TestLogics(
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
             topLeft = MutableVertex(
-                x = (cursor.x - rows / 2) * width,
-                y = (cursor.y - columns / 2) * width,
+                x = (cell.x - rows / 2) * width,
+                y = (cell.y - columns / 2) * width,
                 z = 0.1,
             ),
             size = MutableSize(2.0, 2.0),

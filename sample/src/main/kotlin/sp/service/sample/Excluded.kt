@@ -36,18 +36,6 @@ internal fun pov(
     )
 }
 
-@Deprecated("sp.kx.math.IntPoint")
-internal interface IntPoint {
-    val x: Int
-    val y: Int
-}
-
-@Deprecated("sp.kx.math.MutableIntPoint")
-internal class MutableIntPoint(
-    override var x: Int,
-    override var y: Int,
-) : IntPoint
-
 @Deprecated("sp.kx.math.angleOf")
 internal fun angleOf(
     aX: Double,
