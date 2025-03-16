@@ -25,7 +25,10 @@ import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.angleOf
+import sp.service.sample.div
 import sp.service.sample.length
+import sp.service.sample.minus
+import sp.service.sample.plus
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -38,11 +41,9 @@ internal class TestLogics(
             when (button) {
                 KeyboardButton.Escape -> ses = Unit
                 KeyboardButton.C -> {
-                    val ps = engine.property.pictureSize
-                    val psu = ps / scale
-                    offset.dX = psu.width / 2
-                    offset.dY = psu.height / 2
-                    offset.dZ = 0.0
+                    camera.dX = 0.0
+                    camera.dY = 0.0
+                    camera.dZ = 0.0
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
@@ -73,11 +74,7 @@ internal class TestLogics(
         }
     }
     private var scale = 24.0
-    private val offset = MutableOffset(
-        dX = engine.property.pictureSize.width / 2 / scale,
-        dY = engine.property.pictureSize.height / 2 / scale,
-        dZ = 0.0,
-    )
+    private val camera = MutableOffset(0.0, 0.0, 0.0)
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
 
     override fun shouldEngineStop(): Boolean {
@@ -102,12 +99,17 @@ internal class TestLogics(
     }
 
     private fun setScale(value: Double) {
-        val ps = engine.property.pictureSize
-        val dw = ps.width / 2 / scale - offset.dX
-        val dh = ps.height / 2 / scale - offset.dY
+        val pic = engine.property.picture
+        val offset = MutableOffset(
+            dX = camera.dX + pic.center.dX / scale,
+            dY = camera.dY + pic.center.dY / scale,
+            dZ = camera.dZ,
+        )
+        val dw = pic.size.width / 2 / scale - offset.dX
+        val dh = pic.size.height / 2 / scale - offset.dY
         scale = value
-        offset.dX = ps.width / 2 / value - dw
-        offset.dY = ps.height / 2 / value - dh
+        camera.dX = pic.size.width / 2 / value - dw - pic.center.dX / value
+        camera.dY = pic.size.height / 2 / value - dh - pic.center.dY / value
     }
 
     private var zTest = -1.0
@@ -118,10 +120,8 @@ internal class TestLogics(
             if (!offset.isEmpty()) {
                 val length = length(8.0, TimeUnit.SECONDS, diff)
                 val radians = angleOf(x = offset.dX, y = offset.dY)
-                this.offset.dX -= length * kotlin.math.cos(radians)
-                this.offset.dY -= length * kotlin.math.sin(radians)
-//            p1.x += length * kotlin.math.cos(radians)
-//            p1.y += length * kotlin.math.sin(radians)
+                this.camera.dX -= length * kotlin.math.cos(radians)
+                this.camera.dY -= length * kotlin.math.sin(radians)
             }
         }
         val pi12 = kotlin.math.PI / 2
@@ -292,10 +292,16 @@ internal class TestLogics(
 
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
-        val ps = engine.property.pictureSize
+        val pic = engine.property.picture
         val scale = scale
-        val offset = offset.copy()
-        val psu = ps / scale
+//        val offset = camera + pic.center / scale
+        val offset = MutableOffset(
+            dX = camera.dX + pic.center.dX / scale,
+            dY = camera.dY + pic.center.dY / scale,
+            dZ = camera.dZ,
+        )
+//        val offset = MutableOffset(0.0, 0.0, 0.0)
+        val psu = pic.size / scale
         onPreRender()
         //
         val rows = 8
@@ -356,13 +362,15 @@ internal class TestLogics(
             color = Color.Green,
             fontHeight = fontHeight,
             text = String.format("%6.2f", fps),
-            topLeft = MutableVertex(x = ps.width - 96.0, y = ps.height - fontHeight * 2, z = 0.0),
+            topLeft = MutableVertex(x = pic.size.width - 96.0, y = pic.size.height - fontHeight * 2, z = 0.0),
         )
         listOf(
-            String.format("dX: %+6.2f", offset.dX - psu.width / 2),
-            String.format("dY: %+6.2f", offset.dY - psu.height / 2),
-//            String.format("pX: %+6.2f", p1.x),
-//            String.format("pY: %+6.2f", p1.y),
+            String.format("cX: %+6.2f", camera.dX),
+            String.format("cY: %+6.2f", camera.dY),
+            String.format("cZ: %+6.2f", camera.dZ),
+            String.format("oX: %+6.2f", offset.dX),
+            String.format("oY: %+6.2f", offset.dY),
+            String.format("oZ: %+6.2f", offset.dZ),
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),

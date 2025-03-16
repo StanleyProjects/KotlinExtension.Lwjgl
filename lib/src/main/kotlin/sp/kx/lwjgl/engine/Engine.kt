@@ -4,9 +4,9 @@ import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL11
-import sp.kx.calculations.MutableSize
 import sp.kx.calculations.Size
 import sp.kx.lwjgl.engine.input.StatefulKeyboard
+import sp.kx.lwjgl.entity.MutablePicture
 import sp.kx.lwjgl.entity.engine.MutableEngineProperty
 import sp.kx.lwjgl.glfw.GLFWUtil
 import sp.kx.lwjgl.glfw.WindowUtil
@@ -38,8 +38,7 @@ sealed interface Engine {
             val engine = MutableEngine(
                 input = EngineInputState(keyboard),
                 property = MutableEngineProperty(
-//                    pictureSize = size ?: Size.Undefined, // todo
-                    pictureSize = size ?: MutableSize(Double.NaN, Double.NaN),
+                    picture = MutablePicture.of(size),
                     ortho = BufferUtils.createDoubleBuffer(16),
                 ),
             )
@@ -55,11 +54,11 @@ sealed interface Engine {
                 },
                 onWindowResizeCallback = { _: Long, width: Int, height: Int ->
                     println("Engine: on -> window resize callback: width: $width height: $height") // todo
-                    engine.property.pictureSize = MutableSize(width = width.toDouble(), height = height.toDouble()) // todo
+                    engine.property.picture.set(width = width.toDouble(), height = height.toDouble())
                     GLUtil.ortho(
                         buffer = engine.property.ortho,
-                        width = engine.property.pictureSize.width,
-                        height = engine.property.pictureSize.height,
+                        width = engine.property.picture.size.width,
+                        height = engine.property.picture.size.height,
                         zNear = zNear,
                         zFar = zFar,
                     )
@@ -68,12 +67,12 @@ sealed interface Engine {
                 onPreLoop = { windowId ->
                     engine.property.launched = times.now()
                     engine.property.time.a = engine.property.launched
-                    engine.property.pictureSize = GLFWUtil.getWindowSize(windowId)
-                    println("Engine: on -> pre loop: width: ${engine.property.pictureSize}") // todo
+                    engine.property.picture.set(GLFWUtil.getWindowSize(windowId))
+                    println("Engine: on -> pre loop: width: ${engine.property.picture.size}") // todo
                     GLUtil.ortho(
                         buffer = engine.property.ortho,
-                        width = engine.property.pictureSize.width,
-                        height = engine.property.pictureSize.height,
+                        width = engine.property.picture.size.width,
+                        height = engine.property.picture.size.height,
                         zNear = zNear,
                         zFar = zFar,
                     )

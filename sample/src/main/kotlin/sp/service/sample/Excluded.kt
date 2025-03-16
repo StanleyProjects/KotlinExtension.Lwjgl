@@ -5,6 +5,7 @@ import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.translate
+import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Vertex
@@ -12,6 +13,33 @@ import sp.kx.calculations.operators.times
 import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+
+@Deprecated("sp.kx.calculations.plus")
+internal operator fun Offset.div(scale: Double): Offset {
+    return MutableOffset(
+        dX = dX / scale,
+        dY = dY / scale,
+        dZ = dZ / scale,
+    )
+}
+
+@Deprecated("sp.kx.calculations.plus")
+internal operator fun Offset.plus(other: Offset): Offset {
+    return MutableOffset(
+        dX = dX + other.dX,
+        dY = dY + other.dY,
+        dZ = dZ + other.dZ,
+    )
+}
+
+@Deprecated("sp.kx.calculations.minus")
+internal operator fun Offset.minus(other: Offset): Offset {
+    return MutableOffset(
+        dX = dX - other.dX,
+        dY = dY - other.dY,
+        dZ = dZ - other.dZ,
+    )
+}
 
 @Deprecated("sp.kx.calculations.pov")
 internal fun pov(
