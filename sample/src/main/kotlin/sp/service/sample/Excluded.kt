@@ -7,40 +7,11 @@ import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
-import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
-import sp.kx.calculations.geometry.rotate
+import sp.kx.calculations.operators.times
 import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
-
-@Deprecated("sp.kx.calculations.rotated")
-internal fun Vertex.rotated(rotation: Rotation): Vertex {
-    return rotate(
-        x = x,
-        y = y,
-        z = z,
-        aX = rotation.aX,
-        aY = rotation.aY,
-        aZ = rotation.aZ,
-    )
-}
-
-@Deprecated("sp.kx.calculations.rotated")
-internal fun Vertex.rotated(
-    aX: Double,
-    aY: Double,
-    aZ: Double,
-): Vertex {
-    return rotate(
-        x = x,
-        y = y,
-        z = z,
-        aX = aX,
-        aY = aY,
-        aZ = aZ,
-    )
-}
 
 @Deprecated("sp.kx.calculations.pov")
 internal fun pov(
@@ -144,15 +115,6 @@ internal operator fun Vertex.plus(other: Vertex): Vertex {
         x = x + other.x,
         y = y + other.y,
         z = z + other.z,
-    )
-}
-
-@Deprecated("sp.kx.math.times")
-internal operator fun Vertex.times(value: Double): Vertex {
-    return MutableVertex(
-        x = x * value,
-        y = y * value,
-        z = z * value,
     )
 }
 
@@ -337,61 +299,6 @@ internal fun MutableMatrix.perform(
     dX: Double,
     dY: Double,
     dZ: Double,
-    pointOfRotation: Vertex,
-    aX: Double,
-) {
-    identity()
-//    mul(MutableMatrix.ofTranslation(dX = dX, dY = dY, dZ = dZ))
-    translate(dX = dX, dY = dY, dZ = dZ)
-//    mul(MutableMatrix.ofTranslation(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z))
-    translate(dX = -pointOfRotation.x, dY = -pointOfRotation.y, dZ = -pointOfRotation.z)
-    timesAssign(MutableMatrix.ofRotationX(radians = aX))
-//    mul(MutableMatrix.ofTranslation(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z))
-    translate(dX = pointOfRotation.x, dY = pointOfRotation.y, dZ = pointOfRotation.z)
-}
-
-@Deprecated("sp.kx.math.perform")
-internal fun MutableMatrix.perform(
-    dX: Double,
-    dY: Double,
-    dZ: Double,
-    rX: Double,
-    rY: Double,
-    rZ: Double,
-    aX: Double,
-    aY: Double,
-    aZ: Double,
-) {
-    identity()
-    translate(dX = dX, dY = dY, dZ = dZ)
-//    mul(o03 = -rX, o13 = -rY, o23 = -rZ)
-//    mul(MutableMatrix.ofRotationZ(radians = aZ))
-//    mul(MutableMatrix.ofRotationY(radians = aY))
-//    mul(MutableMatrix.ofRotationX(radians = aX))
-    timesAssign(Matrices.ofRotation(aX = aX, aY = aY, aZ = aZ))
-//    mul(o03 = rX, o13 = rY, o23 = rZ)
-}
-
-@Deprecated("sp.kx.math.perform")
-internal fun MutableMatrix.perform(
-    dX: Double,
-    dY: Double,
-    dZ: Double,
-    rX: Double,
-    rY: Double,
-    rZ: Double,
-    radians: Double,
-) {
-    identity()
-    translate(dX = dX, dY = dY, dZ = dZ)
-    timesAssign(Matrices.ofRotation(rX = rX, rY = rY, rZ = rZ, radians = radians))
-}
-
-@Deprecated("sp.kx.math.perform")
-internal fun MutableMatrix.perform(
-    dX: Double,
-    dY: Double,
-    dZ: Double,
     aX: Double,
     aY: Double,
     aZ: Double,
@@ -465,89 +372,4 @@ internal fun MutableMatrix.ortho(r: Double, b: Double) {
     m21 *= rm22
     m22 *= rm22
     m23 *= rm22
-}
-
-@Deprecated("sp.kx.math.rotateX")
-internal fun MutableMatrix.rotateX(value: Double) {
-    m11 *= java.lang.Math.cos(value)
-    m12 *= -java.lang.Math.sin(value)
-    m21 *= java.lang.Math.sin(value)
-    m22 *= java.lang.Math.cos(value)
-}
-
-@Deprecated("sp.kx.math.rotateY")
-internal fun MutableMatrix.rotateY(value: Double) {
-    m00 *= java.lang.Math.cos(value)
-    m02 *= -java.lang.Math.sin(value)
-    m20 *= java.lang.Math.sin(value)
-    m22 *= java.lang.Math.cos(value)
-}
-
-@Deprecated("sp.kx.math.rotateX")
-internal fun MutableMatrix.rotateX(oY: Double, oZ: Double, radians: Double) {
-//    translate(dX = -oX, dY = 0.0, dZ = -oZ)
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    m11 = c
-    m12 = -s
-    m21 = s
-    m22 = c
-//    translate(dX = oX, dY = 0.0, dZ = oZ)
-}
-
-@Deprecated("sp.kx.math.rotateX")
-internal fun MutableMatrix.rotateX(oX: Double, oY: Double, oZ: Double, radians: Double) {
-    translate(dX = -oX, dY = 0.0, dZ = -oZ)
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    m11 = c
-    m12 = -s
-    m21 = s
-    m22 = c
-    translate(dX = oX, dY = 0.0, dZ = oZ)
-}
-
-@Deprecated("sp.kx.math.rotateY")
-internal fun MutableMatrix.rotateY(oX: Double, oZ: Double, radians: Double) {
-//    translate(dX = -oX, dY = 0.0, dZ = -oZ)
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    m00 = c
-    m02 = s
-    m20 = -s
-    m22 = c
-//    translate(dX = oX, dY = 0.0, dZ = oZ)
-}
-
-@Deprecated("sp.kx.math.rotatedX")
-internal fun Vertex.rotatedX(radians: Double): Vertex {
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    return MutableVertex(
-        x = x,
-        y = y * c - z * s,
-        z = y * s + z * c,
-    )
-}
-
-@Deprecated("sp.kx.math.rotatedY")
-internal fun Vertex.rotatedY(radians: Double): Vertex {
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    return MutableVertex(
-        x = x * c - z * s,
-        y = y,
-        z = x * s + z * c,
-    )
-}
-
-@Deprecated("sp.kx.math.rotatedZ")
-internal fun Vertex.rotatedZ(radians: Double): Vertex {
-    val c = kotlin.math.cos(radians)
-    val s = kotlin.math.sin(radians)
-    return MutableVertex(
-        x = x * c - y * s,
-        y = x * s + y * c,
-        z = z,
-    )
 }

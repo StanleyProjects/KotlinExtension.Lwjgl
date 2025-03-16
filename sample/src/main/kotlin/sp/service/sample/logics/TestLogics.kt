@@ -3,13 +3,6 @@ package sp.service.sample.logics
 import sp.kx.calculations.MutableCell
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
-import sp.kx.calculations.algebra.identity
-import sp.kx.calculations.algebra.rotate
-import sp.kx.calculations.algebra.rx
-import sp.kx.calculations.algebra.ry
-import sp.kx.calculations.algebra.rz
-import sp.kx.calculations.algebra.scale
-import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
@@ -18,12 +11,13 @@ import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
 import sp.kx.calculations.geometry.copy
-import sp.kx.calculations.geometry.rotate
 import sp.kx.calculations.operators.div
 import sp.kx.calculations.operators.plus
 import sp.kx.calculations.operators.times
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
+import sp.kx.calculations.rotations.rxyz
+import sp.kx.calculations.rotations.rzyx
 import sp.kx.lwjgl.engine.Engine
 import sp.kx.lwjgl.engine.EngineInputCallback
 import sp.kx.lwjgl.engine.EngineLogics
@@ -34,10 +28,6 @@ import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.service.sample.angleOf
 import sp.service.sample.length
-import sp.service.sample.rotated
-import sp.service.sample.rotatedX
-import sp.service.sample.rotatedY
-import sp.service.sample.rotatedZ
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -320,11 +310,7 @@ internal class TestLogics(
             scale = scale,
             rotation = rotation,
         )
-//        val vm = vertex.rotated(rotation).plus(offset).times(scale)
-        val vm = vertex
-            .rotatedX(rotation.aX)
-            .rotatedY(rotation.aY)
-            .rotatedZ(rotation.aZ)
+        val vm = rxyz(vertex, rotation)
             .plus(offset)
             .times(scale)
         val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
