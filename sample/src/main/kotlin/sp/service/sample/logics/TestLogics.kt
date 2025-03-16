@@ -29,6 +29,7 @@ import sp.service.sample.div
 import sp.service.sample.length
 import sp.service.sample.minus
 import sp.service.sample.plus
+import sp.service.sample.times
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -190,19 +191,30 @@ internal class TestLogics(
         rows: Int,
         columns: Int,
         width: Double,
+        rotation: Rotation,
+        about: Vertex,
         offset: Offset,
         scale: Double,
-        rotation: Rotation,
     ) {
         val x = - width * rows / 2
         val y = - width * columns / 2
+        val vm = rxyz(MutableVertex(x, y, z), rotation, about = about)
+            .plus(offset)
+            .times(scale)
+        val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = colorOf(0xff8888ff),
+            fontHeight = 16.0,
+            topLeft = vm,
+            text = text,
+        )
         for (row in 0..rows) {
             canvas.vectors.draw(
                 color = colorOf(0xff8888ff),
                 start = MutableVertex(x + row * width, y, z),
                 finish = MutableVertex(x + row * width, y + columns * width, z),
                 rotation = rotation,
-                about = MutableVertex(0.0, 0.0, 0.0),
+                about = about,
                 offset = offset,
                 scale = scale,
             )
@@ -213,7 +225,7 @@ internal class TestLogics(
                 start = MutableVertex(x, y + column * width, z),
                 finish = MutableVertex(x + columns * width, y + column * width, z),
                 rotation = rotation,
-                about = MutableVertex(0.0, 0.0, 0.0),
+                about = about,
                 offset = offset,
                 scale = scale,
             )
@@ -239,7 +251,7 @@ internal class TestLogics(
             offset = offset,
             scale = scale,
         )
-        val vm = rxyz(vertex, rotation)
+        val vm = rxyz(vertex, rotation, about = about)
             .plus(offset)
             .times(scale)
         val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
@@ -307,15 +319,18 @@ internal class TestLogics(
         val rows = 8
         val columns = 8
         val width = 2.0
+//        val about = MutableVertex(0.0, 0.0, 0.0)
+        val about = MutableVertex(-camera.dX, -camera.dY, -camera.dZ)
         onRenderGrid(
             canvas = canvas,
             z = -0.5,
             rows = rows,
             columns = columns,
             width = width,
+            rotation = rotation,
+            about = about,
             offset = offset,
             scale = scale,
-            rotation = rotation,
         )
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
@@ -329,7 +344,7 @@ internal class TestLogics(
                 height = 2.0,
             ),
             rotation = rotation,
-            about = MutableVertex(0.0, 0.0, 0.0),
+            about = about,
             offset = offset,
             scale = scale,
         )
@@ -345,14 +360,14 @@ internal class TestLogics(
                 height = 4.0,
             ),
             rotation = rotation,
-            about = MutableVertex(0.0, 0.0, 0.0),
+            about = about,
             offset = offset,
             scale = scale,
         )
         onRenderAxes(
             canvas = canvas,
             rotation = rotation,
-            about = MutableVertex(0.0, 0.0, 0.0),
+            about = about,
             offset = offset,
             scale = scale,
         )

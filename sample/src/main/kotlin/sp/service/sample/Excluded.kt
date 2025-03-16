@@ -14,7 +14,16 @@ import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
-@Deprecated("sp.kx.calculations.plus")
+@Deprecated("sp.kx.calculations.times")
+internal operator fun Offset.times(scale: Double): Offset {
+    return MutableOffset(
+        dX = dX * scale,
+        dY = dY * scale,
+        dZ = dZ * scale,
+    )
+}
+
+@Deprecated("sp.kx.calculations.div")
 internal operator fun Offset.div(scale: Double): Offset {
     return MutableOffset(
         dX = dX / scale,

@@ -28,8 +28,8 @@ sealed interface Engine {
             monitorIdSupplier: () -> Long = GLFW::glfwGetPrimaryMonitor,
             times: Times = SystemTimes,
             defaultFontName: String,
-            zNear: Double = -512.0,
-            zFar: Double = 512.0,
+            zNear: Double = -1024.0,
+            zFar: Double = 1024.0,
         ) {
             // todo run once
             // todo logger
