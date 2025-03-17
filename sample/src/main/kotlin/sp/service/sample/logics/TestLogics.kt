@@ -29,10 +29,12 @@ import sp.kx.lwjgl.entity.Canvas
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
+import sp.kx.lwjgl.opengl.GLUtil
 import sp.service.sample.angleOf
 import sp.service.sample.div
 import sp.service.sample.length
 import sp.service.sample.minus
+import sp.service.sample.ortho
 import sp.service.sample.plus
 import sp.service.sample.times
 import sp.service.sample.translate
@@ -396,6 +398,36 @@ internal class TestLogics(
 
     private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
+        val fps = engine.property.time.frequency()
+        val pic = engine.property.picture
+        onPreRender()
+        //
+        GLUtil.onMatrix {
+            val offset = MutableOffset(
+                dX = camera.dX + pic.center.dX / scale,
+                dY = camera.dY + pic.center.dY / scale,
+                dZ = camera.dZ,
+            )
+            matrix.identity()
+            matrix.ortho(r = pic.size.width, b = pic.size.height)
+            val about = MutableVertex(-camera.dX, -camera.dY, -camera.dZ)
+            matrix.identity()
+            matrix.scale(scale)
+            matrix.translate(offset)
+            matrix.rxyz(rotation, about)
+            onRenderAxes(canvas = canvas, matrix = matrix)
+        }
+        //
+        val fontHeight = 24.0
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = fontHeight,
+            text = String.format("%6.2f", fps),
+            topLeft = MutableVertex(x = pic.size.width - 96.0, y = pic.size.height - fontHeight * 2, z = 0.0),
+        )
+    }
+
+    private fun onRenderOld(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
         val scale = scale

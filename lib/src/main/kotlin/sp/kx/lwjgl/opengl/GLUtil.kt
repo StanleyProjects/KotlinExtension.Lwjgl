@@ -52,6 +52,12 @@ object GLUtil {
         GL11.glEnd()
     }
 
+    fun onMatrix(block: () -> Unit) {
+        GL11.glPushMatrix()
+        block()
+        GL11.glPopMatrix()
+    }
+
     fun ortho(
         buffer: DoubleBuffer,
         width: Double,
