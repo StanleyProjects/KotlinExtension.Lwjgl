@@ -14,6 +14,14 @@ import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
+@Deprecated("sp.kx.calculations.translate")
+internal fun MutableMatrix.translate(offset: Offset) {
+    m03 += m00 * offset.dX + m01 * offset.dY + m02 * offset.dZ
+    m13 += m10 * offset.dX + m11 * offset.dY + m12 * offset.dZ
+    m23 += m20 * offset.dX + m21 * offset.dY + m22 * offset.dZ
+    m33 += m30 * offset.dX + m31 * offset.dY + m32 * offset.dZ
+}
+
 @Deprecated("sp.kx.calculations.times")
 internal operator fun Offset.times(scale: Double): Offset {
     return MutableOffset(

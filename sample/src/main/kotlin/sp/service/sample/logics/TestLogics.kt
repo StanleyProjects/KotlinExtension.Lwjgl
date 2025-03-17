@@ -2,6 +2,11 @@ package sp.service.sample.logics
 
 import sp.kx.calculations.MutableCell
 import sp.kx.calculations.MutableSize
+import sp.kx.calculations.algebra.Matrix
+import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.algebra.identity
+import sp.kx.calculations.algebra.scale
+import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
@@ -30,6 +35,7 @@ import sp.service.sample.length
 import sp.service.sample.minus
 import sp.service.sample.plus
 import sp.service.sample.times
+import sp.service.sample.translate
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -232,6 +238,42 @@ internal class TestLogics(
         }
     }
 
+    private fun onRenderGrid(
+        canvas: Canvas,
+        z: Double,
+        rows: Int,
+        columns: Int,
+        width: Double,
+        matrix: Matrix,
+    ) {
+        val x = - width * rows / 2
+        val y = - width * columns / 2
+        val vm = MutableVertex(x, y, z) * matrix
+        val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = colorOf(0xff8888ff),
+            fontHeight = 16.0,
+            topLeft = vm,
+            text = text,
+        )
+        for (row in 0..rows) {
+            canvas.vectors.draw(
+                color = colorOf(0xff8888ff),
+                start = MutableVertex(x + row * width, y, z),
+                finish = MutableVertex(x + row * width, y + columns * width, z),
+                matrix = matrix,
+            )
+        }
+        for (column in 0..columns) {
+            canvas.vectors.draw(
+                color = Color.Gray,
+                start = MutableVertex(x, y + column * width, z),
+                finish = MutableVertex(x + columns * width, y + column * width, z),
+                matrix = matrix,
+            )
+        }
+    }
+
     private fun onRenderAxis(
         canvas: Canvas,
         color: Color,
@@ -254,6 +296,29 @@ internal class TestLogics(
         val vm = rxyz(vertex, rotation, about = about)
             .plus(offset)
             .times(scale)
+        val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = color,
+            fontHeight = 24.0,
+            topLeft = vm,
+            text = text,
+        )
+    }
+
+    private fun onRenderAxis(
+        canvas: Canvas,
+        color: Color,
+        vertex: Vertex,
+        prefix: CharSequence,
+        matrix: Matrix,
+    ) {
+        canvas.vectors.draw(
+            color = color,
+            start = MutableVertex(0.0, 0.0, 0.0),
+            finish = vertex,
+            matrix = matrix,
+        )
+        val vm = vertex * matrix
         val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
         canvas.texts.draw(
             color = color,
@@ -302,6 +367,34 @@ internal class TestLogics(
         )
     }
 
+    private fun onRenderAxes(
+        canvas: Canvas,
+        matrix: Matrix,
+    ) {
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Red,
+            vertex = MutableVertex(4.0, 0.0, 0.0),
+            prefix = "x",
+            matrix = matrix,
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Green,
+            vertex = MutableVertex(0.0, 4.0, 0.0),
+            prefix = "y",
+            matrix = matrix,
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Blue,
+            vertex = MutableVertex(0.0, 0.0, 4.0),
+            prefix = "z",
+            matrix = matrix,
+        )
+    }
+
+    private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
@@ -321,16 +414,21 @@ internal class TestLogics(
         val width = 2.0
 //        val about = MutableVertex(0.0, 0.0, 0.0)
         val about = MutableVertex(-camera.dX, -camera.dY, -camera.dZ)
+        matrix.identity()
+        matrix.scale(scale)
+        matrix.translate(offset)
+        matrix.rxyz(rotation, about)
         onRenderGrid(
             canvas = canvas,
             z = -0.5,
             rows = rows,
             columns = columns,
             width = width,
-            rotation = rotation,
-            about = about,
-            offset = offset,
-            scale = scale,
+//            rotation = rotation,
+//            about = about,
+//            offset = offset,
+//            scale = scale,
+            matrix = matrix,
         )
         canvas.polygons.drawRectangle(
             color = Color.Yellow,
@@ -343,10 +441,11 @@ internal class TestLogics(
                 width = 2.0,
                 height = 2.0,
             ),
-            rotation = rotation,
-            about = about,
-            offset = offset,
-            scale = scale,
+//            rotation = rotation,
+//            about = about,
+//            offset = offset,
+//            scale = scale,
+            matrix = matrix,
         )
         canvas.polygons.drawRectangle(
             color = Color.White,
@@ -359,17 +458,19 @@ internal class TestLogics(
                 width = 4.0,
                 height = 4.0,
             ),
-            rotation = rotation,
-            about = about,
-            offset = offset,
-            scale = scale,
+//            rotation = rotation,
+//            about = about,
+//            offset = offset,
+//            scale = scale,
+            matrix = matrix,
         )
         onRenderAxes(
             canvas = canvas,
-            rotation = rotation,
-            about = about,
-            offset = offset,
-            scale = scale,
+//            rotation = rotation,
+//            about = about,
+//            offset = offset,
+//            scale = scale,
+            matrix = matrix,
         )
         //
         val fontHeight = 24.0

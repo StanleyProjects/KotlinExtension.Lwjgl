@@ -2,6 +2,7 @@ package sp.kx.lwjgl.gl
 
 import org.lwjgl.opengl.GL11
 import sp.kx.calculations.Size
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
@@ -52,6 +53,29 @@ internal object GLPolygonDrawer : PolygonDrawer {
         }
     }
 
+    override fun drawRectangle(color: Color, topLeft: Vertex, size: Size, matrix: Matrix) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_TRIANGLE_STRIP) {
+            GLUtil.vertexOf(
+                x = topLeft.x, y = topLeft.y, z = topLeft.z,
+                matrix = matrix,
+            )
+            GLUtil.vertexOf(
+                x = topLeft.x + size.width, y = topLeft.y, z = topLeft.z,
+                matrix = matrix,
+            )
+            GLUtil.vertexOf(
+                x = topLeft.x, y = topLeft.y + size.height, z = topLeft.z,
+                matrix = matrix,
+            )
+            GLUtil.vertexOf(
+                x = topLeft.x + size.width, y = topLeft.y + size.height, z = topLeft.z,
+                matrix = matrix,
+            )
+        }
+    }
+
+    /*
     override fun drawCircle(
         color: Color,
         center: Vertex,
@@ -80,4 +104,5 @@ internal object GLPolygonDrawer : PolygonDrawer {
             }
         }
     }
+    */
 }
