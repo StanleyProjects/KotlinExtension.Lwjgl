@@ -14,6 +14,19 @@ import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
+@Deprecated("sp.kx.calculations.transpose")
+internal fun MutableMatrix.transpose() {
+    val m00 = this.m00; val m01 = this.m10; val m02 = this.m20; val m03 = this.m30
+    val m10 = this.m01; val m11 = this.m11; val m12 = this.m21; val m13 = this.m31
+    val m20 = this.m02; val m21 = this.m12; val m22 = this.m22; val m23 = this.m32
+    val m30 = this.m03; val m31 = this.m13; val m32 = this.m23; val m33 = this.m33
+    //
+    this.m00 = m00; this.m01 = m01; this.m02 = m02; this.m03 = m03
+    this.m10 = m10; this.m11 = m11; this.m12 = m12; this.m13 = m13
+    this.m20 = m20; this.m21 = m21; this.m22 = m22; this.m23 = m23
+    this.m30 = m30; this.m31 = m31; this.m32 = m32; this.m33 = m33
+}
+
 @Deprecated("sp.kx.calculations.translate")
 internal fun MutableMatrix.translate(offset: Offset) {
     m03 += m00 * offset.dX + m01 * offset.dY + m02 * offset.dZ

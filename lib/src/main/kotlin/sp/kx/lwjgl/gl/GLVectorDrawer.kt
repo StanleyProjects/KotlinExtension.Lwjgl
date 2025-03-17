@@ -51,4 +51,12 @@ internal object GLVectorDrawer : VectorDrawer {
             )
         }
     }
+
+    override fun draw(color: Color, start: Vertex, finish: Vertex) {
+        GLUtil.colorOf(color)
+        GLUtil.transaction(GL11.GL_LINES) {
+            GL11.glVertex3d(start.x, start.y, start.z)
+            GL11.glVertex3d(finish.x, finish.y, finish.z)
+        }
+    }
 }

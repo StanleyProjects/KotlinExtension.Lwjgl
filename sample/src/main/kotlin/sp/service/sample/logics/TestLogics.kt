@@ -38,6 +38,7 @@ import sp.service.sample.ortho
 import sp.service.sample.plus
 import sp.service.sample.times
 import sp.service.sample.translate
+import sp.service.sample.transpose
 import java.util.concurrent.TimeUnit
 
 internal class TestLogics(
@@ -330,6 +331,27 @@ internal class TestLogics(
         )
     }
 
+    private fun onRenderAxis(
+        canvas: Canvas,
+        color: Color,
+        vertex: Vertex,
+        prefix: CharSequence,
+    ) {
+        canvas.vectors.draw(
+            color = color,
+            start = MutableVertex(0.0, 0.0, 0.0),
+            finish = vertex,
+        )
+        val vm = vertex
+        val text = String.format("$prefix: %.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+        canvas.texts.draw(
+            color = color,
+            fontHeight = 24.0,
+            topLeft = vm,
+            text = text,
+        )
+    }
+
     private fun onRenderAxes(
         canvas: Canvas,
         rotation: Rotation,
@@ -396,26 +418,58 @@ internal class TestLogics(
         )
     }
 
+    private fun onRenderAxes(
+        canvas: Canvas,
+    ) {
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Red,
+            vertex = MutableVertex(4.0, 0.0, 0.0),
+            prefix = "x",
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Green,
+            vertex = MutableVertex(0.0, 4.0, 0.0),
+            prefix = "y",
+        )
+        onRenderAxis(
+            canvas = canvas,
+            color = Color.Blue,
+            vertex = MutableVertex(0.0, 0.0, 4.0),
+            prefix = "z",
+        )
+    }
+
     private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
         onPreRender()
         //
-        GLUtil.onMatrix {
-            val offset = MutableOffset(
-                dX = camera.dX + pic.center.dX / scale,
-                dY = camera.dY + pic.center.dY / scale,
-                dZ = camera.dZ,
-            )
-            matrix.identity()
-            matrix.ortho(r = pic.size.width, b = pic.size.height)
-            val about = MutableVertex(-camera.dX, -camera.dY, -camera.dZ)
-            matrix.identity()
-            matrix.scale(scale)
-            matrix.translate(offset)
-            matrix.rxyz(rotation, about)
-            onRenderAxes(canvas = canvas, matrix = matrix)
+        val offset = MutableOffset(
+            dX = camera.dX + pic.center.dX / scale,
+            dY = camera.dY + pic.center.dY / scale,
+            dZ = camera.dZ,
+        )
+        matrix.identity()
+        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, zNear = -1024.0, zFar = 1024.0)
+        matrix.transpose()
+        matrix.scale(scale)
+        matrix.translate(offset)
+        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
+        matrix.transpose()
+//        matrix.ortho(r = pic.size.width, b = pic.size.height)
+//        matrix.translate(offset)
+//        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
+//        matrix.transpose()
+        GLUtil.onMatrix(matrix = matrix) {
+//            canvas.vectors.draw(
+//                color = Color.Green,
+//                start = MutableVertex(1.0, 1.0, 0.0),
+//                finish = MutableVertex(1.0 * 6, 1.0, 0.0),
+//            )
+            onRenderAxes(canvas = canvas)
         }
         //
         val fontHeight = 24.0

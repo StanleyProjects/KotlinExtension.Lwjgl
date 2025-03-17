@@ -1,5 +1,6 @@
 package sp.kx.lwjgl.opengl
 
+import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.rotations.rxyz
@@ -54,6 +55,36 @@ object GLUtil {
 
     fun onMatrix(block: () -> Unit) {
         GL11.glPushMatrix()
+        block()
+        GL11.glPopMatrix()
+    }
+
+    private fun load(buffer: DoubleBuffer, matrix: Matrix) {
+        buffer.put(0,  matrix.m00)
+            .put(1,  matrix.m01)
+            .put(2,  matrix.m02)
+            .put(3,  matrix.m03)
+            .put(4,  matrix.m10)
+            .put(5,  matrix.m11)
+            .put(6,  matrix.m12)
+            .put(7,  matrix.m13)
+            .put(8,  matrix.m20)
+            .put(9,  matrix.m21)
+            .put(10, matrix.m22)
+            .put(11, matrix.m23)
+            .put(12, matrix.m30)
+            .put(13, matrix.m31)
+            .put(14, matrix.m32)
+            .put(15, matrix.m33)
+    }
+
+    private val buffer = BufferUtils.createDoubleBuffer(16)
+
+    fun onMatrix(matrix: Matrix, block: () -> Unit) {
+        GL11.glPushMatrix()
+        load(buffer = buffer, matrix = matrix)
+        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        GL11.glLoadMatrixd(buffer)
         block()
         GL11.glPopMatrix()
     }

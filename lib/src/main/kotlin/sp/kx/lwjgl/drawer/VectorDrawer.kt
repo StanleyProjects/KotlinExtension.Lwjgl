@@ -23,4 +23,10 @@ interface VectorDrawer {
         finish: Vertex,
         matrix: Matrix,
     )
+
+    fun draw(
+        color: Color,
+        start: Vertex,
+        finish: Vertex,
+    )
 }
