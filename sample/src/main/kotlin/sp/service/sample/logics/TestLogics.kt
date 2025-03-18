@@ -82,7 +82,8 @@ internal class TestLogics(
         }
     }
     private var scale = 24.0
-    private val camera = MutableOffset(0.0, 0.0, 0.0)
+//    private val camera = MutableOffset(0.0, 0.0, 0.0)
+    private val camera = MutableOffset(0.0, 0.0, 16.0)
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
 
     override fun shouldEngineStop(): Boolean {
@@ -478,7 +479,7 @@ internal class TestLogics(
         )
         //
         matrix.identity()
-//        matrix.scale(scale)
+        matrix.scale(scale)
 //        matrix.translate(offset)
         matrix.translate(camera)
 //        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
@@ -487,7 +488,7 @@ internal class TestLogics(
         matrix.identity()
 //        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
 //        matrix.perspective(fov = 90.0, n = -1024.0, f = 1024.0)
-        matrix.perspective(fov = 90.0, n = -100.0, f = 100.0)
+        matrix.perspective(fov = 90.0, n = -1.0, f = 1.0)
         matrix *= mm
         // https://en.wikipedia.org/wiki/Row-_and_column-major_order
         matrix.transpose()
@@ -497,48 +498,60 @@ internal class TestLogics(
             MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
         )
         GLUtil.onMatrix(matrix = matrix) {
-            canvas.vectors.draw(
-                color = Color.Red,
-                start = MutableVertex(0.0, 24.0, 0.0),
-                finish = MutableVertex(24.0, 24.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Green,
-                start = MutableVertex(0.0, 0.0, 0.0),
-                finish = MutableVertex(0.0, 24.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Green,
-                start = MutableVertex(24.0, 0.0, 0.0),
-                finish = MutableVertex(24.0, 24.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Yellow,
-                start = MutableVertex(0.0, 0.0, -24.0),
-                finish = MutableVertex(0.0, 0.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.White,
-                start = MutableVertex(24.0, 0.0, -24.0),
-                finish = MutableVertex(24.0, 0.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Blue,
-                start = MutableVertex(0.0, 0.0, 24.0),
-                finish = MutableVertex(0.0, 0.0, 0.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Gray,
-                start = MutableVertex(24.0, 0.0, 24.0),
-                finish = MutableVertex(24.0, 0.0, 0.0),
-            )
-//            axis.forEach { (vertex, color) ->
-//                canvas.vectors.draw(
-//                    color = color,
-//                    start = MutableVertex(0.0, 0.0, 0.0),
-//                    finish = vertex,
-//                )
-//            }
+            val d = 4.0
+//            val d = 24.0
+            GLUtil.colorOf(Color.Red)
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, d, d, 1.0)
+                GL11.glVertex4d(-d, d, d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, d, d, 1.0)
+                GL11.glVertex4d(d, -d, d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, d, d, 1.0)
+                GL11.glVertex4d(d, d, -d, 1.0)
+            }
+            GLUtil.colorOf(Color.Green)
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, d, -d, 1.0)
+                GL11.glVertex4d(d, d, -d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, d, -d, 1.0)
+                GL11.glVertex4d(-d, -d, -d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, d, -d, 1.0)
+                GL11.glVertex4d(-d, d, d, 1.0)
+            }
+            GLUtil.colorOf(Color.Blue)
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, -d, d, 1.0)
+                GL11.glVertex4d(d, -d, d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, -d, d, 1.0)
+                GL11.glVertex4d(-d, d, d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(-d, -d, d, 1.0)
+                GL11.glVertex4d(-d, -d, -d, 1.0)
+            }
+            GLUtil.colorOf(Color.Yellow)
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, -d, -d, 1.0)
+                GL11.glVertex4d(-d, -d, -d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, -d, -d, 1.0)
+                GL11.glVertex4d(d, d, -d, 1.0)
+            }
+            GLUtil.transaction(GL11.GL_LINES) {
+                GL11.glVertex4d(d, -d, -d, 1.0)
+                GL11.glVertex4d(d, -d, d, 1.0)
+            }
         }
         //
         val fontHeight = 24.0
