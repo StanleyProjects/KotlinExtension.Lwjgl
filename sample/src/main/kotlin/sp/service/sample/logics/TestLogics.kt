@@ -486,6 +486,7 @@ internal class TestLogics(
         val mm = matrix.copy()
         matrix.identity()
         matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, zNear = -1024.0, zFar = 1024.0)
+        // https://en.wikipedia.org/wiki/Row-_and_column-major_order
         matrix.transpose()
         matrix *= mm
         matrix.transpose()
