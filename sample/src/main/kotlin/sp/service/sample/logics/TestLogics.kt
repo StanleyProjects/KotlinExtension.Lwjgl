@@ -4,6 +4,7 @@ import sp.kx.calculations.MutableCell
 import sp.kx.calculations.MutableSize
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.scale
 import sp.kx.calculations.algebra.translate
@@ -18,6 +19,7 @@ import sp.kx.calculations.geometry.copy
 import sp.kx.calculations.operators.div
 import sp.kx.calculations.operators.plus
 import sp.kx.calculations.operators.times
+import sp.kx.calculations.operators.timesAssign
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
 import sp.kx.calculations.rotations.rxyz
@@ -277,6 +279,31 @@ internal class TestLogics(
         }
     }
 
+    private fun onRenderGrid(
+        canvas: Canvas,
+        z: Double,
+        rows: Int,
+        columns: Int,
+        width: Double,
+    ) {
+        val x = - width * rows / 2
+        val y = - width * columns / 2
+        for (row in 0..rows) {
+            canvas.vectors.draw(
+                color = colorOf(0xff8888ff),
+                start = MutableVertex(x + row * width, y, z),
+                finish = MutableVertex(x + row * width, y + columns * width, z),
+            )
+        }
+        for (column in 0..columns) {
+            canvas.vectors.draw(
+                color = Color.Gray,
+                start = MutableVertex(x, y + column * width, z),
+                finish = MutableVertex(x + columns * width, y + column * width, z),
+            )
+        }
+    }
+
     private fun onRenderAxis(
         canvas: Canvas,
         color: Color,
@@ -453,23 +480,60 @@ internal class TestLogics(
             dZ = camera.dZ,
         )
         matrix.identity()
-        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, zNear = -1024.0, zFar = 1024.0)
-        matrix.transpose()
         matrix.scale(scale)
         matrix.translate(offset)
         matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
+        val mm = matrix.copy()
+        matrix.identity()
+        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, zNear = -1024.0, zFar = 1024.0)
         matrix.transpose()
-//        matrix.ortho(r = pic.size.width, b = pic.size.height)
-//        matrix.translate(offset)
-//        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
-//        matrix.transpose()
+        matrix *= mm
+        matrix.transpose()
+        val rows = 8
+        val columns = 8
+        val width = 2.0
+        val axis = listOf(
+            MutableVertex(4.0, 0.0, 0.0) to Color.Red,
+            MutableVertex(0.0, 4.0, 0.0) to Color.Green,
+            MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
+        )
         GLUtil.onMatrix(matrix = matrix) {
-//            canvas.vectors.draw(
-//                color = Color.Green,
-//                start = MutableVertex(1.0, 1.0, 0.0),
-//                finish = MutableVertex(1.0 * 6, 1.0, 0.0),
-//            )
-            onRenderAxes(canvas = canvas)
+            onRenderGrid(
+                canvas = canvas,
+                z = -0.5,
+                rows = rows,
+                columns = columns,
+                width = width,
+            )
+            canvas.polygons.drawRectangle(
+                color = Color.Yellow,
+                topLeft = MutableVertex(
+                    x = (cell.x - rows / 2) * width,
+                    y = (cell.y - columns / 2) * width,
+                    z = 0.1,
+                ),
+                size = MutableSize(
+                    width = 2.0,
+                    height = 2.0,
+                ),
+            )
+            axis.forEach { (vertex, color) ->
+                canvas.vectors.draw(
+                    color = color,
+                    start = MutableVertex(0.0, 0.0, 0.0),
+                    finish = vertex,
+                )
+            }
+        }
+        axis.forEach { (vertex, color) ->
+            val vm = vertex * mm
+            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+            canvas.texts.draw(
+                color = color,
+                fontHeight = 24.0,
+                topLeft = vm,
+                text = text,
+            )
         }
         //
         val fontHeight = 24.0

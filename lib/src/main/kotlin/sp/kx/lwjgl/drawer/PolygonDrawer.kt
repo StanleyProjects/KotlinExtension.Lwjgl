@@ -24,4 +24,10 @@ interface PolygonDrawer {
         size: Size,
         matrix: Matrix,
     )
+
+    fun drawRectangle(
+        color: Color,
+        topLeft: Vertex,
+        size: Size,
+    )
 }
