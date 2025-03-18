@@ -52,7 +52,7 @@ internal class TestLogics(
                 KeyboardButton.C -> {
                     camera.dX = 0.0
                     camera.dY = 0.0
-                    camera.dZ = 0.0
+                    camera.dZ = 24.0
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
@@ -87,7 +87,7 @@ internal class TestLogics(
     }
     private var scale = 1.0
 //    private val camera = MutableOffset(0.0, 0.0, 0.0)
-    private val camera = MutableOffset(0.0, 0.0, 16.0)
+    private val camera = MutableOffset(0.0, 0.0, 24.0)
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
 
     override fun shouldEngineStop(): Boolean {
@@ -144,36 +144,37 @@ internal class TestLogics(
         val max = pi14
 //        val max = pi12
         val min = -max
+        val angle = 1.0
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
-            if (rotation.aX < max) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aX = kotlin.math.min(max, rotation.aX + radians)
+            rotation.aX += length(angle, TimeUnit.SECONDS, diff)
+            if (rotation.aX > kotlin.math.PI * 2) {
+                rotation.aX -= kotlin.math.PI * 2
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Down)) {
-            if (rotation.aX > min) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aX = kotlin.math.max(min, rotation.aX - radians)
+            rotation.aX -= length(angle, TimeUnit.SECONDS, diff)
+            if (rotation.aX < -kotlin.math.PI * 2) {
+                rotation.aX += kotlin.math.PI * 2
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Left)) {
-            if (rotation.aY < max) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aY = kotlin.math.min(max, rotation.aY + radians)
+            rotation.aY += length(angle, TimeUnit.SECONDS, diff)
+            if (rotation.aY > kotlin.math.PI * 2) {
+                rotation.aY -= kotlin.math.PI * 2
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Right)) {
-            if (rotation.aY > min) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
-                rotation.aY = kotlin.math.max(min, rotation.aY - radians)
+            rotation.aY -= length(angle, TimeUnit.SECONDS, diff)
+            if (rotation.aY > kotlin.math.PI * 2) {
+                rotation.aY += kotlin.math.PI * 2
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Z)) {
             if (rotation.aZ < max) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                val radians = length(angle, TimeUnit.SECONDS, diff)
                 rotation.aZ = kotlin.math.min(max, rotation.aZ + radians)
             }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.X)) {
             if (rotation.aZ > min) {
-                val radians = length(2.0, TimeUnit.SECONDS, diff)
+                val radians = length(angle, TimeUnit.SECONDS, diff)
                 rotation.aZ = kotlin.math.max(min, rotation.aZ - radians)
             }
         }
@@ -189,9 +190,9 @@ internal class TestLogics(
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Q)) {
-            this.camera.dZ += length(1.0, TimeUnit.SECONDS, diff)
+            this.camera.dZ += length(8.0, TimeUnit.SECONDS, diff)
         } else if (engine.input.keyboard.isPressed(KeyboardButton.E)) {
-            this.camera.dZ -= length(1.0, TimeUnit.SECONDS, diff)
+            this.camera.dZ -= length(8.0, TimeUnit.SECONDS, diff)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.O)) {
             zTest -= length(8.0, TimeUnit.SECONDS, diff)
@@ -481,16 +482,19 @@ internal class TestLogics(
         onPreRender()
         //
         matrix.identity()
-        matrix.perspective(fov = 90.0, n = -1.0, f = 1.0)
-        //
-//        matrix.scale(scale)
-//        matrix.translate(camera)
-//        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        matrix.perspective(fov = kotlin.math.PI / 3, n = -1.0, f = 1.0)
+//        matrix.perspective(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
         //
         matrix.translate(camera)
 //        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
         matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
         matrix.scale(scale)
+//        matrix *= MutableMatrix(
+//            1.0, 0.0, 0.0, 0.0,
+//            0.0, 1.0, 0.0, 0.0,
+//            0.0, 0.0, -1.0, 0.0,
+//            0.0, 0.0, 0.0, 1.0,
+//        )
         //
         matrix.transpose()
         GLUtil.onMatrix(matrix = matrix) {
@@ -543,6 +547,8 @@ internal class TestLogics(
             String.format("aX: %+6.2f", rotation.aX),
             String.format("aY: %+6.2f", rotation.aY),
             String.format("aZ: %+6.2f", rotation.aZ),
+            String.format("cell:x: %d", cell.x),
+            String.format("cell:y: %d", cell.y),
             String.format("scale: %+6.2f", scale),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
