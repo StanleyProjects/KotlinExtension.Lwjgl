@@ -1,5 +1,6 @@
 package sp.service.sample.logics
 
+import org.lwjgl.opengl.GL11
 import sp.kx.calculations.MutableCell
 import sp.kx.calculations.MutableSize
 import sp.kx.calculations.algebra.Matrix
@@ -7,7 +8,6 @@ import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.scale
-import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
@@ -15,7 +15,6 @@ import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Rotation
 import sp.kx.calculations.geometry.Vertex
-import sp.kx.calculations.geometry.copy
 import sp.kx.calculations.operators.div
 import sp.kx.calculations.operators.plus
 import sp.kx.calculations.operators.times
@@ -33,12 +32,8 @@ import sp.kx.lwjgl.entity.colorOf
 import sp.kx.lwjgl.entity.input.KeyboardButton
 import sp.kx.lwjgl.opengl.GLUtil
 import sp.service.sample.angleOf
-import sp.service.sample.div
 import sp.service.sample.length
-import sp.service.sample.minus
 import sp.service.sample.ortho
-import sp.service.sample.plus
-import sp.service.sample.times
 import sp.service.sample.translate
 import sp.service.sample.transpose
 import java.util.concurrent.TimeUnit
@@ -485,10 +480,10 @@ internal class TestLogics(
         matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
         val mm = matrix.copy()
         matrix.identity()
-        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, zNear = -1024.0, zFar = 1024.0)
-        // https://en.wikipedia.org/wiki/Row-_and_column-major_order
-        matrix.transpose()
+        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+//        matrix.transpose()
         matrix *= mm
+        // https://en.wikipedia.org/wiki/Row-_and_column-major_order
         matrix.transpose()
         val rows = 8
         val columns = 8
@@ -526,6 +521,25 @@ internal class TestLogics(
                 )
             }
         }
+//        GLUtil.onMatrix {
+//            GL11.glLoadIdentity()
+//            matrix.identity()
+//            matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+//            matrix *= mm
+//            axis.forEach { (vertex, color) ->
+//                val vm = vertex * matrix
+//                println("v.x: ${vm.x}")
+//                println("v.y: ${vm.y}")
+//                println("v.z: ${vm.z}")
+//                val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+//                canvas.texts.draw(
+//                    color = color,
+//                    fontHeight = 24.0,
+//                    topLeft = vm,
+//                    text = text,
+//                )
+//            }
+//        }
         axis.forEach { (vertex, color) ->
             val vm = vertex * mm
             val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)

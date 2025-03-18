@@ -373,16 +373,49 @@ internal fun MutableMatrix.perform(
     timesAssign(Matrices.ofQuaternion(q))
 }
 
+/*
 @Deprecated("sp.kx.math.ortho")
-internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double, zNear: Double, zFar: Double) {
+internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double, n: Double, f: Double) {
     m00 = 2.0 / (r - l)
     m11 = 2.0 / (t - b)
-    m22 = 2.0 / (zNear - zFar)
+    m22 = 2.0 / (n - f)
     m30 = (r + l) / (l - r)
     m31 = (t + b) / (b - t)
-    m32 = (zFar + zNear) / (zNear - zFar)
+    m32 = (f + n) / (n - f)
+}
+*/
+
+@Deprecated("sp.kx.math.ortho")
+internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double, n: Double, f: Double) {
+    val a00 = 2.0 / (r - l); val a01 = 0.0;           val a02 = 0.0;           val a03 = (l + r) / (l - r)
+    val a10 = 0.0;           val a11 = 2.0 / (t - b); val a12 = 0.0;           val a13 = (b + t) / (b - t)
+    val a20 = 0.0;           val a21 = 0.0;           val a22 = 2.0 / (n - f); val a23 = (n + f) / (n - f)
+    val a30 = 0.0;           val a31 = 0.0;           val a32 = 0.0;           val a33 = 1.0
+    //
+    val m00 = this.m00 * a00 + this.m01 * a10 + this.m02 * a20 + this.m03 * a30
+    val m01 = this.m00 * a01 + this.m01 * a11 + this.m02 * a21 + this.m03 * a31
+    val m02 = this.m00 * a02 + this.m01 * a12 + this.m02 * a22 + this.m03 * a32
+    val m03 = this.m00 * a03 + this.m01 * a13 + this.m02 * a23 + this.m03 * a33
+    val m10 = this.m10 * a00 + this.m11 * a10 + this.m12 * a20 + this.m13 * a30
+    val m11 = this.m10 * a01 + this.m11 * a11 + this.m12 * a21 + this.m13 * a31
+    val m12 = this.m10 * a02 + this.m11 * a12 + this.m12 * a22 + this.m13 * a32
+    val m13 = this.m10 * a03 + this.m11 * a13 + this.m12 * a23 + this.m13 * a33
+    val m20 = this.m20 * a00 + this.m21 * a10 + this.m22 * a20 + this.m23 * a30
+    val m21 = this.m20 * a01 + this.m21 * a11 + this.m22 * a21 + this.m23 * a31
+    val m22 = this.m20 * a02 + this.m21 * a12 + this.m22 * a22 + this.m23 * a32
+    val m23 = this.m20 * a03 + this.m21 * a13 + this.m22 * a23 + this.m23 * a33
+    val m30 = this.m30 * a00 + this.m31 * a10 + this.m32 * a20 + this.m33 * a30
+    val m31 = this.m30 * a01 + this.m31 * a11 + this.m32 * a21 + this.m33 * a31
+    val m32 = this.m30 * a02 + this.m31 * a12 + this.m32 * a22 + this.m33 * a32
+    val m33 = this.m30 * a03 + this.m31 * a13 + this.m32 * a23 + this.m33 * a33
+    //
+    this.m00 = m00; this.m01 = m01; this.m02 = m02; this.m03 = m03
+    this.m10 = m10; this.m11 = m11; this.m12 = m12; this.m13 = m13
+    this.m20 = m20; this.m21 = m21; this.m22 = m22; this.m23 = m23
+    this.m30 = m30; this.m31 = m31; this.m32 = m32; this.m33 = m33
 }
 
+/*
 @Deprecated("sp.kx.math.ortho")
 internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double) {
     val rm00 = 2.0 / (r - l)
@@ -408,6 +441,7 @@ internal fun MutableMatrix.ortho(l: Double, t: Double, r: Double, b: Double) {
     m22 = m22 * rm22
     m23 = m23 * rm22
 }
+*/
 
 @Deprecated("sp.kx.math.ortho")
 internal fun MutableMatrix.ortho(r: Double, b: Double) {
