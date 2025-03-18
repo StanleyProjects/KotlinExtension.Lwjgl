@@ -8,6 +8,7 @@ import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.scale
+import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
@@ -55,7 +56,7 @@ internal class TestLogics(
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
-                    setScale(24.0)
+//                    setScale(24.0)
                 }
                 KeyboardButton.A -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -77,11 +78,17 @@ internal class TestLogics(
                         cell.y += 1
                     }
                 }
+                KeyboardButton.Tab -> {
+                    p = !p
+                }
                 else -> Unit
             }
         }
     }
-    private var scale = 24.0
+//    private var scale = 24.0
+    private val scale: Double get() {
+        return camera.dZ
+    }
 //    private val camera = MutableOffset(0.0, 0.0, 0.0)
     private val camera = MutableOffset(0.0, 0.0, 16.0)
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
@@ -107,19 +114,19 @@ internal class TestLogics(
         return offset
     }
 
-    private fun setScale(value: Double) {
-        val pic = engine.property.picture
-        val offset = MutableOffset(
-            dX = camera.dX + pic.center.dX / scale,
-            dY = camera.dY + pic.center.dY / scale,
-            dZ = camera.dZ,
-        )
-        val dw = pic.size.width / 2 / scale - offset.dX
-        val dh = pic.size.height / 2 / scale - offset.dY
-        scale = value
-        camera.dX = pic.size.width / 2 / value - dw - pic.center.dX / value
-        camera.dY = pic.size.height / 2 / value - dh - pic.center.dY / value
-    }
+//    private fun setScale(value: Double) {
+//        val pic = engine.property.picture
+//        val offset = MutableOffset(
+//            dX = camera.dX + pic.center.dX / scale,
+//            dY = camera.dY + pic.center.dY / scale,
+//            dZ = camera.dZ,
+//        )
+//        val dw = pic.size.width / 2 / scale - offset.dX
+//        val dh = pic.size.height / 2 / scale - offset.dY
+//        scale = value
+//        camera.dX = pic.size.width / 2 / value - dw - pic.center.dX / value
+//        camera.dY = pic.size.height / 2 / value - dh - pic.center.dY / value
+//    }
 
     private var zTest = -1.0
     private fun onPreRender() {
@@ -467,6 +474,7 @@ internal class TestLogics(
         )
     }
 
+    private var p = false
     private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
         val fps = engine.property.time.frequency()
@@ -479,17 +487,16 @@ internal class TestLogics(
         )
         //
         matrix.identity()
-        matrix.scale(scale)
-//        matrix.translate(offset)
-        matrix.translate(camera)
-//        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
-        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
-        val mm = matrix.copy()
-        matrix.identity()
-//        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
-//        matrix.perspective(fov = 90.0, n = -1024.0, f = 1024.0)
-        matrix.perspective(fov = 90.0, n = -1.0, f = 1.0)
-        matrix *= mm
+        if (p) {
+            matrix.perspective(fov = 90.0, n = -1.0, f = 1.0)
+            matrix.translate(camera)
+            matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        } else {
+            matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+            matrix.scale(camera.dZ)
+            matrix.translate(offset)
+            matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        }
         // https://en.wikipedia.org/wiki/Row-_and_column-major_order
         matrix.transpose()
         val axis = listOf(
