@@ -56,7 +56,7 @@ internal class TestLogics(
                     rotation.aX = 0.0
                     rotation.aY = 0.0
                     rotation.aZ = 0.0
-//                    setScale(24.0)
+                    setScale(1.0)
                 }
                 KeyboardButton.A -> {
                     if (engine.input.keyboard.isPressed(KeyboardButton.Shift)) {
@@ -85,10 +85,7 @@ internal class TestLogics(
             }
         }
     }
-//    private var scale = 24.0
-    private val scale: Double get() {
-        return camera.dZ
-    }
+    private var scale = 1.0
 //    private val camera = MutableOffset(0.0, 0.0, 0.0)
     private val camera = MutableOffset(0.0, 0.0, 16.0)
     private val rotation = MutableRotation(0.0, 0.0, 0.0)
@@ -114,19 +111,19 @@ internal class TestLogics(
         return offset
     }
 
-//    private fun setScale(value: Double) {
-//        val pic = engine.property.picture
-//        val offset = MutableOffset(
-//            dX = camera.dX + pic.center.dX / scale,
-//            dY = camera.dY + pic.center.dY / scale,
-//            dZ = camera.dZ,
-//        )
-//        val dw = pic.size.width / 2 / scale - offset.dX
-//        val dh = pic.size.height / 2 / scale - offset.dY
-//        scale = value
-//        camera.dX = pic.size.width / 2 / value - dw - pic.center.dX / value
-//        camera.dY = pic.size.height / 2 / value - dh - pic.center.dY / value
-//    }
+    private fun setScale(value: Double) {
+        val pic = engine.property.picture
+        val offset = MutableOffset(
+            dX = camera.dX + pic.center.dX / scale,
+            dY = camera.dY + pic.center.dY / scale,
+            dZ = camera.dZ,
+        )
+        val dw = pic.size.width / 2 / scale - offset.dX
+        val dh = pic.size.height / 2 / scale - offset.dY
+        scale = value
+        camera.dX = pic.size.width / 2 / value - dw - pic.center.dX / value
+        camera.dY = pic.size.height / 2 / value - dh - pic.center.dY / value
+    }
 
     private var zTest = -1.0
     private fun onPreRender() {
@@ -181,16 +178,19 @@ internal class TestLogics(
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
-//            if (scale < 64.0) {
-//                val value = length(24.0, TimeUnit.SECONDS, diff)
-//                setScale(kotlin.math.min(64.0, scale + value))
-//            }
-            this.camera.dZ += length(1.0, TimeUnit.SECONDS, diff)
+            if (scale < 64.0) {
+                val value = length(24.0, TimeUnit.SECONDS, diff)
+                setScale(kotlin.math.min(64.0, scale + value))
+            }
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Minus)) {
-//            if (scale > 8.0) {
-//                val value = length(24.0, TimeUnit.SECONDS, diff)
-//                setScale(kotlin.math.max(8.0, scale - value))
-//            }
+            if (scale > 1.0) {
+                val value = length(24.0, TimeUnit.SECONDS, diff)
+                setScale(kotlin.math.max(1.0, scale - value))
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Q)) {
+            this.camera.dZ += length(1.0, TimeUnit.SECONDS, diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.E)) {
             this.camera.dZ -= length(1.0, TimeUnit.SECONDS, diff)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.O)) {
@@ -474,9 +474,88 @@ internal class TestLogics(
         )
     }
 
-    private var p = false
     private val matrix = MutableMatrix()
     override fun onRender(canvas: Canvas) {
+        val fps = engine.property.time.frequency()
+        val pic = engine.property.picture
+        onPreRender()
+        //
+        matrix.identity()
+        matrix.perspective(fov = 90.0, n = -1.0, f = 1.0)
+        //
+//        matrix.scale(scale)
+//        matrix.translate(camera)
+//        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        //
+        matrix.translate(camera)
+//        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
+        matrix.scale(scale)
+        //
+        matrix.transpose()
+        GLUtil.onMatrix(matrix = matrix) {
+            val rows = 8
+            val columns = 8
+            val width = 2.0
+            onRenderGrid(
+                canvas = canvas,
+                z = -0.5,
+                rows = rows,
+                columns = columns,
+                width = width,
+            )
+            canvas.polygons.drawRectangle(
+                color = Color.Yellow,
+                topLeft = MutableVertex(
+                    x = (cell.x - rows / 2) * width,
+                    y = (cell.y - columns / 2) * width,
+                    z = 0.1,
+                ),
+                size = MutableSize(
+                    width = 2.0,
+                    height = 2.0,
+                ),
+            )
+            listOf(
+                MutableVertex(4.0, 0.0, 0.0) to Color.Red,
+                MutableVertex(0.0, 4.0, 0.0) to Color.Green,
+                MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
+            ).forEach { (vertex, color) ->
+                canvas.vectors.draw(
+                    color = color,
+                    start = MutableVertex(0.0, 0.0, 0.0),
+                    finish = vertex,
+                )
+            }
+        }
+        //
+        val fontHeight = 24.0
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = fontHeight,
+            text = String.format("%6.2f", fps),
+            topLeft = MutableVertex(x = pic.size.width - 96.0, y = pic.size.height - fontHeight * 2, z = 0.0),
+        )
+        listOf(
+            String.format("cX: %+6.2f", camera.dX),
+            String.format("cY: %+6.2f", camera.dY),
+            String.format("cZ: %+6.2f", camera.dZ),
+            String.format("aX: %+6.2f", rotation.aX),
+            String.format("aY: %+6.2f", rotation.aY),
+            String.format("aZ: %+6.2f", rotation.aZ),
+            String.format("scale: %+6.2f", scale),
+        ).forEachIndexed { index, text ->
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = fontHeight,
+                text = text,
+                topLeft = MutableVertex(x = fontHeight, y = fontHeight * (1 + index), z = 0.0),
+            )
+        }
+    }
+
+    private var p = false
+    private fun onRender3(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
         onPreRender()
