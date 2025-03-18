@@ -34,6 +34,7 @@ import sp.kx.lwjgl.opengl.GLUtil
 import sp.service.sample.angleOf
 import sp.service.sample.length
 import sp.service.sample.ortho
+import sp.service.sample.perspective
 import sp.service.sample.translate
 import sp.service.sample.transpose
 import java.util.concurrent.TimeUnit
@@ -172,15 +173,17 @@ internal class TestLogics(
             }
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
-            if (scale < 64.0) {
-                val value = length(24.0, TimeUnit.SECONDS, diff)
-                setScale(kotlin.math.min(64.0, scale + value))
-            }
+//            if (scale < 64.0) {
+//                val value = length(24.0, TimeUnit.SECONDS, diff)
+//                setScale(kotlin.math.min(64.0, scale + value))
+//            }
+            this.camera.dZ += length(1.0, TimeUnit.SECONDS, diff)
         } else if (engine.input.keyboard.isPressed(KeyboardButton.Minus)) {
-            if (scale > 8.0) {
-                val value = length(24.0, TimeUnit.SECONDS, diff)
-                setScale(kotlin.math.max(8.0, scale - value))
-            }
+//            if (scale > 8.0) {
+//                val value = length(24.0, TimeUnit.SECONDS, diff)
+//                setScale(kotlin.math.max(8.0, scale - value))
+//            }
+            this.camera.dZ -= length(1.0, TimeUnit.SECONDS, diff)
         }
         if (engine.input.keyboard.isPressed(KeyboardButton.O)) {
             zTest -= length(8.0, TimeUnit.SECONDS, diff)
@@ -468,6 +471,108 @@ internal class TestLogics(
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
         onPreRender()
+        val offset = MutableOffset(
+            dX = camera.dX + pic.center.dX / scale,
+            dY = camera.dY + pic.center.dY / scale,
+            dZ = camera.dZ,
+        )
+        //
+        matrix.identity()
+//        matrix.scale(scale)
+//        matrix.translate(offset)
+        matrix.translate(camera)
+//        matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
+        matrix.rxyz(rotation, MutableVertex(0.0, 0.0, 0.0))
+        val mm = matrix.copy()
+        matrix.identity()
+//        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+//        matrix.perspective(fov = 90.0, n = -1024.0, f = 1024.0)
+        matrix.perspective(fov = 90.0, n = -100.0, f = 100.0)
+        matrix *= mm
+        // https://en.wikipedia.org/wiki/Row-_and_column-major_order
+        matrix.transpose()
+        val axis = listOf(
+            MutableVertex(4.0, 0.0, 0.0) to Color.Red,
+            MutableVertex(0.0, 4.0, 0.0) to Color.Green,
+            MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
+        )
+        GLUtil.onMatrix(matrix = matrix) {
+            canvas.vectors.draw(
+                color = Color.Red,
+                start = MutableVertex(0.0, 24.0, 0.0),
+                finish = MutableVertex(24.0, 24.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.Green,
+                start = MutableVertex(0.0, 0.0, 0.0),
+                finish = MutableVertex(0.0, 24.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.Green,
+                start = MutableVertex(24.0, 0.0, 0.0),
+                finish = MutableVertex(24.0, 24.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.Yellow,
+                start = MutableVertex(0.0, 0.0, -24.0),
+                finish = MutableVertex(0.0, 0.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.White,
+                start = MutableVertex(24.0, 0.0, -24.0),
+                finish = MutableVertex(24.0, 0.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.Blue,
+                start = MutableVertex(0.0, 0.0, 24.0),
+                finish = MutableVertex(0.0, 0.0, 0.0),
+            )
+            canvas.vectors.draw(
+                color = Color.Gray,
+                start = MutableVertex(24.0, 0.0, 24.0),
+                finish = MutableVertex(24.0, 0.0, 0.0),
+            )
+//            axis.forEach { (vertex, color) ->
+//                canvas.vectors.draw(
+//                    color = color,
+//                    start = MutableVertex(0.0, 0.0, 0.0),
+//                    finish = vertex,
+//                )
+//            }
+        }
+        //
+        val fontHeight = 24.0
+        canvas.texts.draw(
+            color = Color.Green,
+            fontHeight = fontHeight,
+            text = String.format("%6.2f", fps),
+            topLeft = MutableVertex(x = pic.size.width - 96.0, y = pic.size.height - fontHeight * 2, z = 0.0),
+        )
+        listOf(
+            String.format("cX: %+6.2f", camera.dX),
+            String.format("cY: %+6.2f", camera.dY),
+            String.format("cZ: %+6.2f", camera.dZ),
+            String.format("oX: %+6.2f", offset.dX),
+            String.format("oY: %+6.2f", offset.dY),
+            String.format("oZ: %+6.2f", offset.dZ),
+            String.format("aX: %+6.2f", rotation.aX),
+            String.format("aY: %+6.2f", rotation.aY),
+            String.format("aZ: %+6.2f", rotation.aZ),
+            String.format("scale: %+6.2f", scale),
+        ).forEachIndexed { index, text ->
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = fontHeight,
+                text = text,
+                topLeft = MutableVertex(x = fontHeight, y = fontHeight * (1 + index), z = 0.0),
+            )
+        }
+    }
+
+    private fun onRender2(canvas: Canvas) {
+        val fps = engine.property.time.frequency()
+        val pic = engine.property.picture
+        onPreRender()
         //
         val offset = MutableOffset(
             dX = camera.dX + pic.center.dX / scale,
@@ -480,7 +585,8 @@ internal class TestLogics(
         matrix.rxyz(rotation, MutableVertex(-camera.dX, -camera.dY, -camera.dZ))
         val mm = matrix.copy()
         matrix.identity()
-        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+//        matrix.ortho(l = 0.0, t = 0.0, r = pic.size.width, b = pic.size.height, n = -1024.0, f = 1024.0)
+        matrix.perspective(fov = 90.0, n = -1024.0, f = 1024.0)
 //        matrix.transpose()
         matrix *= mm
         // https://en.wikipedia.org/wiki/Row-_and_column-major_order
@@ -558,9 +664,28 @@ internal class TestLogics(
             text = String.format("%6.2f", fps),
             topLeft = MutableVertex(x = pic.size.width - 96.0, y = pic.size.height - fontHeight * 2, z = 0.0),
         )
+        listOf(
+            String.format("cX: %+6.2f", camera.dX),
+            String.format("cY: %+6.2f", camera.dY),
+            String.format("cZ: %+6.2f", camera.dZ),
+            String.format("oX: %+6.2f", offset.dX),
+            String.format("oY: %+6.2f", offset.dY),
+            String.format("oZ: %+6.2f", offset.dZ),
+            String.format("aX: %+6.2f", rotation.aX),
+            String.format("aY: %+6.2f", rotation.aY),
+            String.format("aZ: %+6.2f", rotation.aZ),
+            String.format("scale: %+6.2f", scale),
+        ).forEachIndexed { index, text ->
+            canvas.texts.draw(
+                color = Color.Green,
+                fontHeight = fontHeight,
+                text = text,
+                topLeft = MutableVertex(x = fontHeight, y = fontHeight * (1 + index), z = 0.0),
+            )
+        }
     }
 
-    private fun onRenderOld(canvas: Canvas) {
+    private fun onRender1(canvas: Canvas) {
         val fps = engine.property.time.frequency()
         val pic = engine.property.picture
         val scale = scale
