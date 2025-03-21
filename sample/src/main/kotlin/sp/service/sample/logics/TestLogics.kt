@@ -497,7 +497,7 @@ internal class TestLogics(
 //        )
         //
         matrix.transpose()
-        GLUtil.onMatrix(matrix = matrix) {
+        GLUtil.onMatrix(pm = matrix) {
             val rows = 8
             val columns = 8
             val width = 2.0
@@ -589,7 +589,7 @@ internal class TestLogics(
             MutableVertex(0.0, 4.0, 0.0) to Color.Green,
             MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
         )
-        GLUtil.onMatrix(matrix = matrix) {
+        GLUtil.onMatrix(pm = matrix) {
             val d = 4.0
 //            val d = 24.0
             GLUtil.colorOf(Color.Red)
@@ -704,7 +704,7 @@ internal class TestLogics(
             MutableVertex(0.0, 4.0, 0.0) to Color.Green,
             MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
         )
-        GLUtil.onMatrix(matrix = matrix) {
+        GLUtil.onMatrix(pm = matrix) {
             onRenderGrid(
                 canvas = canvas,
                 z = -0.5,

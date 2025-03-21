@@ -80,14 +80,14 @@ object GLUtil {
 
     private val buffer = BufferUtils.createDoubleBuffer(16)
 
-    fun onMatrix(matrix: Matrix, block: () -> Unit) {
+    fun onMatrix(pm: Matrix, block: () -> Unit) {
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPushMatrix()
-        GL11.glLoadIdentity()
+        load(buffer = buffer, matrix = pm)
+        GL11.glLoadMatrixd(buffer)
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glPushMatrix()
-        load(buffer = buffer, matrix = matrix)
-        GL11.glLoadMatrixd(buffer)
+        GL11.glLoadIdentity()
         block()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glPopMatrix()

@@ -10,7 +10,6 @@ import org.lwjgl.util.freetype.FreeType.FT_Init_FreeType
 import org.lwjgl.util.freetype.FreeType.FT_Load_Char
 import org.lwjgl.util.freetype.FreeType.FT_New_Memory_Face
 import org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes
-import sp.kx.calculations.algebra.Matrix
 import sp.kx.lwjgl.drawer.TextDrawer
 import sp.kx.lwjgl.entity.Color
 import sp.kx.lwjgl.opengl.GLUtil
@@ -71,7 +70,6 @@ internal class FTTextDrawer(
         x: Double,
         y: Double,
         z: Double,
-        matrix: Matrix
     ) {
         val (buffer, atlases) = getAtlases(fontName = fontName)
         val atlas = getAtlas(
@@ -86,31 +84,6 @@ internal class FTTextDrawer(
             x = x,
             y = y,
             z = z,
-            matrix = matrix,
-            text = text,
-        )
-    }
-
-    override fun draw(
-        color: Color,
-        fontName: String,
-        fontHeight: Double,
-        text: CharSequence,
-        x: Double,
-        y: Double,
-    ) {
-        val (buffer, atlases) = getAtlases(fontName = fontName)
-        val atlas = getAtlas(
-            buffer = buffer,
-            atlases = atlases,
-            fontHeight = fontHeight,
-        )
-        draw(
-            color = color,
-            atlas = atlas,
-            scale = fontHeight / (atlas.ascender - atlas.descender),
-            x = x,
-            y = y,
             text = text,
         )
     }
@@ -246,35 +219,6 @@ internal class FTTextDrawer(
             glyph: FTGlyph,
             x: Double,
             y: Double,
-        ) {
-            val ipw = 1.0 / atlas.width
-            val iph = 1.0 / atlas.height
-            //
-            val x0 = x + glyph.left * scale
-            val y0 = y + (atlas.ascender - glyph.top) * scale
-            val x1 = x0 + glyph.width * scale
-            val y1 = y0 + glyph.height * scale
-            val s0 = glyph.x * ipw
-            val t0 = 0.0
-            val s1 = (glyph.x + glyph.width) * ipw
-            val t1 = glyph.height * iph
-            //
-            GL11.glTexCoord2d(s0, t0)
-            GL11.glVertex2d(x0, y0)
-            GL11.glTexCoord2d(s1, t0)
-            GL11.glVertex2d(x1, y0)
-            GL11.glTexCoord2d(s1, t1)
-            GL11.glVertex2d(x1, y1)
-            GL11.glTexCoord2d(s0, t1)
-            GL11.glVertex2d(x0, y1)
-        }
-
-        private fun draw(
-            atlas: FTAtlas,
-            scale: Double,
-            glyph: FTGlyph,
-            x: Double,
-            y: Double,
             z: Double,
         ) {
             val ipw = 1.0 / atlas.width
@@ -305,6 +249,7 @@ internal class FTTextDrawer(
             scale: Double,
             x: Double,
             y: Double,
+            z: Double,
             text: CharSequence,
         ) {
             var i = x
@@ -324,48 +269,12 @@ internal class FTTextDrawer(
                     glyph = glyph,
                     x = i,
                     y = y,
+                    z = z,
                 )
                 GL11.glEnd()
                 i += glyph.advance * scale
             }
             GL11.glDisable(GL11.GL_TEXTURE_2D)
-        }
-
-        private fun draw(
-            color: Color,
-            atlas: FTAtlas,
-            scale: Double,
-            x: Double,
-            y: Double,
-            z: Double,
-            matrix: Matrix,
-            text: CharSequence,
-        ) {
-            GLUtil.onMatrix(matrix = matrix) {
-                var i = x
-                GL11.glEnable(GL11.GL_TEXTURE_2D)
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, atlas.id)
-                GLUtil.colorOf(color = color)
-                for (char in text) {
-                    val glyph = atlas.glyphs[char.code]
-                    if (glyph == null) {
-                        if (char == ' ') i += atlas.space * scale
-                        continue
-                    }
-                    GL11.glBegin(GL11.GL_QUADS)
-                    draw(
-                        atlas = atlas,
-                        scale = scale,
-                        glyph = glyph,
-                        x = i,
-                        y = y,
-                        z = z,
-                    )
-                    GL11.glEnd()
-                    i += glyph.advance * scale
-                }
-                GL11.glDisable(GL11.GL_TEXTURE_2D)
-            }
         }
 
         private fun getTextWidth(

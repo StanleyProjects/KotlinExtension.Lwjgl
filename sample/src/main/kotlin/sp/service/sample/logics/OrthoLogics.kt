@@ -298,6 +298,10 @@ internal class OrthoLogics(
                     start = MutableVertex(0.0, 0.0, 0.0) * matrix,
                     finish = vertex * matrix,
                 )
+            }
+        }
+        GLUtil.onMatrix(pm = pm.transposed(), mv = id) {
+            for ((vertex, color) in axes) {
                 val vm = vertex * mv
                 val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
                 canvas.texts.draw(
@@ -305,7 +309,6 @@ internal class OrthoLogics(
                     fontHeight = 24.0,
                     topLeft = vm,
                     text = text,
-                    matrix = pm.transposed(),
                 )
             }
         }
@@ -333,7 +336,7 @@ internal class OrthoLogics(
             MutableVertex(0.0, 4.0, 0.0) to Color.Green,
             MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
         )
-        GLUtil.onMatrix(matrix = matrix) {
+        GLUtil.onMatrix(pm = matrix) {
             onRenderAxes(canvas = canvas, axes = axes)
         }
         for ((vertex, color) in axes) {
