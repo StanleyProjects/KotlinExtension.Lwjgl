@@ -1,5 +1,6 @@
 package sp.kx.lwjgl.drawer
 
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.geometry.Vertex
 import sp.kx.lwjgl.entity.Color
 
@@ -14,6 +15,28 @@ abstract class TextDrawer(
         x: Double,
         y: Double,
         z: Double,
+    )
+
+    abstract fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        atlasHeight: Int,
+        text: CharSequence,
+        x: Double,
+        y: Double,
+        z: Double,
+    )
+
+    abstract fun draw(
+        color: Color,
+        fontName: String = defaultFontName,
+        fontHeight: Double,
+        text: CharSequence,
+        x: Double,
+        y: Double,
+        z: Double,
+        matrix: Matrix,
     )
 
     fun draw(
