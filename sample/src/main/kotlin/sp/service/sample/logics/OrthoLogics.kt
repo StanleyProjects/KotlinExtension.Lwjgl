@@ -48,6 +48,7 @@ internal class OrthoLogics(
                 KeyboardButton.C -> {
                     camera.set(0.0, 0.0, 0.0)
                     rotation.clear()
+                    setScale(24.0)
                 }
                 else -> Unit
             }
@@ -79,6 +80,17 @@ internal class OrthoLogics(
         return offset
     }
 
+    private fun setScale(value: Double) {
+        val pic = engine.property.picture
+        val dX = camera.x + pic.center.dX / scale
+        val dY = camera.y + pic.center.dY / scale
+        val dw = pic.size.width / 2 / scale - dX
+        val dh = pic.size.height / 2 / scale - dY
+        scale = value
+        camera.x = pic.size.width / 2 / value - dw - pic.center.dX / value
+        camera.y = pic.size.height / 2 / value - dh - pic.center.dY / value
+    }
+
     private fun onPreRender() {
         val diff = engine.property.time.diff()
         //
@@ -93,6 +105,8 @@ internal class OrthoLogics(
         }
         //
         val angle = 1.0
+        val min = 8.0
+        val max = 64.0
         if (engine.input.keyboard.isPressed(KeyboardButton.Up)) {
             rotation.aX += length(angle, TimeUnit.SECONDS, diff)
             if (rotation.aX > kotlin.math.PI * 2) {
@@ -124,6 +138,17 @@ internal class OrthoLogics(
             rotation.aZ -= length(angle, TimeUnit.SECONDS, diff)
             if (rotation.aZ > kotlin.math.PI * 2) {
                 rotation.aZ += kotlin.math.PI * 2
+            }
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.Minus)) {
+            if (scale > min) {
+                val d = length(8.0, TimeUnit.SECONDS, diff)
+                setScale(kotlin.math.max(scale - d, min))
+            }
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.Equal)) {
+            if (scale < max) {
+                val d = length(8.0, TimeUnit.SECONDS, diff)
+                setScale(kotlin.math.min(scale + d, max))
             }
         }
     }
@@ -509,6 +534,7 @@ internal class OrthoLogics(
             String.format("cX: %+6.2f", camera.x),
             String.format("cY: %+6.2f", camera.y),
             String.format("cZ: %+6.2f", camera.z),
+            String.format("scale: %+6.2f", scale),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
