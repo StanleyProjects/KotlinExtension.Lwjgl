@@ -7,7 +7,6 @@ import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.scale
-import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
@@ -31,7 +30,6 @@ import sp.service.sample.angleOf
 import sp.service.sample.clear
 import sp.service.sample.length
 import sp.service.sample.ortho
-import sp.service.sample.scale
 import sp.service.sample.translate
 import sp.service.sample.transpose
 import sp.service.sample.transposed
@@ -136,6 +134,21 @@ internal class OrthoLogics(
                 color = color,
                 start = MutableVertex(0.0, 0.0, 0.0),
                 finish = vertex,
+            )
+        }
+    }
+
+    private fun onRenderAxes(
+        canvas: Canvas,
+        axes: List<Pair<Vertex, Color>>,
+        matrix: Matrix,
+    ) {
+        for ((vertex, color) in axes) {
+            canvas.vectors.draw(
+                color = color,
+                start = MutableVertex(0.0, 0.0, 0.0),
+                finish = vertex,
+                matrix = matrix,
             )
         }
     }
@@ -252,6 +265,51 @@ internal class OrthoLogics(
     }
 
     private val buffer = BufferUtils.createDoubleBuffer(16)
+
+    private fun onRenderV7(canvas: Canvas) {
+        val pic = engine.property.picture
+        val scale = scale
+        val offset = MutableOffset(
+            dX = camera.x + pic.center.dX / scale,
+            dY = camera.y + pic.center.dY / scale,
+            dZ = camera.z,
+        )
+        matrix.identity()
+        val id = matrix.copy()
+        matrix.ortho(0.0, 0.0, pic.size.width, pic.size.height, -1_024.0, 1_024.0)
+        val pm = matrix.copy()
+        matrix.identity()
+        matrix.scale(scale)
+        matrix.translate(offset)
+        matrix.rxyz(rotation)
+        val mv = matrix.copy()
+        matrix.identity()
+        matrix *= pm
+        matrix *= mv
+        val axes = listOf(
+            MutableVertex(4.0, 0.0, 0.0) to Color.Red,
+            MutableVertex(0.0, 4.0, 0.0) to Color.Green,
+            MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
+        )
+        GLUtil.onMatrix(pm = id, mv = id) {
+            for ((vertex, color) in axes) {
+                canvas.vectors.draw(
+                    color = color,
+                    start = MutableVertex(0.0, 0.0, 0.0) * matrix,
+                    finish = vertex * matrix,
+                )
+                val vm = vertex * mv
+                val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+                canvas.texts.draw(
+                    color = color,
+                    fontHeight = 24.0,
+                    topLeft = vm,
+                    text = text,
+                    matrix = pm.transposed(),
+                )
+            }
+        }
+    }
 
     private fun onRenderV6(canvas: Canvas) {
         val pic = engine.property.picture
@@ -431,7 +489,8 @@ internal class OrthoLogics(
 //        onRenderV3(canvas = canvas)
 //        onRenderV4(canvas = canvas)
 //        onRenderV5(canvas = canvas)
-        onRenderV6(canvas = canvas)
+//        onRenderV6(canvas = canvas)
+        onRenderV7(canvas = canvas)
         //
         val fontHeight = 24.0
         canvas.texts.draw(
