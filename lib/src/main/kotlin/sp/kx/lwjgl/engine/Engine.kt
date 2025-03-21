@@ -97,7 +97,7 @@ sealed interface Engine {
                     }
                 },
                 onPreRender = { _: Long ->
-                    GL11.glMatrixMode(GL11.GL_MODELVIEW)
+                    GL11.glMatrixMode(GL11.GL_PROJECTION)
                     GL11.glLoadMatrixd(engine.property.ortho)
                 },
                 onRender = { windowId, canvas ->

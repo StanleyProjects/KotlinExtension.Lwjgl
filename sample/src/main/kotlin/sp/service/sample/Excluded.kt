@@ -6,6 +6,7 @@ import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.translate
 import sp.kx.calculations.geometry.MutableOffset
+import sp.kx.calculations.geometry.MutableRotation
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
 import sp.kx.calculations.geometry.Vertex
@@ -13,6 +14,20 @@ import sp.kx.calculations.operators.times
 import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+
+@Deprecated("sp.kx.calculations.set")
+internal fun MutableRotation.clear() {
+    aX = 0.0
+    aY = 0.0
+    aZ = 0.0
+}
+
+@Deprecated("sp.kx.calculations.set")
+internal fun MutableRotation.set(aX: Double, aY: Double, aZ: Double) {
+    this.aX = aX
+    this.aY = aY
+    this.aZ = aZ
+}
 
 @Deprecated("sp.kx.calculations.transpose")
 internal fun MutableMatrix.transpose() {
@@ -25,6 +40,16 @@ internal fun MutableMatrix.transpose() {
     this.m10 = m10; this.m12 = m12; this.m13 = m13
     this.m20 = m20; this.m21 = m21; this.m23 = m23
     this.m30 = m30; this.m31 = m31; this.m32 = m32
+}
+
+@Deprecated("sp.kx.calculations.transposed")
+internal fun Matrix.transposed(): Matrix {
+    return MutableMatrix(
+        m00 = m00, m01 = m10, m02 = m20, m03 = m30,
+        m10 = m01, m11 = m11, m12 = m21, m13 = m31,
+        m20 = m02, m21 = m12, m22 = m22, m23 = m32,
+        m30 = m03, m31 = m13, m32 = m23, m33 = m33,
+    )
 }
 
 @Deprecated("sp.kx.calculations.translate")
