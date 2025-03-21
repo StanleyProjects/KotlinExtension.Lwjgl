@@ -4,6 +4,7 @@ import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
+import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
 import sp.kx.calculations.algebra.scale
 import sp.kx.calculations.algebra.translate
@@ -12,6 +13,9 @@ import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableRotation
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Vertex
+import sp.kx.calculations.operators.times
+import sp.kx.calculations.operators.timesAssign
 import sp.kx.calculations.physics.diff
 import sp.kx.calculations.physics.frequency
 import sp.kx.calculations.rotations.rxyz
@@ -27,6 +31,7 @@ import sp.service.sample.angleOf
 import sp.service.sample.clear
 import sp.service.sample.length
 import sp.service.sample.ortho
+import sp.service.sample.scale
 import sp.service.sample.translate
 import sp.service.sample.transpose
 import sp.service.sample.transposed
@@ -122,6 +127,16 @@ internal class OrthoLogics(
             if (rotation.aZ > kotlin.math.PI * 2) {
                 rotation.aZ += kotlin.math.PI * 2
             }
+        }
+    }
+
+    private fun onRenderAxes(canvas: Canvas, axes: List<Pair<Vertex, Color>>) {
+        for ((vertex, color) in axes) {
+            canvas.vectors.draw(
+                color = color,
+                start = MutableVertex(0.0, 0.0, 0.0),
+                finish = vertex,
+            )
         }
     }
 
@@ -247,16 +262,30 @@ internal class OrthoLogics(
             dZ = camera.z,
         )
         matrix.identity()
-        matrix.ortho(0.0, 0.0, pic.size.width, pic.size.height, -1_024.0, 1_024.0)
         matrix.scale(scale)
         matrix.translate(offset)
         matrix.rxyz(rotation)
+        val mv = matrix.copy()
+        matrix.identity()
+        matrix.ortho(0.0, 0.0, pic.size.width, pic.size.height, -1_024.0, 1_024.0)
+        matrix *= mv
         matrix.transpose()
+        val axes = listOf(
+            MutableVertex(4.0, 0.0, 0.0) to Color.Red,
+            MutableVertex(0.0, 4.0, 0.0) to Color.Green,
+            MutableVertex(0.0, 0.0, 4.0) to Color.Blue,
+        )
         GLUtil.onMatrix(matrix = matrix) {
-            canvas.vectors.draw(
-                color = Color.Red,
-                start = MutableVertex(0.0, 0.0, 0.0),
-                finish = MutableVertex(1.0, 0.0, 0.0),
+            onRenderAxes(canvas = canvas, axes = axes)
+        }
+        for ((vertex, color) in axes) {
+            val vm = vertex * mv
+            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+            canvas.texts.draw(
+                color = color,
+                fontHeight = 24.0,
+                topLeft = vm,
+                text = text,
             )
         }
     }

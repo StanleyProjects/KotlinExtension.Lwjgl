@@ -15,6 +15,16 @@ import sp.kx.calculations.operators.timesAssign
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 
+@Deprecated("sp.kx.calculations.scale")
+internal fun MutableMatrix.scale(sX: Double, sY: Double, sZ: Double) {
+    this *= MutableMatrix(
+        m00 = sX,  m01 = 0.0, m02 = 0.0, m03 = 0.0,
+        m10 = 0.0, m11 = sY,  m12 = 0.0, m13 = 0.0,
+        m20 = 0.0, m21 = 0.0, m22 = sZ,  m23 = 0.0,
+        m30 = 0.0, m31 = 0.0, m32 = 0.0, m33 = 1.0,
+    )
+}
+
 @Deprecated("sp.kx.calculations.set")
 internal fun MutableRotation.clear() {
     aX = 0.0
