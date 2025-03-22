@@ -25,6 +25,7 @@ import sp.service.sample.angleOf
 import sp.service.sample.length
 import sp.service.sample.ortho
 import sp.service.sample.perspective
+import sp.service.sample.px
 import sp.service.sample.transpose
 import sp.service.sample.transposed
 import java.util.concurrent.TimeUnit
@@ -38,11 +39,19 @@ internal class PerspectiveLogics(
             if (isPressed) return
             when (button) {
                 KeyboardButton.Escape -> ses = Unit
+                KeyboardButton.C -> {
+                    near = 1.0
+                    far = 2.0
+                    camera.set(-0.5, -0.5, -4.0)
+                }
                 else -> Unit
             }
         }
     }
-    private val camera = MutableVertex(0.0, 0.0, 0.0)
+//    private val camera = MutableVertex(0.0, 0.0, 0.0)
+    private val camera = MutableVertex(-0.5, -0.5, -4.0)
+    private var near = 1.0
+    private var far = 2.0
 
     override fun shouldEngineStop(): Boolean {
         return ::ses.isInitialized
@@ -80,6 +89,16 @@ internal class PerspectiveLogics(
             camera.z -= length(8.0, TimeUnit.SECONDS, diff)
         } else if (engine.input.keyboard.isPressed(KeyboardButton.E)) {
             camera.z += length(8.0, TimeUnit.SECONDS, diff)
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.N)) {
+            near += length(1.0, TimeUnit.SECONDS, diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.M)) {
+            near -= length(1.0, TimeUnit.SECONDS, diff)
+        }
+        if (engine.input.keyboard.isPressed(KeyboardButton.F)) {
+            far += length(8.0, TimeUnit.SECONDS, diff)
+        } else if (engine.input.keyboard.isPressed(KeyboardButton.G)) {
+            far -= length(8.0, TimeUnit.SECONDS, diff)
         }
     }
 
@@ -137,10 +156,13 @@ internal class PerspectiveLogics(
     }
 
     private fun onRenderV1(canvas: Canvas) {
+        val pic = engine.property.picture
         matrix.identity()
         val id = matrix.copy()
 //        matrix.perspective(fov = kotlin.math.PI / 4, n = -1.0, f = 1.0)
-        matrix.perspective(fov = kotlin.math.PI / 4, n = -1.0, f = 1.0)
+//        matrix.perspective(fov = kotlin.math.PI / 4, n = -12.0, f = -24.0)
+//        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = 0.5, f = 1024.0)
+        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = near, f = far)
         val pm = matrix.copy()
         matrix.identity()
         matrix.translate(dX = camera.x, dY = camera.y, dZ = camera.z)
@@ -148,66 +170,42 @@ internal class PerspectiveLogics(
         GLUtil.onMatrix(pm = pm.transposed(), mv = mv.transposed()) {
             canvas.vectors.draw(
                 color = Color.Red,
-                start = MutableVertex(-1.0, 0.0, 12.0),
-                finish = MutableVertex(1.0, 0.0, 12.0),
-            )
-            canvas.vectors.draw(
-                color = Color.Blue,
-                start = MutableVertex(0.0, -1.0, 24.0),
-                finish = MutableVertex(0.0, 1.0, 24.0),
+                start = MutableVertex(0.0, 0.0, 0.0),
+                finish = MutableVertex(1.0, 0.0, 0.0),
             )
         }
         GLUtil.onMatrix(pm = pm.transposed()) {
             canvas.vectors.draw(
-                color = Color.Yellow,
-                start = MutableVertex(-0.1, -1.0, 24.0) * mv,
-                finish = MutableVertex(0.1, -1.0, 24.0) * mv,
+                color = Color.Green,
+                start = MutableVertex(0.0, 0.0, 0.0) * mv,
+                finish = MutableVertex(0.0, 1.0, 0.0) * mv,
             )
         }
         GLUtil.onMatrix(pm = id, mv = id) {
             matrix.identity()
             matrix *= pm
             matrix *= mv
-            val vm = MutableVertex(-0.1, 1.0, 24.0) * matrix
-            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
-            println("[Test]:vertex: $text")
-//            canvas.vectors.draw(
-//                color = Color.Green,
-//                start = MutableVertex(-0.1, 1.0, 24.0) * matrix,
-//                finish = MutableVertex(0.1, 1.0, 24.0) * matrix,
-//            )
-            GLUtil.colorOf(Color.Green)
-            GLUtil.transaction(GL11.GL_LINES) {
-                val v0 = MutableVertex(-0.1, 1.0, 24.0)
-                GL11.glVertex4d(
-                    matrix.m00 * v0.x + matrix.m01 * v0.y + matrix.m02 * v0.z + matrix.m03,
-                    matrix.m10 * v0.x + matrix.m11 * v0.y + matrix.m12 * v0.z + matrix.m13,
-                    matrix.m20 * v0.x + matrix.m21 * v0.y + matrix.m22 * v0.z + matrix.m23,
-                    matrix.m30 * v0.x + matrix.m31 * v0.y + matrix.m32 * v0.z + matrix.m33,
-                )
-                val v1 = MutableVertex(0.1, 1.0, 24.0)
-                GL11.glVertex4d(
-                    matrix.m00 * v1.x + matrix.m01 * v1.y + matrix.m02 * v1.z + matrix.m03,
-                    matrix.m10 * v1.x + matrix.m11 * v1.y + matrix.m12 * v1.z + matrix.m13,
-                    matrix.m20 * v1.x + matrix.m21 * v1.y + matrix.m22 * v1.z + matrix.m23,
-                    matrix.m30 * v1.x + matrix.m31 * v1.y + matrix.m32 * v1.z + matrix.m33,
-                )
-            }
-        }
-        GLUtil.onMatrix(pm = pm.transposed(), mv = id) {
-            val vertex = MutableVertex(0.0, 1.0, 24.0)
-            val vm = vertex * mv
-            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
-            canvas.texts.draw(
+            canvas.vectors.draw(
                 color = Color.Blue,
-                fontHeight = 1.0,
-                atlasHeight = 32,
-                text = text,
-                x = vm.x,
-                y = vm.y,
-                z = vm.z,
+                start = MutableVertex(0.0, 0.0, 0.0),
+                finish = MutableVertex(0.0, 0.0, 1.0),
+                matrix = matrix,
             )
         }
+//        GLUtil.onMatrix(pm = pm.transposed(), mv = id) {
+//            val vertex = MutableVertex(0.0, 1.0, 24.0)
+//            val vm = vertex * mv
+//            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+//            canvas.texts.draw(
+//                color = Color.Blue,
+//                fontHeight = 1.0,
+//                atlasHeight = 32,
+//                text = text,
+//                x = vm.x,
+//                y = vm.y,
+//                z = vm.z,
+//            )
+//        }
     }
 
     private val matrix = MutableMatrix()
@@ -231,6 +229,8 @@ internal class PerspectiveLogics(
             String.format("cX: %+6.2f", camera.x),
             String.format("cY: %+6.2f", camera.y),
             String.format("cZ: %+6.2f", camera.z),
+            String.format("n: %+6.2f", near),
+            String.format("f: %+6.2f", far),
         ).forEachIndexed { index, text ->
             canvas.texts.draw(
                 color = Color.Green,
