@@ -1,6 +1,7 @@
 package sp.service.sample.logics
 
 import org.lwjgl.opengl.GL11
+import sp.kx.calculations.algebra.Matrix
 import sp.kx.calculations.algebra.MutableMatrix
 import sp.kx.calculations.algebra.copy
 import sp.kx.calculations.algebra.identity
@@ -9,6 +10,7 @@ import sp.kx.calculations.comparisons.isEmpty
 import sp.kx.calculations.geometry.MutableOffset
 import sp.kx.calculations.geometry.MutableVertex
 import sp.kx.calculations.geometry.Offset
+import sp.kx.calculations.geometry.Vertex
 import sp.kx.calculations.operators.times
 import sp.kx.calculations.operators.timesAssign
 import sp.kx.calculations.physics.diff
@@ -155,14 +157,26 @@ internal class PerspectiveLogics(
         GL11.glPopMatrix()
     }
 
+    private fun Vertex.foo(matrix: Matrix): Vertex {
+        val x = matrix.m00 * this.x + matrix.m01 * this.y + matrix.m02 * this.z + matrix.m03
+        val y = matrix.m10 * this.x + matrix.m11 * this.y + matrix.m12 * this.z + matrix.m13
+        val z = matrix.m20 * this.x + matrix.m21 * this.y + matrix.m22 * this.z + matrix.m23
+        val w = matrix.m30 * this.x + matrix.m31 * this.y + matrix.m32 * this.z + matrix.m33
+        return MutableVertex(
+            x = x / w,
+            y = y / w,
+            z = z / w,
+        )
+    }
+
     private fun onRenderV1(canvas: Canvas) {
         val pic = engine.property.picture
         matrix.identity()
         val id = matrix.copy()
 //        matrix.perspective(fov = kotlin.math.PI / 4, n = -1.0, f = 1.0)
 //        matrix.perspective(fov = kotlin.math.PI / 4, n = -12.0, f = -24.0)
-//        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = 0.5, f = 1024.0)
-        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = near, f = far)
+        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = 0.5, f = 1024.0)
+//        matrix.px(fov = kotlin.math.PI / 4, width = pic.size.width, height =  pic.size.height, n = near, f = far)
         val pm = matrix.copy()
         matrix.identity()
         matrix.translate(dX = camera.x, dY = camera.y, dZ = camera.z)
@@ -192,20 +206,30 @@ internal class PerspectiveLogics(
                 matrix = matrix,
             )
         }
-//        GLUtil.onMatrix(pm = pm.transposed(), mv = id) {
-//            val vertex = MutableVertex(0.0, 1.0, 24.0)
-//            val vm = vertex * mv
-//            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
-//            canvas.texts.draw(
-//                color = Color.Blue,
-//                fontHeight = 1.0,
-//                atlasHeight = 32,
-//                text = text,
-//                x = vm.x,
-//                y = vm.y,
-//                z = vm.z,
-//            )
-//        }
+        GLUtil.onMatrix(pm = id, mv = id) {
+            matrix.identity()
+            matrix *= pm
+            matrix *= mv
+            canvas.vectors.draw(
+                color = Color.Yellow,
+                start = MutableVertex(-0.5, 0.0, 1.0).foo(matrix),
+                finish = MutableVertex(0.5, 0.0, 1.0).foo(matrix),
+            )
+        }
+        GLUtil.onMatrix(pm = pm.transposed(), mv = id) {
+            val vertex = MutableVertex(0.0, 1.0, 0.0)
+            val vm = vertex * mv
+            val text = String.format("%.1f:%.1f:%.1f", vm.x, vm.y, vm.z)
+            canvas.texts.draw(
+                color = Color.Blue,
+                fontHeight = 1.0,
+                atlasHeight = 32,
+                text = text,
+                x = vm.x,
+                y = vm.y,
+                z = vm.z,
+            )
+        }
     }
 
     private val matrix = MutableMatrix()
